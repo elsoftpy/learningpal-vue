@@ -23,7 +23,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'exists:users,email'],
+            'name' => ['required', 'string', 'exists:users,name'],
             'password' => ['required', 'string', Password::default()],
         ];
     }
@@ -31,9 +31,9 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => __('Email is required.'),
-            'email.email' => __('Please provide a valid email address.'),
-            'email.exists' => __('No account found with this email.'),
+            'name.required' => __('name is required.'),
+            'name.name' => __('Please provide a valid name address.'),
+            'name.exists' => __('No account found with this name.'),
             'password.required' => __('Password is required.'),
             'password.string' => __('Password must be a valid string.'),
         ];

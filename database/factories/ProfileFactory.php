@@ -21,6 +21,7 @@ class ProfileFactory extends Factory
         $firstName = fake()->firstName();
         $lastName = fake()->lastName();
         $fullName = "{$firstName} {$lastName}";
+        
         return [
             'type' => ProfileTypeEnum::PERSON->value,
             'first_name' => $firstName,

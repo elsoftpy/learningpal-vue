@@ -10,14 +10,14 @@
         <p class="text-xl mt-4">If this is red with white text, Tailwind is working!</p>
         
         <div class="mt-8 grid grid-cols-3 gap-4">
-            <div class="bg-blue-500 p-4 rounded">Blue</div>
-            <div class="bg-green-500 p-4 rounded">Green</div>
-            <div class="bg-yellow-500 p-4 rounded">Yellow</div>
+            <div class="bg-blue-500 p-4 rounded-sm">Blue</div>
+            <div class="bg-green-500 p-4 rounded-sm">Green</div>
+            <div class="bg-yellow-500 p-4 rounded-sm">Yellow</div>
         </div>
         
         <div class="mt-8 flex space-x-4 justify-center">
-            <button class="bg-purple-600 text-white px-6 py-2 rounded-lg shadow">Button 1</button>
-            <button class="bg-pink-600 text-white px-6 py-2 rounded-lg shadow">Button 2</button>
+            <button class="bg-purple-600 text-white px-6 py-2 rounded-lg shadow-sm">Button 1</button>
+            <button class="bg-pink-600 text-white px-6 py-2 rounded-lg shadow-sm">Button 2</button>
         </div>
     </div>
 </body>

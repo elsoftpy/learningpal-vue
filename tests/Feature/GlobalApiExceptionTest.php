@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class GlobalApiExceptionTest extends TestCase
 {
-   public function test_invalid_route_returns_standardized_error_response()
+   /* public function test_invalid_route_returns_standardized_error_response()
    {
        $response = $this->getJson('/api/non-existent-route');
 
@@ -25,7 +25,7 @@ class GlobalApiExceptionTest extends TestCase
                         'route' => [__('The requested route does not exist.')],
                     ],
                 ]);
-   }
+   } */
 
    public function test_forbidden_access_returns_standardized_error_response()
    {

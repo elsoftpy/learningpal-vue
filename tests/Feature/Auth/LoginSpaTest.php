@@ -14,12 +14,12 @@ class LoginSpaTest extends TestCase
     public function test_user_can_login_with_correct_credentials()
     {
         $user = User::factory()->create([
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => bcrypt('Password123!'),
         ]);
 
         $response = $this->postJson(route('auth.login'), [
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => 'Password123!',
         ]);
 
@@ -46,12 +46,12 @@ class LoginSpaTest extends TestCase
     public function test_user_cannot_login_with_incorrect_credentials()
     {
         $user = User::factory()->create([
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => bcrypt('Password123!'),
         ]);
 
         $response = $this->post(route('auth.login'), [
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => 'WrongPassword!',
         ]);
 
@@ -78,19 +78,28 @@ class LoginSpaTest extends TestCase
 
         $response->assertStatus(422);
 
-        $response->assertJsonValidationErrors(['email', 'password']);
+        $response->assertJsonValidationErrors(['name', 'password'])
+            ->assertJsonStructure([
+            'success',
+            'message',
+            'data',
+            'errors' => [
+                'name',
+                'password',
+            ],
+        ]);
     }
 
     public function test_inactive_user_cannot_login()
     {
         $user = User::factory()->create([
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => bcrypt('Password123!'),
             'status' => StatusEnum::DISABLED->value,
         ]);
 
         $response = $this->postJson(route('auth.login'), [
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => 'Password123!',
         ]);
 
@@ -114,13 +123,13 @@ class LoginSpaTest extends TestCase
     public function test_pending_user_can_login()
     {
         $user = User::factory()->create([
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => bcrypt('Password123!'),
             'status' => StatusEnum::PENDING->value,
         ]);
 
         $response = $this->postJson(route('auth.login'), [
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => 'Password123!',
         ]);
 
@@ -147,7 +156,7 @@ class LoginSpaTest extends TestCase
     public function test_user_can_logout()
     {
         $user = User::factory()->create([
-            'email' => 'jane@example.com',
+            'name' => 'jane',
             'password' => bcrypt('Password123!'),
         ]);
 

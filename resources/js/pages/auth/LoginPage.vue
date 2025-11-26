@@ -121,7 +121,7 @@ const handleLogin = async () => {
     await axios.get('/sanctum/csrf-cookie')
 
     // Attempt login
-    await axios.post('/login', {
+    await axios.post('/auth/login', {
       name: form.name,
       password: form.password,
       remember: form.remember
@@ -137,6 +137,7 @@ const handleLogin = async () => {
       if (validationErrors.password) errors.password = validationErrors.password[0]
     } else {
       // General error
+      console.error('Login error:', error)
       errors.password = error.response?.data?.message || 'An error occurred. Please try again.'
     }
   } finally {

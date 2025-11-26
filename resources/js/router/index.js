@@ -6,6 +6,10 @@ export default createRouter({
         { path: '/', redirect: '/login' },
         { path: '/login', component: () => import('../pages/auth/LoginPage.vue') },
         { path: '/register', component: () => import('../pages/auth/RegisterPage.vue') },
-        { path: '/dashboard', component: () => import('../pages/DashboardPage.vue') },
+        { 
+            path: '/dashboard',
+            name: 'dashboard', 
+            component: () => import('../pages/DashboardPage.vue'),
+         },
     ],
 });

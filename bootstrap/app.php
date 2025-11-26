@@ -5,6 +5,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -40,5 +41,13 @@ return Application::configure(basePath: dirname(__DIR__))
                     message: __('You do not have permission to access this resource.'),
                 );
             }
+        });
+
+        $exceptions->renderable(function (ValidationException $e, $request) {
+            return ResponseService::failedValidationResponse(
+                message: __('The given data was invalid.'),
+                errors: $e->errors()
+            );
+            
         });
     })->create();

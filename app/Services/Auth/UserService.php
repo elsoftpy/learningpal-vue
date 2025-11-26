@@ -28,7 +28,7 @@ class UserService
     public function loginAttempt(LoginRequest $request): bool
     {
         $credentials = [
-            'email' => $request->input('email'),
+            'name' => $request->input('name'),
             'password' => $request->input('password'),
             'status' => [StatusEnum::ACTIVE->value, StatusEnum::PENDING->value],
         ];
