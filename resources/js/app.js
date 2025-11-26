@@ -5,6 +5,7 @@ import Aura from '@primeuix/themes/aura';
 import router from './router';
 import axios from 'axios';
 import App from './App.vue';
+import i18n from '../locales';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = '/';
@@ -47,5 +48,6 @@ app.use(PrimeVue, {
         preset: IplPreset,
     }
 })
+    .use(i18n)
     .use(router)
     .mount('#app');

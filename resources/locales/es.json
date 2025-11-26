@@ -1,0 +1,18 @@
+{
+  "Login": "Iniciar sesión",
+  "Username": "Usuario",
+  "Password": "Contraseña",
+  "Remember me": "Recordarme",
+  "Log in": "Iniciar sesión",
+  "Forgot your password?": "¿Olvidaste tu contraseña?",
+  "Dashboard": "Panel de control",
+  "Register": "Registrarse",
+  "Name": "Nombre",
+  "Last Name": "Apellido",
+  "Phone": "Teléfono",
+  "ID Number": "Número de identificación",
+  "Email": "Correo electrónico",
+  "Confirm Password": "Confirmar contraseña",
+  "Send": "Enviar",
+  "Already registered?": "¿Ya estás registrado?"
+}

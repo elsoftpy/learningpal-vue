@@ -1,0 +1,18 @@
+{
+  "Login": "Login",
+  "Username": "Username", 
+  "Password": "Password",
+  "Remember me": "Remember me",
+  "Log in": "Log in",
+  "Forgot your password?": "Forgot your password?",
+  "Dashboard": "Dashboard",
+  "Register": "Register",
+  "Name": "Name",
+  "Last Name": "Last Name",
+  "Phone": "Phone",
+  "ID Number": "ID Number",
+  "Email": "Email",
+  "Confirm Password": "Confirm Password",
+  "Send": "Send",
+  "Already registered?": "Already registered?"
+}

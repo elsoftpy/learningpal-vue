@@ -79,6 +79,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import GuestLayout from '@/layouts/GuestLayout.vue'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -88,6 +89,7 @@ import Divider from 'primevue/divider'
 import axios from 'axios'
 
 const router = useRouter()
+const { t: $t } = useI18n()
 
 const form = reactive({
   name: '',
@@ -145,18 +147,7 @@ const handleLogin = async () => {
   }
 }
 
-// Translation helper (replace with your i18n solution)
-const $t = (key) => {
-  const translations = {
-    'Login': 'Login',
-    'Username': 'Username',
-    'Password': 'Password',
-    'Remember me': 'Remember me',
-    'Log in': 'Log in',
-    'Forgot your password?': 'Forgot your password?'
-  }
-  return translations[key] || key
-}
+
 </script>
 
 <style scoped>
