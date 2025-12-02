@@ -14,6 +14,7 @@ class AuthenticationController extends Controller
 {
     public function login(LoginRequest $request, UserService $userService)
     {
+
         if (! $userService->loginAttempt($request)) {
             return ResponseService::unauthenticated(
                 message: __('Unauthenticated.'),

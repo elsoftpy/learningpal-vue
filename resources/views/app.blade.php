@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>My App</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
     @vite(['resources/js/app.js', 'resources/css/app.css'])
 </head>
 

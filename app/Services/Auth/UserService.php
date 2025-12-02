@@ -45,6 +45,7 @@ class UserService
     {
         return [
             'id' => $user->id,
+            'name' => $user->name,
             'type' => $user->profile->type ?? null,
             'first_name' => $user->profile->first_name ?? null,
             'last_name' => $user->profile->last_name ?? null,

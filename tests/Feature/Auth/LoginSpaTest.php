@@ -31,6 +31,7 @@ class LoginSpaTest extends TestCase
             'data' => [
                 'user' => [
                     'id',
+                    'name',
                     'type',
                     'first_name',
                     'last_name',
@@ -141,6 +142,7 @@ class LoginSpaTest extends TestCase
             'data' => [
                 'user' => [
                     'id',
+                    'name',
                     'type',
                     'first_name',
                     'last_name',
@@ -191,6 +193,7 @@ class LoginSpaTest extends TestCase
                     'data' => [
                         'user' => [
                             'id',
+                            'name',
                             'type',
                             'first_name',
                             'last_name',

@@ -16,11 +16,17 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@phosphor-icons/vue": "^2.2.1",
         "@primeuix/themes": "^2.0.0",
+        "@schedule-x/calendar": "^3.4.2",
+        "@schedule-x/theme-default": "^3.4.2",
+        "@schedule-x/vue": "^3.4.0",
         "@vitejs/plugin-vue": "^6.0.2",
+        "pinia": "^3.0.4",
         "primevue": "^4.4.1",
+        "temporal-polyfill": "^0.3.0",
         "vue": "^3.5.25",
-        "vue-i18n": "^11.2.1",
+        "vue-i18n": "^11.2.2",
         "vue-router": "^4.6.3"
     }
 }

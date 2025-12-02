@@ -1,0 +1,25 @@
+<template>
+    <div class="py-12">
+      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+          <div class="p-6 text-gray-900 dark:text-gray-100">
+            <h2 class="text-2xl font-bold mb-4">{{ $t('404 - Page Not Found') }}</h2>
+            <p>{{ $t("Sorry, the page you are looking for does not exist.") }}</p>
+            <router-link to="/dashboard" class="text-blue-500 hover:underline">
+              {{ $t('Return to Dashboard') }}
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+</template>
+
+<script setup>
+
+import AppLayout from "@/Layouts/AppLayout.vue";
+
+defineOptions({
+  layout: AppLayout,
+});
+
+</script>

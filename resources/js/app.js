@@ -1,14 +1,20 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import { useAuthStore } from './stores/auth';
+import App from './App.vue';
+import router from './router';
+import axios from 'axios';
 import PrimeVue from 'primevue/config';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import router from './router';
-import axios from 'axios';
-import App from './App.vue';
 import i18n from '../locales';
+import { useThemeStore } from './stores/theme';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = '/';
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.headers.common['Accept'] = 'application/json';
+
 
 const IplPreset = definePreset(Aura, {
     semantic: {
@@ -42,12 +48,25 @@ const IplPreset = definePreset(Aura, {
 
 const app = createApp(App);
 
+const pinia = createPinia();
 
 app.use(PrimeVue, {
     theme: {
         preset: IplPreset,
+        options: {
+            darkModeSelector: '.dark',
+        }
     }
 })
+    .use(pinia)
     .use(i18n)
     .use(router)
-    .mount('#app');
+
+const authStore = useAuthStore(pinia);
+
+const themeStore = useThemeStore(pinia);
+themeStore.initialize();
+
+authStore.checkAuth().finally(() => {
+    app.mount('#app');
+});
