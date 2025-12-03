@@ -43,5 +43,15 @@
   "Forgot Password": "Olvidé mi contraseña",
   "Send Reset Link": "Enviar enlace de restablecimiento",
   "Light mode": "Modo Claro",
-  "Dark mode": "Modo Oscuro"
+  "Dark mode": "Modo Oscuro",
+  "Active": "Activo",
+  "Payment": "Pago",
+  "Address": "Dirección",
+  "Profile Settings": "Configuración de perfil",
+  "Update Profile": "Actualizar perfil",
+  "Save": "Guardar",
+  "Role": "Rol",
+  "Profile Picture": "Foto de perfil",
+  "Birth Date": "Fecha de nacimiento",
+  "Back": "Volver"
 }

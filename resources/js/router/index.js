@@ -60,6 +60,7 @@ const routes = [
     meta: { 
       requiresAuth: true,
       module: 'settings', 
+      title: 'Users List',
     },
   },
   {
@@ -69,6 +70,7 @@ const routes = [
     meta: { 
       requiresAuth: true,
       module: 'settings', 
+      title: 'User Profile',
     },
   },
   {

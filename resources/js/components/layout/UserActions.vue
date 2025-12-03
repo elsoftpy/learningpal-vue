@@ -8,7 +8,7 @@
                 {{ auth.user.name }}
             </span>    
             <img
-                :src="auth.user?.profile_photo_url || defaultAvatar"
+                :src="avatar"
                 alt="User Photo"
                 class="w-8 h-8 rounded-full object-cover"
             />
@@ -54,6 +54,7 @@ import defaultAvatar from '@/images/default-avatar.png';
 const auth = useAuthStore();
 const router = useRouter();
 const show = ref(false);
+const avatar = auth.user?.profile_photo_url || defaultAvatar;
 
 console.log('UserActions auth.user:', auth.user);
 

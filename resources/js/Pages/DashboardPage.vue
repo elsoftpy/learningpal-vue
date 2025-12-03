@@ -2,7 +2,7 @@
       <div class="flex w-full bg-slate-50 dark:bg-slate-900 shadow-md rounded-md">
           <div class="w-full p-2">
               <div class="flex-col space-y-2">
-                  <div class="flex w-full justify-between items-center bg-blue-500 rounded-md p-4">
+                  <div class="flex w-full justify-between items-center bg-blue-500 dark:bg-blue-800 rounded-md p-4">
                       <div class="text-xl text-slate-50">
                           {{ appName }}
                       </div>
@@ -35,9 +35,12 @@ import "@schedule-x/theme-default/dist/index.css";
 import 'temporal-polyfill/global';
 import { useThemeStore } from '@/stores/theme';
 
+const appName = import.meta.env.VITE_APP_NAME || 'LearningPal';
+const appVersion = import.meta.env.VITE_APP_VERSION || 'N/A';
+const appLocale = import.meta.env.VITE_APP_LOCALE + '-ES'|| 'en-US';
 const today = new Date();
 const selectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-console.log('Selected Date:', selectedDate);
+
 
 const themeStore = useThemeStore();
 
@@ -45,6 +48,7 @@ const calendarApp = createCalendar({
   defaultView:  viewMonthGrid.name,
   isDark: themeStore.isDark,
   selectedDate: Temporal.PlainDate.from(selectedDate),
+  locale: appLocale,
   views: [
     createViewMonthGrid(),
     createViewMonthAgenda(),
@@ -107,9 +111,6 @@ const calendarApp = createCalendar({
 defineOptions({
   layout: AppLayout,
 });
-
-const appName = import.meta.env.VITE_APP_NAME || 'LearningPal';
-const appVersion = import.meta.env.VITE_APP_VERSION || 'N/A';
 
 watch(
   () => themeStore.isDark,

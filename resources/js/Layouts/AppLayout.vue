@@ -22,24 +22,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import Sidebar from '@/components/layout/navigation/Sidebar.vue';
 import TopNav from '@/components/layout/navigation/TopNav.vue';
 
 const auth = useAuthStore();
 const sidebarOpen = ref(false);
-
-defineProps({
-  name: {
-    type: String,
-    default: 'AppLayout',
-  },
-  title: {
-    type: String,
-    default: 'Dashboard',
-  },
-});
 
 onMounted( async () => {
   if (!auth.ready) {
