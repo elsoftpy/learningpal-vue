@@ -18,6 +18,7 @@
     "dependencies": {
         "@phosphor-icons/vue": "^2.2.1",
         "@primeuix/themes": "^2.0.0",
+        "@primevue/forms": "^4.5.1",
         "@schedule-x/calendar": "^3.4.2",
         "@schedule-x/theme-default": "^3.4.2",
         "@schedule-x/vue": "^3.4.0",
@@ -28,6 +29,7 @@
         "temporal-polyfill": "^0.3.0",
         "vue": "^3.5.25",
         "vue-i18n": "^11.2.2",
-        "vue-router": "^4.6.3"
+        "vue-router": "^4.6.3",
+        "zod": "^4.1.13"
     }
 }

@@ -54,17 +54,18 @@ export const useAuthStore = defineStore('auth', {
                 await this.ensureCsrf();
 
                 const response = await loginRequest(credentials);
-                this.user = response.data.data.user;
                 this.isAuthenticated = true;
+                this.user = response.data.data.user;
 
-                return { success: true, user: this.user };
+                return {success: true, user: this.user};
+
             } catch (error) {
                 this.user = null;
                 this.isAuthenticated = false;
                 
-                return { success: false, error: error.response.data.message || 'Login failed' };
-            }
-            finally {
+                throw error;
+
+            } finally {
                 this.loading = false;
             }
         },
@@ -78,7 +79,8 @@ export const useAuthStore = defineStore('auth', {
                 this.isAuthenticated = false;
 
             } catch (error) {
-                console.error('Logout failed:', error);
+                
+                throw error;
 
             } finally {
                 this.loading = false;
@@ -90,19 +92,19 @@ export const useAuthStore = defineStore('auth', {
             this.loading = true;
 
             try {
-                await getCsrfCookie();
+                await this.ensureCsrf();
                 
                 const response = await registerRequest(data);
-
-                this.user = response.data.data.user;
                 this.isAuthenticated = true;
+                this.user = response.data.data.user;
+
+                return {success: true, user: this.user};
                 
-                return { success: true, user: this.user };
             } catch (error) {
                 this.user = null;
                 this.isAuthenticated = false;
 
-                return { success: false, error: error.response.data.message || 'Registration failed' };
+                throw error;
             }
             finally {
                 this.loading = false;
