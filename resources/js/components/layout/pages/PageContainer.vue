@@ -14,6 +14,7 @@
                     </div>
                     <div class="text-xs text-slate-300">
                         <Button 
+                            @click="goBack"
                             :label="$t('Back')" 
                             icon="pi pi-arrow-left"
                             severity="warn"
@@ -30,7 +31,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { useI18n } from 'vue-i18n';
 import { Button } from "primevue";
@@ -39,11 +40,24 @@ import IconWrapper from '@/components/common/IconWrapper.vue';
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
+const fallbackRoute = { name: 'dashboard' };
 
 const pageTitle = computed(() => {
     const key = route.meta?.title ?? 'Leka';
     return key ? t(key) : '';
 });
+
+const goBack = () => {
+    const hasHistory = typeof window !== 'undefined' && !!window.history.state?.back;
+
+    if (hasHistory) {
+        router.back();
+        return;
+    }
+
+    router.push(fallbackRoute);
+};
 
 defineOptions({
   layout: AppLayout,
