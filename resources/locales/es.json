@@ -53,5 +53,7 @@
   "Role": "Rol",
   "Profile Picture": "Foto de perfil",
   "Birth Date": "Fecha de nacimiento",
-  "Back": "Volver"
+  "Back": "Volver",
+  "Username is required": "El nombre de usuario es obligatorio",
+  "Password is required": "La contraseña es obligatoria"
 }

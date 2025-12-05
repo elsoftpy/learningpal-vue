@@ -41,5 +41,19 @@
   "Class Schedules": "Class Schedules",
   "Log out": "Log out",
   "Forgot Password": "Forgot Password",
-  "Send Reset Link": "Send Reset Link"
+  "Send Reset Link": "Send Reset Link",
+  "Light mode": "Light mode",
+  "Dark mode": "Dark mode",
+  "Active": "Active",
+  "Payment": "Payment",
+  "Address": "Address",
+  "Profile Settings": "Profile Settings",
+  "Update Profile": "Update Profile",
+  "Save": "Save",
+  "Role": "Role",
+  "Profile Picture": "Profile Picture",
+  "Birth Date": "Birth Date",
+  "Back": "Back",
+  "Username is required": "Username is required",
+  "Password is required": "Password is required"
 }

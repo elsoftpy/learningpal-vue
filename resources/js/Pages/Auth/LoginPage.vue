@@ -24,7 +24,6 @@
           id="name"
           name="name"
           type="text"
-          :invalid="$form.name?.invalid"
           fluid
         />
         <!-- Client-side error from Zod -->
@@ -57,14 +56,25 @@
           id="password"
           name="password"
           :feedback="false"
-          :invalid="$form.password?.invalid"
           toggleMask
           fluid
         />
-        <small v-if="$form.password?.invalid" class="text-red-500">
+        <Message
+          v-if="$form.password?.invalid"
+          severity="error"
+          size="small"
+          variant="simple"
+        >
           {{ $form.password.error?.message }}
-        </small>
-        <small v-if="errors.password" class="text-red-500">{{ errors.password }}</small>
+        </Message>
+        <Message
+          v-if="errors.password"
+          severity="error"
+          size="small"
+          variant="simple"
+        >
+          {{ errors?.password }}
+        </Message>
       </div>
 
       <!-- Remember Me & Submit Button (Remember field doesn't need error display) -->
@@ -97,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
 import { useI18n } from 'vue-i18n'
@@ -105,7 +115,7 @@ import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useAuthStore } from '../../stores/auth'
 import { useAuthForm } from '@/composable/useAuthForm'
-import { loginSchema } from '@/schemas/login'
+import { createLoginSchema } from '@/schemas/login'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Message from 'primevue/message'
@@ -125,7 +135,8 @@ const form = reactive({
   remember: false
 })
 
-const resolver = zodResolver(loginSchema)
+const loginSchema = computed(() => createLoginSchema($t))
+const resolver = zodResolver(loginSchema.value)
 
 const { errors, loading, setErrors, clearErrors } = useAuthForm({
   name: '',

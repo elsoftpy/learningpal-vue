@@ -41,5 +41,19 @@
   "Class Schedules": "Horários das aulas",
   "Log out": "Sair",
   "Forgot Password": "Esqueci minha senha",
-  "Send Reset Link": "Enviar link de redefinição"
+  "Send Reset Link": "Enviar link de redefinição",
+  "Light mode": "Modo Claro",
+  "Dark mode": "Modo Escuro",
+  "Active": "Ativo",
+  "Payment": "Pagamento",
+  "Address": "Endereço",
+  "Profile Settings": "Configurações de perfil",
+  "Update Profile": "Atualizar perfil",
+  "Save": "Salvar",
+  "Role": "Função",
+  "Profile Picture": "Foto de perfil",
+  "Birth Date": "Data de nascimento",
+  "Back": "Voltar",
+  "Username is required": "O nome de usuário é obrigatório",
+  "Password is required": "A senha é obrigatória"
 }
