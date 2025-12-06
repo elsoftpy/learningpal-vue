@@ -31,8 +31,8 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('name is required.'),
-            'name.name' => __('Please provide a valid name address.'),
+            'name.required' => __('Name is required'),
+            'name.name' => __('Please provide a valid name.'),
             'name.exists' => __('No account found with this name.'),
             'password.required' => __('Password is required.'),
             'password.string' => __('Password must be a valid string.'),
