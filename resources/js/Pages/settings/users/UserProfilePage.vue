@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -92,6 +92,8 @@ const { t: $t } = useI18n();
 const resolver = zodResolver(createUserSchema($t));
 const auth = useAuthStore();
 const route = useRoute();
+// const selectedFile = ref(null);
+const loading = ref(false);
 
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
