@@ -100,6 +100,7 @@
                         <FileUpload
                             id="avatar-input"
                             :label="$t('Profile Picture')"
+                            :button-label="$t('Select Avatar')"
                             accept="image/*"
                             :max-file-size="2000000"
                             preview-class="h-16 w-16 rounded-full object-cover"

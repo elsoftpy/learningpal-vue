@@ -1,14 +1,11 @@
 <template>
     <div class="flex flex-col w-full">
-        <label v-if="label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ label }}
-        </label>
         <FileUpload
             :id="id"
             mode="advanced"
             :accept="accept"
             :auto="false"
-            :choose-label="$t('Select Image')"
+            :choose-label="$t(buttonLabel || 'Select Image')"
             :custom-upload="true"
             :show-upload-button="false"
             :show-cancel-button="false"
@@ -18,7 +15,7 @@
             @clear="onFileClear"
             :class="containerClass"
         >
-            <template #empty>
+            <template #empty v-if="showEmpty">
                 <div class="flex flex-col items-center justify-center py-4">
                     <i :class="['text-4xl text-gray-400 mb-2', emptyIcon]"></i>
                     <p class="text-sm text-gray-500">
@@ -99,6 +96,14 @@ const props = defineProps({
     label: {
         type: String,
         default: ''
+    },
+    buttonLabel: {
+        type: String,
+        default: ''
+    },
+    showEmpty: {
+        type: Boolean,
+        default: false
     },
     accept: {
         type: String,
