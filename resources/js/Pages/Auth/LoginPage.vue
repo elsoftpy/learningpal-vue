@@ -76,8 +76,7 @@
           {{ errors?.password }}
         </Message>
       </div>
-
-      <!-- Remember Me & Submit Button (Remember field doesn't need error display) -->
+      <!-- Remember me -->
       <div class="flex text-sm">
         <div class="mt-6 flex items-center">
           <ToggleSwitch name="remember" inputId="remember" />
@@ -86,7 +85,7 @@
           </label>
         </div>
       </div>
-
+      <!-- Submit button-->
       <div class="mt-4">
         <Button
           type="submit"
@@ -97,11 +96,28 @@
         />
       </div>
     </Form>
-
-    <!-- Links and other components below remain unchanged -->
+    <!-- Divider and Forgot Password / Register links-->
     <Divider class="my-8" />
     <div class="flex w-full justify-between mt-4">
-      <!-- ... forgot password and register links ... -->
+      <div class="flex w-full justify-between mt-4">
+        <!-- Forgot Password Link -->
+        <p v-if="hasPasswordReset">
+          <router-link
+            :to="{ name: 'forgot-password' }"
+            class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {{ $t('Forgot your password?') }}
+          </router-link>
+        </p>
+        <p>
+          <router-link
+            :to="{ name: 'register' }"
+            class="ml-4 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {{ $t('Register') }}
+          </router-link>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -111,11 +127,11 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
 import { useI18n } from 'vue-i18n'
-import { Form } from '@primevue/forms'
-import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useAuthStore } from '../../stores/auth'
 import { useAuthForm } from '@/composable/useAuthForm'
 import { createLoginSchema } from '@/schemas/login'
+import { Form } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Message from 'primevue/message'
@@ -128,6 +144,11 @@ const route = useRoute()
 const authStore = useAuthStore()
 const { handleApiError } = useApiErrorHandler()
 const { t: $t } = useI18n()
+const loginSchema = computed(() => createLoginSchema($t))
+const resolver = zodResolver(loginSchema.value)
+const status = ref('')
+const hasPasswordReset = ref(true)
+
 
 const form = reactive({
   name: '',
@@ -135,16 +156,11 @@ const form = reactive({
   remember: false
 })
 
-const loginSchema = computed(() => createLoginSchema($t))
-const resolver = zodResolver(loginSchema.value)
-
 const { errors, loading, setErrors, clearErrors } = useAuthForm({
   name: '',
   password: '',
 })
 
-const status = ref('')
-const hasPasswordReset = ref(true)
 
 const handleLogin = async ({valid, values}) => {
   clearErrors()
