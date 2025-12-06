@@ -4,7 +4,7 @@
             <div class="flex flex-col w-full space-y-4">
                 <div class="space-y-4 md:space-y-0 md:flex md:items-center md:space-x-4">
                     <!-- Avatar -->
-                    <div class="flex justify-center w-full md:w-1/12">
+                    <div v-if="isUserProfile" class="flex justify-center w-full md:max-w-16">
                         <img
                             :src="avatar"
                             class="h-16 w-16 rounded-full border-2 border-blue-500 dark:border-blue-100"
@@ -18,9 +18,8 @@
                         </label>
                         <InputText
                             id="personal_id"
-                            v-model="auth.user.personal_id"
+                            name="personal_id"
                             :disabled="!creating"
-                            :label="$t('ID Number') + ' *'"
                             :placeholder="$t('ID Number')"
                         />
                     </div>
@@ -28,12 +27,11 @@
                     <div class="w-full md:flex md:space-x-2 md:w-3/4 space-y-2 md:space-y-0">
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                {{ $t('Name') }}
+                                {{ $t('First Name') }}
                             </label>
                             <InputText
                                 id="first_name"
-                                v-model="auth.user.first_name"
-                                :label="$t('Name') + ' *'"
+                                name="first_name"
                                 :placeholder="$t('Name')"
                                 class="w-full"
                             />
@@ -44,8 +42,7 @@
                             </label>
                             <InputText
                                 id="last_name"
-                                v-model="auth.user.last_name"
-                                :label="$t('Last Name') + ' *'"
+                                name="last_name"
                                 :placeholder="$t('Last Name')"
                                 class="w-full"
                             />
@@ -60,8 +57,7 @@
                         </label>
                         <InputText
                             id="address"
-                            v-model="auth.user.address"
-                            :label="$t('Address')"
+                            name="address"
                             :placeholder="$t('Address')"
                         />
                     </div>
@@ -71,8 +67,7 @@
                         </label>
                         <InputText
                             id="phone"
-                            v-model="auth.user.phone"
-                            :label="$t('Phone')"
+                            name="phone"
                             :placeholder="$t('Phone')"
                         />
                     </div>
@@ -85,8 +80,7 @@
                         </label>
                         <InputText
                             id="email"
-                            v-model="auth.user.email"
-                            :label="$t('Email') + ' *'"
+                            name="email"
                             :placeholder="$t('Email')"
                             class="w-full"
                         />
@@ -97,8 +91,7 @@
                         </label>
                         <InputText
                             id="birth_date"
-                            v-model="auth.user.birth_date"
-                            :label="$t('Birth Date')"
+                            name="birth_date"
                             :placeholder="$t('Birth Date')"
                             class="w-full"
                         />
@@ -109,8 +102,7 @@
                         </label>
                         <InputText
                             id="avatar"
-                            v-model="auth.user.avatar"
-                            :label="$t('Profile Picture')"
+                            name="avatar"
                             :placeholder="$t('Profile Picture')"
                             class="w-full"
                         />
@@ -129,7 +121,21 @@ import { useAuthStore } from '@/stores/auth'
 import { InputText } from 'primevue'
 import { useI18n } from 'vue-i18n'
 
-const auth = useAuthStore()
 const { t: $t } = useI18n()
-const avatar = auth.user?.profile_photo_url || defaultAvatar
+const auth = useAuthStore()
+const props = defineProps({
+    form: {
+        type: Object,
+        required: true,
+    },
+    creating: {
+        type: Boolean,
+        default: false,
+    },
+    isUserProfile: {
+        type: Boolean,
+        default: false,
+    },
+});
+const avatar = props.form.avatar || defaultAvatar
 </script>

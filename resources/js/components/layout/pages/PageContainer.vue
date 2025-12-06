@@ -21,7 +21,7 @@
                         />
                     </div>
                 </div>
-                <div class="flex flex-col items-center justify-center">
+                <div class="flex flex-col items-center justify-center p-4">
                     <slot name="body" />
                 </div>
             </div>

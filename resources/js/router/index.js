@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth';
 import { title } from '@primeuix/themes/aura/card';
 
 const routes = [
+  /* Default Route */
   {
     path: '/',
     redirect : '/dashboard',
@@ -11,6 +12,7 @@ const routes = [
       module: null,
     },
   },
+  /* Guest Routes */
   {
     path: '/login',
     name: 'login',
@@ -38,6 +40,7 @@ const routes = [
       title: 'Forgot Password', 
     },
   },
+  /* Protected Routes */
   {
     path: '/dashboard',
     name: 'dashboard',
@@ -47,12 +50,7 @@ const routes = [
       module: null,
     },
   },
-  {
-    path: '/auth-test',
-    name: 'auth-test',
-    component: () => import('../Pages/AuthTestPage.vue'),
-    meta: { requiresAuth: true },
-  },
+  /* Settings Module */
   {
     path: '/settings/users',
     name: 'settings.users.list',
@@ -61,6 +59,7 @@ const routes = [
       requiresAuth: true,
       module: 'settings', 
       title: 'Users List',
+      crud: 'read',
     },
   },
   {
@@ -71,8 +70,10 @@ const routes = [
       requiresAuth: true,
       module: 'settings', 
       title: 'User Profile',
+      crud: 'edit.auth-user',
     },
   },
+  /* Academic Module */
   {
     path: '/academic/settings/language-levels',
     name: 'academic.settings.language-levels.list',
@@ -81,6 +82,8 @@ const routes = [
       requiresAuth: true,
       module: 'academic', 
       submodule: 'settings', 
+      title: 'Language Levels',
+      crud: 'read',
     },
   },
   {
@@ -91,8 +94,11 @@ const routes = [
       requiresAuth: true,
       module: 'academic', 
       submodule: 'classes', 
+      title: 'Class Schedules',
+      crud: 'read',
     },
   },
+  /* Fallback Route */
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
