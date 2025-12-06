@@ -70,5 +70,9 @@
   "First Name": "Nombre",
   "Invalid email address": "Dirección de correo electrónico no válida",
   "Avatar must be a valid URL": "El avatar debe ser una URL válida",
-  "First Name is required": "El nombre es obligatorio"
+  "First Name is required": "El nombre es obligatorio",
+  "Select Avatar": "Seleccionar Avatar",
+  "No file chosen": "Ningún archivo seleccionado",
+  "Pending": "Pendiente",
+  "Drag and drop image here": "Arrastra y suelta la imagen aquí"
 }

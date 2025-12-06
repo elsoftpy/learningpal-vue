@@ -70,5 +70,9 @@
   "First Name": "First Name",
   "Invalid email address": "Invalid email address",
   "Avatar must be a valid URL": "Avatar must be a valid URL",
-  "First Name is required": "First Name is required"
+  "First Name is required": "First Name is required",
+  "Select Avatar": "Select Avatar",
+  "No file chosen": "No file chosen",
+  "Pending": "Pending",
+  "Drag and drop image here": "Drag and drop image here"
 }

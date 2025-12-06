@@ -5,7 +5,7 @@
         :initial-values="initialValues"
         :resolver="resolver"
     >
-        <ProfilePage :form="$form" :creating="creating" :isUserProfile="true">
+        <ProfilePage :form="$form" :creating="creating" :isPersonProfile="true">
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2 md:items-center">
                     <div class="flex flex-col w-full md:w-1/5">
