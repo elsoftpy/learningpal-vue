@@ -1,11 +1,5 @@
-<!-- LoginPage.vue Template Section -->
 <template>
   <div class="w-full">
-    <!-- Session Status (unchanged) -->
-    <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-      {{ status }}
-    </div>
-
     <!-- PrimeVue Form Component -->
     <Form
       v-slot="$form"
@@ -15,6 +9,7 @@
       :validateOnBlur="true"
       class="flex flex-col gap-4"
     >
+
       <!-- Username Input -->
       <div class="mt-4">
         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -26,7 +21,7 @@
           type="text"
           fluid
         />
-        <!-- Client-side error from Zod -->
+        <!-- Client-side error  -->
          <Message
           v-if="$form.name?.invalid"
           severity="error"
@@ -35,8 +30,7 @@
         >
           {{ $form.name.error?.message }}
         </Message>
-        
-        <!-- Server-side error from your existing system -->
+        <!-- Server-side error -->
         <Message
           v-if="errors?.name"
           severity="error"
@@ -59,6 +53,7 @@
           toggleMask
           fluid
         />
+        <!-- Client-side error -->
         <Message
           v-if="$form.password?.invalid"
           severity="error"
@@ -67,6 +62,7 @@
         >
           {{ $form.password.error?.message }}
         </Message>
+        <!-- Server-side error -->
         <Message
           v-if="errors.password"
           severity="error"
@@ -76,6 +72,7 @@
           {{ errors?.password }}
         </Message>
       </div>
+
       <!-- Remember me -->
       <div class="flex text-sm">
         <div class="mt-6 flex items-center">
@@ -85,6 +82,7 @@
           </label>
         </div>
       </div>
+
       <!-- Submit button-->
       <div class="mt-4">
         <Button
@@ -96,10 +94,13 @@
         />
       </div>
     </Form>
+
     <!-- Divider and Forgot Password / Register links-->
     <Divider class="my-8" />
+
     <div class="flex w-full justify-between mt-4">
       <div class="flex w-full justify-between mt-4">
+        
         <!-- Forgot Password Link -->
         <p v-if="hasPasswordReset">
           <router-link
@@ -109,6 +110,8 @@
             {{ $t('Forgot your password?') }}
           </router-link>
         </p>
+
+        <!-- Register Link -->
         <p>
           <router-link
             :to="{ name: 'register' }"
