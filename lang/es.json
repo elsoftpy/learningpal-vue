@@ -39,5 +39,16 @@
     "Selected gender is invalid.": "El género seleccionado no es válido.",
     "Gender must be a valid string.": "El género debe ser una cadena válida.",
     "First name must be a valid string.": "El nombre debe ser una cadena válida.",
-    "Last name must be a valid string.": "El apellido debe ser una cadena válida."
+    "Last name must be a valid string.": "El apellido debe ser una cadena válida.",
+    "Unauthenticated.": "No autenticado.",
+    "Invalid credentials.": "Credenciales inválidas.",
+    "Login successful.": "Inicio de sesión exitoso.",
+    "Session expired. Please log in again.": "Sesión expirada. Por favor, inicia sesión de nuevo.",
+    "Your session has been invalidated. Please log in again.": "Tu sesión ha sido invalidada. Por favor, inicia sesión de nuevo.",
+    "The requested resource was not found.": "El recurso solicitado no fue encontrado.",
+    "The requested route does not exist.": "La ruta solicitada no existe.",
+    "You do not have permission to access this resource.": "No tienes permiso para acceder a este recurso.",
+    "You do not have permission to perform this action.": "No tienes permiso para realizar esta acción.",
+    "Too many requests. Please try again later.": "Demasiadas solicitudes. Por favor, inténtalo de nuevo más tarde.",
+    "The given data was invalid.": "Los datos proporcionados no son válidos."
 }
