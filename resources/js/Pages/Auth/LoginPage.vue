@@ -139,11 +139,11 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
 
+const { t: $t } = useI18n()
+const { handleApiError } = useApiErrorHandler()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const { handleApiError } = useApiErrorHandler()
-const { t: $t } = useI18n()
 const loginSchema = computed(() => createLoginSchema($t))
 const resolver = zodResolver(loginSchema.value)
 const status = ref('')
