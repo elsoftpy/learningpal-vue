@@ -1,10 +1,12 @@
 <template>
     <Form
         v-slot="$form"
-        @submit="handleLogin"
-        :initial-values="initialValues"
         :resolver="resolver"
+        :initial-values="initialValues"
+        @submit="handleSubmit"
+        :validateOnBlur="true"
     >
+        <!-- <pre>{{ $form }}</pre> -->
         <ProfilePage :form="$form" :creating="creating" :isPersonProfile="true">
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -17,6 +19,22 @@
                             name="name"
                             :placeholder="$t('Username')"
                         />
+                        <Message
+                            v-if="$form.name?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ $form.name.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.name"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.name }}
+                        </Message>
                     </div>
                     
                     <div class="flex flex-col w-full md:w-1/5">
@@ -32,7 +50,7 @@
 
                     <div class="flex flex-col w-full md:w-1/5">
                         <ServerSideSelect
-                            id="role"
+                            id="roles"
                             name="roles"
                             :label="$t('Role')"
                             :placeholder="$t('Select a role')"
@@ -97,17 +115,17 @@ import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import InputText from 'primevue/inputtext';
 import ProfilePage from '../profiles/ProfilePage.vue';
-import ToogleSwitch from 'primevue/toggleswitch';
 import Button from 'primevue/button';
 import ServerSideSelect from '@/components/form/ServerSideSelect.vue';
 import Select from 'primevue/select';
+import Message from 'primevue/message';
 import axios from 'axios';
 
-const { t: $t } = useI18n();
-const resolver = zodResolver(createUserSchema($t));
+const { locale, t: $t } = useI18n();
+const userSchema = computed(() => createUserSchema($t, locale.value));
+const resolver = zodResolver(userSchema.value);
 const auth = useAuthStore();
 const route = useRoute();
-// const selectedFile = ref(null);
 const loading = ref(false);
 const statusList = ref([]);
 
@@ -153,7 +171,7 @@ const initialValues = computed(() => {
     return {};
 });
 
-const handleLogin = ({valid, values}) => {
+const handleSubmit = ({valid, values}) => {
     if (!valid) {
         return;
     }

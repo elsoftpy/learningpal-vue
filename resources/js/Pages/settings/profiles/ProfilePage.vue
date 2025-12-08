@@ -84,17 +84,48 @@
                             :placeholder="$t('Email')"
                             class="w-full"
                         />
+                        <Message
+                            v-if="form.email?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ form.email.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.email"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.email }}
+                        </Message>
                     </div>
                     <div class="flex flex-col w-full md:w-1/3">
-                        <label for="birth_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ $t('Birth Date') }}
-                        </label>
-                        <InputText
+                        <DateInput
                             id="birth_date"
                             name="birth_date"
+                            :label="$t('Birth Date')"
                             :placeholder="$t('Birth Date')"
+                            @update:unmasked="form.birth_date_unmasked = $event"
                             class="w-full"
                         />
+                        <Message
+                            v-if="form.birth_date?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ form.birth_date.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.birth_date"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.birth_date }}
+                        </Message>
                     </div>
                     <div class="flex flex-col w-full md:w-1/3">
                         <FileUpload
@@ -115,13 +146,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import defaultAvatar from '@/images/default-avatar.png'
 import PageContainer from '@/components/layout/pages/PageContainer.vue'
 import InputText from 'primevue/inputtext'
 import FileUpload from '@/components/form/FileUpload.vue'
-
+import DateInput from '@/components/form/DateInput.vue'
+import Message from 'primevue/message'
 
 const { t: $t } = useI18n()
 
@@ -144,13 +176,6 @@ const emit = defineEmits(['update:avatar'])
 
 const selectedFile = ref(null)
 
-/* const avatarPreview = computed(() => {
-    if (selectedFile.value?.objectURL) {
-        return selectedFile.value.objectURL
-    }
-    return props.form.avatar || defaultAvatar
-})
- */
 const onAvatarSelect = (value) => {
     if (!value) {
         selectedFile.value = null

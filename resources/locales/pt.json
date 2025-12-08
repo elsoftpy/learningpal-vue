@@ -76,5 +76,10 @@
   "Pending": "Pendente",
   "Drag and drop image here": "Arraste e solte a imagem aqui",
   "Remove file": "Remover arquivo",
-  "Select Image": "Selecionar Imagem"
+  "Select Image": "Selecionar Imagem",
+  "Select a role": "Selecione uma função",
+  "Search roles...": "Pesquisar funções...",
+  "Status": "Status",
+  "Select Status": "Selecionar status",
+  "Invalid date format": "Formato de data inválido"
 }

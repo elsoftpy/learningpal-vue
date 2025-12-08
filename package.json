@@ -23,6 +23,7 @@
         "@schedule-x/theme-default": "^3.4.2",
         "@schedule-x/vue": "^3.4.0",
         "@vitejs/plugin-vue": "^6.0.2",
+        "maska": "^3.2.0",
         "pinia": "^3.0.4",
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",
