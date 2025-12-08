@@ -15,6 +15,7 @@
                     <div class="flex flex-col w-full md:w-1/4">
                         <label for="personal_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('ID Number') }}
+                            <span class="text-red-500">*</span>
                         </label>
                         <InputText
                             id="personal_id"
@@ -28,6 +29,7 @@
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 {{ $t('First Name') }}
+                                <span class="text-red-500">*</span>
                             </label>
                             <InputText
                                 id="first_name"
@@ -39,6 +41,7 @@
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 {{ $t('Last Name') }}
+                                <span class="text-red-500">*</span>
                             </label>
                             <InputText
                                 id="last_name"
@@ -77,6 +80,7 @@
                     <div class="flex flex-col w-full md:w-1/3">
                         <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Email') }}
+                            <span class="text-red-500">*</span>
                         </label>
                         <InputText
                             id="email"
