@@ -51,6 +51,7 @@ class UserService
             'last_name' => $user->profile->last_name ?? null,
             'company_name' => $user->profile->company_name ?? null,
             'email' => $user->email,
+            'status' => $user->status,
         ];
     }
 

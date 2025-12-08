@@ -37,5 +37,12 @@
     "Address must be a valid string.": "Address must be a valid string.",
     "Address may not be greater than :max characters.": "Address may not be greater than :max characters.",
     "Selected gender is invalid.": "Selected gender is invalid.",
-    "Gender must be a valid string.": "Gender must be a valid string."
+    "Gender must be a valid string.": "Gender must be a valid string.",
+    "active": "active",
+    "disabled": "disabled",
+    "pending": "peding",
+    "admin": "admin",
+    "student": "student",
+    "teacher": "teacher",
+    "president": "president"
 }

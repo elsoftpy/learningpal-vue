@@ -50,5 +50,11 @@
     "You do not have permission to access this resource.": "Você não tem permissão para acessar este recurso.",
     "You do not have permission to perform this action.": "Você não tem permissão para realizar esta ação.",
     "Too many requests. Please try again later.": "Muitas solicitações. Por favor, tente novamente mais tarde.",
-    "The given data was invalid.": "Os dados fornecidos são inválidos."
+    "The given data was invalid.": "Os dados fornecidos são inválidos.",
+    "active": "ativo",
+    "disabled": "desativado",
+    "pending": "pendente",
+    "admin": "administrador",
+    "student": "estudante",
+    "teacher": "professor"
 }

@@ -7,7 +7,7 @@
     >
         <ProfilePage :form="$form" :creating="creating" :isPersonProfile="true">
             <template #model>
-                <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2 md:items-center">
+                <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
                     <div class="flex flex-col w-full md:w-1/5">
                         <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Username') }}
@@ -29,16 +29,22 @@
                             :placeholder="$t('Password')"
                         />
                     </div>
+
                     <div class="flex flex-col w-full md:w-1/5">
-                        <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ $t('Role') }}
-                        </label>
-                        <InputText
+                        <ServerSideSelect
                             id="role"
-                            name="role"
-                            :placeholder="$t('Role')"
+                            name="roles"
+                            :label="$t('Role')"
+                            :placeholder="$t('Select a role')"
+                            api-endpoint="/lists/roles"
+                            option-label="name"
+                            option-value="id"
+                            search-param="search"
+                            :filter-placeholder="$t('Search roles...')"
+                            :required="true"
                         />
                     </div>
+
                     <div class="flex flex-col w-full md:w-1/5">
                         <label for="payment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Payment') }}
@@ -49,25 +55,31 @@
                             :placeholder="$t('Payment')"
                         />
                     </div>
-                    <div class="flex w-full pt-4 mb-4 md:mb-0 space-x-2 md:w-1/5">
-                        <ToogleSwitch 
-                            id="is_active"
-                            name="is_active"
-                            :label="$t('Active')" 
-                        />
-                        <label for="is_active" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ $t('Active') }}
+
+                    <div class="flex flex-col w-full md:w-1/5">
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ $t('Status') }}
                         </label>
+                        <Select
+                            id="status"
+                            name="status"
+                            :options="statusList"
+                            option-label="name"
+                            option-value="value"
+                            :placeholder="$t('Select Status')"
+                            :label="$t('Status')"
+                            class="w-full"
+                        />
                     </div>
                 </div>
                 <!-- Submit button-->
                 <div class="flex justify-end mt-4">
                     <Button
-                    type="submit"
-                    :loading="loading"
-                    :label="$t('Save Changes')"
-                    icon="pi pi-save"
-                    severity="success"
+                        type="submit"
+                        :loading="loading"
+                        :label="$t('Save Changes')"
+                        icon="pi pi-save"
+                        severity="success"
                     />
                 </div>
             </template>
@@ -76,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -87,6 +99,9 @@ import InputText from 'primevue/inputtext';
 import ProfilePage from '../profiles/ProfilePage.vue';
 import ToogleSwitch from 'primevue/toggleswitch';
 import Button from 'primevue/button';
+import ServerSideSelect from '@/components/form/ServerSideSelect.vue';
+import Select from 'primevue/select';
+import axios from 'axios';
 
 const { t: $t } = useI18n();
 const resolver = zodResolver(createUserSchema($t));
@@ -94,6 +109,7 @@ const auth = useAuthStore();
 const route = useRoute();
 // const selectedFile = ref(null);
 const loading = ref(false);
+const statusList = ref([]);
 
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
@@ -113,7 +129,7 @@ const initialValues = computed(() => {
             password: '',
             role: '',
             payment: '',
-            is_active: true,
+            status: '',
         };
     }
 
@@ -131,7 +147,7 @@ const initialValues = computed(() => {
             password: auth.user?.password || '',
             role: auth.user?.role || '',
             payment: auth.user?.payment || '',
-            is_active: auth.user?.is_active || false,
+            status: auth.user?.status || '',
         };
     }
     return {};
@@ -145,4 +161,14 @@ const handleLogin = ({valid, values}) => {
     // Handle form submission logic here
     console.log('Form submitted with values:', values);
 };
+
+onMounted(async () => {
+    try {
+        statusList.value = await axios.post('/lists/status').then(response => {
+            return response.data;
+        });
+    } catch (error) {
+        console.error('Error during component mount:', error);
+    }
+});
 </script>

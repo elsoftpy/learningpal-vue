@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Selectable\RoleListController;
+use App\Http\Controllers\Selectable\StatusListController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->name('auth.')->group(function () {
@@ -21,6 +23,14 @@ Route::prefix('auth')->name('auth.')->group(function () {
         Route::get('/me', [AuthenticationController::class, 'me'])
             ->name('me');
     });
+});
+
+Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
+    Route::post('/status', StatusListController::class)
+        ->name('status');
+    
+    Route::post('/roles/', RoleListController::class)
+        ->name('roles');
 });
 
 Route::get('/test', function () {
