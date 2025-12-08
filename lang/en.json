@@ -44,5 +44,10 @@
     "admin": "admin",
     "student": "student",
     "teacher": "teacher",
-    "president": "president"
+    "Username is required.": "Username is required.",
+    "Username must be a valid string.": "Username must be a valid string.",
+    "Username may not be greater than :max characters.": "Username may not be greater than :max characters.",
+    "This username is already taken.": "This username is already taken.",
+    "Password does not meet the required criteria.": "Password does not meet the required criteria.",
+    "User profile updated successfully.": "User profile updated successfully."
 }

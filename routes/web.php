@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Selectable\RoleListController;
 use App\Http\Controllers\Selectable\StatusListController;
+use App\Http\Controllers\Settings\Users\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->name('auth.')->group(function () {
@@ -31,6 +32,13 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
     
     Route::post('/roles/', RoleListController::class)
         ->name('roles');
+});
+
+Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::post('profile/{user}/edit', [UserProfileController::class, 'update'])
+            ->name('profile.update');
+    });
 });
 
 Route::get('/test', function () {

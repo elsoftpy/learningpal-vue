@@ -16,7 +16,7 @@ class ApiLoginTest extends TestCase
         ]);
 
         $response = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
+            'name' => $user->name,
             'password' => 'password',
         ]);
 
@@ -47,7 +47,7 @@ class ApiLoginTest extends TestCase
         ]);
 
         $response = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
+            'name' => $user->name,
             'password' => 'wrongpassword',
         ]);
 

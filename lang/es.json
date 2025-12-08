@@ -56,5 +56,11 @@
     "pending": "pendiente",
     "admin": "administrador",
     "student": "estudiante",
-    "teacher": "profesor"
+    "teacher": "profesor",
+    "Username is required.": "El nombre de usuario es obligatorio.",
+    "Username must be a valid string.": "El nombre de usuario debe ser una cadena válida.",
+    "Username may not be greater than :max characters.": "El nombre de usuario no puede tener más de :max caracteres.",
+    "This username is already taken.": "Este nombre de usuario ya está en uso.",
+    "Password does not meet the required criteria.": "La contraseña no cumple con los criterios requeridos.",
+    "User profile updated successfully.": "Perfil de usuario actualizado con éxito."
 }

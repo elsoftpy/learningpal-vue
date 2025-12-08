@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Enums\ProfileTypeEnum;
 use App\Enums\StatusEnum;
+use App\Models\Profile;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Tests\TestCase;
@@ -12,7 +13,6 @@ class RegisterSpaTest extends TestCase
 {
     public function test_register_person_and_gets_login_after()
     {
-        $this->seed(RoleSeeder::class);
 
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::PERSON->value,
@@ -35,10 +35,18 @@ class RegisterSpaTest extends TestCase
                          'user' => [
                             'id',
                             'type',
+                            'personal_id',
                             'first_name',
                             'last_name',
                             'company_name',
+                            'ruc',
                             'email',
+                            'phone',
+                            'address',
+                            'gender',
+                            'birth_date',
+                            'full_name',
+                            'status',
                          ],
                      ],
                  ]);
@@ -66,7 +74,6 @@ class RegisterSpaTest extends TestCase
 
     public function test_register_company_and_gets_login_after()
     {
-        $this->seed(RoleSeeder::class);
 
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::COMPANY->value,
@@ -87,10 +94,18 @@ class RegisterSpaTest extends TestCase
                          'user' => [
                             'id',
                             'type',
+                            'personal_id',
                             'first_name',
                             'last_name',
                             'company_name',
+                            'ruc',
                             'email',
+                            'phone',
+                            'address',
+                            'gender',
+                            'birth_date',
+                            'full_name',
+                            'status',
                          ],
                      ],
                  ]);
@@ -115,25 +130,13 @@ class RegisterSpaTest extends TestCase
 
     public function test_registration_fails_with_existing_email()
     {
-        $this->seed(RoleSeeder::class);
 
         User::factory()->create([
-            'email' => 'jane@example.com',
+            'profile_id' => Profile::factory()->create([
+                'email' => 'jane@example.com',
+            ])->id,
         ]);
         
-        /* $this->postJson(route('auth.register'), [
-            'type' => ProfileTypeEnum::PERSON->value,
-            'first_name' => 'Jane',
-            'last_name' => 'Smith',
-            'email' => 'jane@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'phone' => '1112223333',
-            'personal_id' => '654321',
-            'gender' => 'female',
-            'address' => '456 Elm St',
-        ]); */
-
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::PERSON->value,
             'first_name' => 'Jane',
@@ -156,7 +159,6 @@ class RegisterSpaTest extends TestCase
 
     public function test_registration_fails_with_password_mismatch()
     {
-        $this->seed(RoleSeeder::class);
 
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::PERSON->value,
@@ -180,7 +182,6 @@ class RegisterSpaTest extends TestCase
 
     public function test_person_registration_fails_with_missing_fields()
     {
-        $this->seed(RoleSeeder::class);
 
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::PERSON->value,
@@ -201,7 +202,6 @@ class RegisterSpaTest extends TestCase
 
     public function test_company_registration_fails_with_missing_fields()
     {
-        $this->seed(RoleSeeder::class);
 
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::COMPANY->value,
@@ -221,7 +221,6 @@ class RegisterSpaTest extends TestCase
 
     public function test_type_field_is_required()
     {
-        $this->seed(RoleSeeder::class);
 
         $response = $this->postJson(route('auth.register'), [
             'first_name' => 'Bob',

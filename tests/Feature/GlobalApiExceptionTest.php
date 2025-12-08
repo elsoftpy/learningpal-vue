@@ -66,7 +66,7 @@ class GlobalApiExceptionTest extends TestCase
         ]);
 
         $response = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
+            'name' => $user->name,
             'password' => 'wrongpassword',
         ]);
 

@@ -7,23 +7,13 @@ use App\Models\User;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Profile;
+use App\Services\Traits\ProfileTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class UserService
 {
-    protected function getFullName(string $type, ?string $firstName, ?string $lastName, ?string $companyName): string
-    {
-        if ($type === 'person') {
-            return trim($firstName . ' ' . $lastName);
-        } 
-        return trim($companyName);
-    }
-
-    protected function getUsername(string $fullName): string
-    { 
-        return str_replace(' ', '', trim($fullName));
-    }
+   use ProfileTrait;
 
     public function loginAttempt(LoginRequest $request): bool
     {
@@ -39,20 +29,6 @@ class UserService
         }
 
         return true;
-    }
-
-    public function userData(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'type' => $user->profile->type ?? null,
-            'first_name' => $user->profile->first_name ?? null,
-            'last_name' => $user->profile->last_name ?? null,
-            'company_name' => $user->profile->company_name ?? null,
-            'email' => $user->email,
-            'status' => $user->status,
-        ];
     }
 
     public function registerUser(RegisterRequest $request): User
@@ -84,6 +60,8 @@ class UserService
             return $user;
         });
     }
+
+
 
 
 }

@@ -10,9 +10,7 @@ use Tests\TestCase;
 class ApiRegisterTest extends TestCase
 {
     public function test_register_person()
-    {
-        $this->seed(RoleSeeder::class);
-        
+    {   
         $response = $this->postJson(route('api.v1.auth.register'), [
             'type' => ProfileTypeEnum::PERSON->value,
             'first_name' => 'John',
