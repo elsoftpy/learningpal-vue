@@ -194,6 +194,20 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'first_name' => 'first name',
+        'last_name' => 'last name',
+        'company_name' => 'company name',
+        'personal_id' => 'identity document',
+        'ruc' => 'RUC',
+        'email' => 'email',
+        'phone' => 'phone number',
+        'address' => 'address',
+        'gender' => 'gender',
+        'status' => 'status',
+        'roles' => 'roles',
+        'name' => 'username',
+        'password' => 'password',
+    ],
 
 ];

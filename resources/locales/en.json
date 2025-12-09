@@ -77,9 +77,17 @@
   "Drag and drop image here": "Drag and drop image here",
   "Remove file": "Remove file",
   "Select Image": "Select Image",
-  "Select a role": "Selecciona un rol",
+  "Select at least one role": "Select at least one role",
   "Search roles...": "Search roles...",
   "Status": "Status",
   "Select Status": "Select Status",
-  "Invalid date format": "Invalid date format"
+  "Invalid date format": "Invalid date format",
+  "Validation Error": "Validation Error",
+  "Error": "Error",
+  "User created successfully": "User created successfully",
+  "User updated successfully": "User updated successfully",
+  "Please correct the errors in the form.": "Please correct the errors in the form.",
+  "An unexpected error occurred. Please try again.": "An unexpected error occurred. Please try again.",
+  "Roles": "Roles",  
+  "Select roles": "Select roles"
 }

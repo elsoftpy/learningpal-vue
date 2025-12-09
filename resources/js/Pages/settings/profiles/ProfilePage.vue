@@ -37,6 +37,22 @@
                                 :placeholder="$t('Name')"
                                 class="w-full"
                             />
+                            <Message
+                                v-if="form.first_name?.invalid"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ form.first_name.error?.message }}
+                            </Message>
+                            <Message
+                                v-if="errors?.first_name"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors?.first_name }}
+                            </Message>
                         </div>
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -49,6 +65,22 @@
                                 :placeholder="$t('Last Name')"
                                 class="w-full"
                             />
+                            <Message
+                                v-if="form.last_name?.invalid"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ form.last_name.error?.message }}
+                            </Message>
+                            <Message
+                                v-if="errors?.last_name"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors?.last_name }}
+                            </Message>
                         </div>
                     </div>
                 </div>
@@ -63,6 +95,22 @@
                             name="address"
                             :placeholder="$t('Address')"
                         />
+                        <Message
+                            v-if="form.address?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ form.address.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.address"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.address }}
+                        </Message>
                     </div>
                     <div class="flex flex-col w-full md:w-1/4">
                         <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -73,6 +121,22 @@
                             name="phone"
                             :placeholder="$t('Phone')"
                         />
+                        <Message
+                            v-if="form.phone?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ form.phone.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.phone"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.phone }}
+                        </Message>
                     </div>
                 </div>
                 <!--  Email / Birthdate / Avatar -->
@@ -174,6 +238,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    errors: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const emit = defineEmits(['update:avatar'])
@@ -213,5 +281,5 @@ const onAvatarClear = () => {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
 } */
 
-const avatar = props.form.avatar || defaultAvatar
+const avatar = defaultAvatar
 </script>

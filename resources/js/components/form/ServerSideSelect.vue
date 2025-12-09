@@ -8,6 +8,7 @@
     <Select
         ref="selectRef"
         :id="id"
+        :name="name"
         v-model="selectedValue"
         :options="options"
         :option-label="optionLabel"
@@ -17,6 +18,7 @@
         :disabled="disabled"
         :invalid="invalid"
         :show-clear="true"
+        :multiple="multiple"
         filter
         :filter-placeholder="filterPlaceholder"
         @filter="onFilter"
@@ -77,14 +79,20 @@ const props = defineProps({
   emptyMessage: String,
   filterPlaceholder: { type: String, default: 'Search...' },
   debounceTime: { type: Number, default: 300 },
-  initialLoad: { type: Boolean, default: true }
+  initialLoad: { type: Boolean, default: true },
+  multiple: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
 
 const options = ref([])
 const loading = ref(false)
-const selectedValue = ref(props.modelValue)
+const selectedValue = ref(props.multiple 
+  ? (Array.isArray(props.modelValue) 
+    ? props.modelValue 
+    : []) 
+  : props.modelValue)
+  
 const selectRef = ref(null)
 let debounceTimer = null
 
@@ -104,10 +112,19 @@ const fetchOptions = async (query = '') => {
     if (response.data.data) fetchedOptions = response.data.data
     else if (Array.isArray(response.data)) fetchedOptions = response.data
 
-    // Ensure the selected option is always present
-    if (selectedValue.value && !fetchedOptions.some(o => o[props.optionValue] === selectedValue.value)) {
-      const currentOption = options.value.find(o => o[props.optionValue] === selectedValue.value)
-      if (currentOption) fetchedOptions.unshift(currentOption)
+    // Ensure the selected option(s) are always present
+    if (props.multiple && Array.isArray(selectedValue.value)) {
+      if (Array.isArray(selectedValue.value)) {
+        selectedValue.value.forEach(val => {
+          if (!fetchedOptions.some(o => o[props.optionValue] === val)) {
+            const currentOption = options.value.find(o => o[props.optionValue] === val)
+            if (currentOption) fetchedOptions.unshift(currentOption)
+          }
+        })
+      } else if (selectedValue.value && !fetchedOptions.some(o => o[props.optionValue] === selectedValue.value)) {
+        const currentOption = options.value.find(o => o[props.optionValue] === selectedValue.value)
+        if (currentOption) fetchedOptions.unshift(currentOption)
+      }
     }
 
     options.value = fetchedOptions
@@ -129,22 +146,20 @@ const onFilter = (event) => {
 
 // Handle selection
 const onChange = (event) => {
-  selectedValue.value = event.value
-  emit('update:modelValue', event.value)
-  emit('change', event.value)
+  let newValue = event.value;
 
-  // Reset filter input so it's cleared after selection
-  if (selectRef.value) {
-    selectRef.value.filterValue = ''
-    selectRef.value.filteredOptions = null
+  if (props.multiple && !Array.isArray(newValue)) {
+    newValue = newValue ? [newValue] : [];
   }
 
-  // Ensure selected option exists in options array
-  if (selectedValue.value && !options.value.some(o => o[props.optionValue] === selectedValue.value)) {
-    options.value.unshift({
-      [props.optionValue]: selectedValue.value,
-      [props.optionLabel]: event.originalEvent?.target?.innerText || 'Selected'
-    })
+  selectedValue.value = newValue;
+  emit('update:modelValue', newValue)
+  emit('change', newValue)
+
+  // Reset filter input so it's cleared after selection
+  if (!props.multiple && selectRef.value) {
+    selectRef.value.filterValue = ''
+    selectRef.value.filteredOptions = null
   }
 }
 

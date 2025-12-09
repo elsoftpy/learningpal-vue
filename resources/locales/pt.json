@@ -77,9 +77,17 @@
   "Drag and drop image here": "Arraste e solte a imagem aqui",
   "Remove file": "Remover arquivo",
   "Select Image": "Selecionar Imagem",
-  "Select a role": "Selecione uma função",
+  "Select at least one role": "Selecione pelo menos uma função",
   "Search roles...": "Pesquisar funções...",
   "Status": "Status",
   "Select Status": "Selecionar status",
-  "Invalid date format": "Formato de data inválido"
+  "Invalid date format": "Formato de data inválido",
+  "Validation Error": "Erro de validação",
+  "Error": "Erro",
+  "User created successfully": "Usuário criado com sucesso",
+  "User updated successfully": "Usuário atualizado com sucesso",
+  "Please correct the errors in the form.": "Por favor, corrija os erros no formulário.",
+  "An unexpected error occurred. Please try again.": "Ocorreu um erro inesperado. Por favor, tente novamente.",
+  "Roles": "Funções",
+  "Select roles": "Selecione funções"
 }

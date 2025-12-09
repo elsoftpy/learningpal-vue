@@ -5,7 +5,7 @@
             mode="advanced"
             :accept="accept"
             :auto="false"
-            :choose-label="$t(buttonLabel || 'Select Image')"
+            :choose-label="buttonLabel || $t('Select Image')"
             :custom-upload="true"
             :show-upload-button="false"
             :show-cancel-button="false"

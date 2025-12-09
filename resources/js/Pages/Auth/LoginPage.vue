@@ -4,7 +4,7 @@
     <Form
       v-slot="$form"
       :resolver="resolver"
-      :initial-values="form"
+      :initialValues="form"
       @submit="handleLogin"
       :validateOnBlur="true"
       class="flex flex-col gap-4"

@@ -1,4 +1,5 @@
 <template>
+  <Toast position="top-right" />
   <div v-if="!authStore.ready" class="min-h-screen flex items-center bg-gray-100">
     <div class="text-center">
       <ProgressSpinner 
@@ -28,6 +29,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useSidebarStore } from '@/stores/sidebar';
 import { useI18n } from 'vue-i18n';
 import ProgressSpinner from 'primevue/progressspinner';
+import Toast from 'primevue/toast';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 

@@ -153,4 +153,20 @@ return [
     'url' => 'O campo :attribute deve ser uma URL válida.',
     'ulid' => 'O campo :attribute deve ser um ULID válido.',
     'uuid' => 'O campo :attribute deve ser um UUID válido.',
+
+    'attributes' => [
+        'first_name' => 'nome',
+        'last_name' => 'sobrenome',
+        'company_name' => 'nome da empresa',
+        'personal_id' => 'identificação pessoal',
+        'ruc' => 'RUC',
+        'email' => 'email',
+        'phone' => 'telefone',
+        'address' => 'endereço',
+        'gender' => 'sexo',
+        'name' => 'nome de usuário',
+        'password' => 'senha',
+        'roles' => 'funções',
+        'status' => 'estado',
+    ],
 ];

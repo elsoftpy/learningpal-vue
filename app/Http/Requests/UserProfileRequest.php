@@ -70,4 +70,11 @@ class UserProfileRequest extends FormRequest
             ]
         );
     }
+
+    public function prepareForValidation()
+    {
+        $this->merge([
+            'profile' => $this->user->profile,
+        ]);
+    }
 }

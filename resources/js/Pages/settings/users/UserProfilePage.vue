@@ -6,8 +6,12 @@
         @submit="handleSubmit"
         :validateOnBlur="true"
     >
-        <!-- <pre>{{ $form }}</pre> -->
-        <ProfilePage :form="$form" :creating="creating" :isPersonProfile="true">
+        <ProfilePage 
+            :form="$form" 
+            :creating="creating" 
+            :isPersonProfile="true"
+            :errors="errors"
+        >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
                     <div class="flex flex-col w-full md:w-1/5">
@@ -53,15 +57,32 @@
                         <ServerSideSelect
                             id="roles"
                             name="roles"
-                            :label="$t('Role')"
-                            :placeholder="$t('Select a role')"
+                            :label="$t('Roles')"
+                            :placeholder="$t('Select roles')"
                             api-endpoint="/lists/roles"
                             option-label="name"
                             option-value="id"
                             search-param="search"
                             :filter-placeholder="$t('Search roles...')"
                             :required="true"
+                            :multiple="true"
                         />
+                        <Message
+                            v-if="$form.roles?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ $form.roles.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.roles"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.roles }}
+                        </Message>
                     </div>
 
                     <div class="flex flex-col w-full md:w-1/5">
@@ -110,11 +131,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createUserSchema } from '@/schemas/user';
+import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
+import { useAuthForm } from '@/composable/useAuthForm'
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { useToast } from 'primevue/usetoast';
 import InputText from 'primevue/inputtext';
 import ProfilePage from '../profiles/ProfilePage.vue';
 import Button from 'primevue/button';
@@ -124,15 +148,21 @@ import Message from 'primevue/message';
 import axios from 'axios';
 
 const { locale, t: $t } = useI18n();
+const { handleApiError } = useApiErrorHandler();
 const userSchema = computed(() => createUserSchema($t, locale.value));
 const resolver = zodResolver(userSchema.value);
 const auth = useAuthStore();
 const route = useRoute();
-const loading = ref(false);
+const router = useRouter();
+const toast = useToast();
+
+
 const statusList = ref([]);
 
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
+
+const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
 
 const initialValues = computed(() => {
     if (crudAction === 'create') {
@@ -147,7 +177,7 @@ const initialValues = computed(() => {
             avatar: '',
             name: '',
             password: '',
-            role: '',
+            roles: [],
             payment: '',
             status: '',
         };
@@ -165,7 +195,7 @@ const initialValues = computed(() => {
             avatar: auth.user?.avatar || '',
             name: auth.user?.name || '',
             password: auth.user?.password || '',
-            role: auth.user?.role || '',
+            roles: auth.user?.roles || [],
             payment: auth.user?.payment || '',
             status: auth.user?.status || '',
         };
@@ -173,13 +203,88 @@ const initialValues = computed(() => {
     return {};
 });
 
-const handleSubmit = ({valid, values}) => {
+
+const { errors, loading, setErrors, clearErrors } = useAuthForm({
+    personal_id: '',
+    first_name: '', 
+    last_name: '',
+    address: '',
+    phone: '',
+    email: '',
+    birth_date: '',
+    avatar: '',
+    name: '',
+    password: '',
+    roles: '',
+    payment: '',
+    status: '',
+});
+
+const handleSubmit =  async (formState) => {
+    errors.value = {};
+
+    const { valid } = formState;
+
+    console.log('Form states:', formState.states);
+    console.log('Roles state:', formState.states.roles);
+
+    const values = Object.keys(formState.states).reduce((acc, key) => {
+        acc[key] = formState.states[key].value;
+        return acc;
+    }, {});
+
+    console.log('Extracted values:', values);
+    console.log('Roles value:', values.roles);
+    
+    // Add type field to values to pass reusabeable validation rules
+    values.type = 'person'; // user is always a person
+
     if (!valid) {
         return;
     }
 
-    // Handle form submission logic here
-    console.log('Form submitted with values:', values);
+    loading.value = true;
+
+    try {
+        const { data } = await axios.post(
+            creating ? '/settings/users' : `/settings/users/profile/${userId}/edit`,
+            values
+        );
+
+        toast.add({ 
+            severity: 'success', 
+            summary: $t('Success'), 
+            detail: $t('User saved successfully.'),
+            life: 5000 
+        });
+
+        router.push({ name: 'settings.users.list' });
+
+    } catch (error) {
+        const apiError = handleApiError(error)
+        
+        if (apiError?.type === 'validation' && apiError.errors) {
+            setErrors(apiError.errors)
+
+            toast.add({ 
+                severity: 'error', 
+                summary: $t('Validation Error'), 
+                detail: $t('Please correct the errors in the form.'),
+                life: 5000 
+            });
+
+            return;
+        }
+        
+        toast.add({ 
+            severity: 'error', 
+            summary: $t('Error'), 
+            detail: $t('An unexpected error occurred. Please try again.'),
+            life: 5000 
+        });
+        
+    } finally { loading.value = false; } 
+        
 };
 
 onMounted(async () => {

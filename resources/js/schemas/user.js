@@ -12,8 +12,10 @@ export const createUserSchema = (t, locale) => {
     phone: z.string().optional(),
     address: z.string().optional(),
     birth_date: z.string()
-      .trim()
       .refine((val) => {
+        
+        if (!val || val.trim() === '') return true;
+
         const regex = dataRegex;
         if (!regex.test(val)) return false;
 
@@ -23,11 +25,12 @@ export const createUserSchema = (t, locale) => {
         return date instanceof Date && !isNaN(date);
       }, {
         message: t('Invalid date format'),
-      }),
+      })
+      .optional(),
     avatar: z.url(t('Avatar must be a valid URL')).optional(),
     name: z.string().min(1, t('Username is required')),
     password: z.string().optional(),
-    roles: z.string().min(1, t('Select a role')),
+    roles: z.array(z.string()).min(1, t('Select at least one role')),
     status: z.string().min(1, t('Select Status')),
   });
 }

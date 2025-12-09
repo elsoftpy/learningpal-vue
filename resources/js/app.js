@@ -10,6 +10,7 @@ import Aura from '@primeuix/themes/aura';
 import i18n from '../locales';
 import { useThemeStore } from './stores/theme';
 import { vMaska } from 'maska/vue';
+import ToastService from 'primevue/toastservice';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = '/';
@@ -60,6 +61,7 @@ app.use(PrimeVue, {
     }
 })
     .use(pinia)
+    .use(ToastService)
     .use(i18n)
     .use(router)
     .directive('maska', vMaska);
