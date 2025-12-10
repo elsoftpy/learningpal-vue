@@ -45,13 +45,20 @@ class UserProfileRequest extends FormRequest
                     'array',
                 ],
                 'roles.*' => [
-                    'integer', 
-                    'exists:roles,id',
+                    'string', 
+                    'exists:roles,name',
                 ],
                 'status' => [
                     'required', 
                     'string', 
                     Rule::in(StatusEnum::values()),
+                ],
+                'avatar' => [
+                    'nullable',
+                    'file',
+                    'image',
+                    'max:2048', // Max size in KB
+                    'mimes:jpeg,png,jpg,gif,webp',
                 ],
             ]
         );

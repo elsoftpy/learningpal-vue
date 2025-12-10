@@ -214,7 +214,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import defaultAvatar from '@/images/default-avatar.png'
 import PageContainer from '@/components/layout/pages/PageContainer.vue'
@@ -229,6 +229,10 @@ const props = defineProps({
     form: {
         type: Object,
         required: true,
+    },
+    avatarUrl: {
+        type: String,
+        default: null,
     },
     creating: {
         type: Boolean,
@@ -248,22 +252,14 @@ const emit = defineEmits(['update:avatar'])
 
 const selectedFile = ref(null)
 
-const onAvatarSelect = (value) => {
-    if (!value) {
-        selectedFile.value = null
-        emit('update:avatar', null)
+const avatar = computed(() => props.avatarUrl || defaultAvatar)
+
+const onAvatarSelect = (file) => {
+    if (!file ) {
+        onAvatarClear()
         return
     }
-
-    const files = value.files || []
-    const [file] = files
-
-    if (!file) {
-        selectedFile.value = null
-        emit('update:avatar', null)
-        return
-    }
-
+    
     selectedFile.value = file
     emit('update:avatar', file)
 }
@@ -272,14 +268,4 @@ const onAvatarClear = () => {
     selectedFile.value = null
     emit('update:avatar', null)
 }
-
-/* const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-} */
-
-const avatar = defaultAvatar
 </script>

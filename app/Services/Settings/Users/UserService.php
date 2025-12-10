@@ -11,6 +11,8 @@ class UserService
 
     public function updateUserProfile($user, array $profileData): void
     {
+        $profile = $user->profile;
+
         $fullName = $this->getFullName(
             type: ProfileTypeEnum::PERSON->value, // user cannot be a company
             firstName: $profileData['first_name'] ?? $user->profile->first_name,
@@ -18,8 +20,15 @@ class UserService
             companyName: null,
         );
         $profileData['full_name'] = $fullName;
-        
-        $user->profile->update($profileData);
+
+        if (array_key_exists('avatar', $profileData) && $profileData['avatar'] !== null) {
+            $profile->addMedia($profileData['avatar'])
+                ->toMediaCollection('avatar');
+
+            unset($profileData['avatar']);
+        }
+
+        $profile->update($profileData);
     }
 
     public function updateUserData($user, array $userData): void

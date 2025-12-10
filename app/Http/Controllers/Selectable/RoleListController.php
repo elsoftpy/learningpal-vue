@@ -32,8 +32,8 @@ class RoleListController extends Controller
             $roles = $query->paginate((int) $request->per_page)
                 ->map(function ($role) {
                     return [
-                        'id' => $role->id,
-                        'name' => __($role->name),
+                        'name' => $role->name,
+                        'label' => __($role->name),
                     ];
                 });
 
@@ -96,8 +96,8 @@ class RoleListController extends Controller
                 ->get()
                 ->map(function ($role) {
                     return [
-                        'id' => $role->id,
-                        'name' => ucfirst(__($role->name)),
+                        'name' => $role->name,
+                        'label' => ucfirst(__($role->name)),
                     ];
                 });
     }

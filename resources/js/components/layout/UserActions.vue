@@ -44,7 +44,7 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import ArrowIcon from '@/components/common/ArrowIcon.vue';
@@ -54,7 +54,9 @@ import defaultAvatar from '@/images/default-avatar.png';
 const auth = useAuthStore();
 const router = useRouter();
 const show = ref(false);
-const avatar = auth.user?.profile_photo_url || defaultAvatar;
+const avatar = computed(() => {
+    return auth.user.avatar_url || defaultAvatar;
+});
 
 console.log('UserActions auth.user:', auth.user);
 

@@ -27,7 +27,6 @@ export const createUserSchema = (t, locale) => {
         message: t('Invalid date format'),
       })
       .optional(),
-    avatar: z.url(t('Avatar must be a valid URL')).optional(),
     name: z.string().min(1, t('Username is required')),
     password: z.string().optional(),
     roles: z.array(z.number()).min(1, t('At least one role must be selected')),

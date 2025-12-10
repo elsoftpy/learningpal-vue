@@ -21,7 +21,7 @@ trait UserProfileTrait
 
     public function userData(User $user): array
     {
-        $roles = $user->roles->pluck('id')->toArray();
+        $roles = $user->getRoleNames()->toArray();
         return [
             'id' => $user->id,
             'name' => $user->name,
@@ -39,6 +39,7 @@ trait UserProfileTrait
             'email' => $user->email,
             'status' => $user->status,
             'roles' => $roles,
+            'avatar_url' => $user->profile->getFirstMediaUrl('avatar') ?: null,
         ];
     }
 }

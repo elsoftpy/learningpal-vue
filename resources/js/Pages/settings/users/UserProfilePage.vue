@@ -8,9 +8,11 @@
     >
         <ProfilePage 
             :form="$form" 
+            :avatar-url="currentAvatarUrl"
             :creating="creating" 
             :isPersonProfile="true"
             :errors="errors"
+            @update:avatar="onAvatarUpdate"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -78,8 +80,8 @@
                             id="roles"
                             name="roles"
                             :options="rolesOptions"
-                            option-label="name"
-                            option-value="id"
+                            option-label="label"
+                            option-value="name"
                             :placeholder="$t('Select roles')"
                             filter
                             :filter-placeholder="$t('Search roles...')"
@@ -197,6 +199,7 @@ const toast = useToast();
 
 const statusList = ref([]);
 const rolesOptions = ref([]);
+const selectedAvatar = ref(null);
 const rolesLoading = ref(false);
 let rolesDebounceTimer = null;
 
@@ -204,6 +207,13 @@ const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
 
 const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
+
+const currentAvatarUrl = computed(() => {
+    if (crudAction === 'edit.auth-user') {
+        return auth.user?.avatar_url || null;
+    }
+    return null;
+});
 
 const initialValues = computed(() => {
     if (crudAction === 'create') {
@@ -226,8 +236,8 @@ const initialValues = computed(() => {
 
     if (crudAction === 'edit.auth-user') {
         const userRoles = auth.user?.roles || [];
-        const roleIds = Array.isArray(userRoles) 
-            ? userRoles.map(role => typeof role === 'object' ? role.id : role) 
+        const roleNames = Array.isArray(userRoles) 
+            ? userRoles.map(role => typeof role === 'object' ? role.name : role) 
             : [];
 
         return {
@@ -241,7 +251,7 @@ const initialValues = computed(() => {
             avatar: auth.user?.avatar || '',
             name: auth.user?.name || '',
             password: auth.user?.password || '',
-            roles: roleIds,
+            roles: roleNames,
             payment: auth.user?.payment || '',
             status: auth.user?.status || '',
         };
@@ -288,21 +298,20 @@ const onRolesFilter = (event) => {
     }, 300);
 };
 
+const onAvatarUpdate = (file) => {
+    console.log('Avatar updated:', file);
+    selectedAvatar.value = file;
+}
+
 const handleSubmit =  async (formState) => {
     errors.value = {};
 
     const { valid } = formState;
 
-    console.log('Form states:', formState.states);
-    console.log('Roles state:', formState.states.roles);
-
     const values = Object.keys(formState.states).reduce((acc, key) => {
         acc[key] = formState.states[key].value;
         return acc;
     }, {});
-
-    console.log('Extracted values:', values);
-    console.log('Roles value:', values.roles);
     
     // Add type field to values to pass reusabeable validation rules
     values.type = 'person'; // user is always a person
@@ -314,9 +323,29 @@ const handleSubmit =  async (formState) => {
     loading.value = true;
 
     try {
+        const formData = new FormData();
+
+        Object.keys(values).forEach(key => {
+            if (Array.isArray(values[key])) {
+                values[key].forEach((item, index) => {
+                    formData.append(`${key}[${index}]`, item);
+                });
+            } else {
+                formData.append(key, values[key]);
+            }
+        });
+
+        console.log('Appending avatar to form data:', selectedAvatar.value);
+        if (selectedAvatar.value) {
+            formData.append('avatar', selectedAvatar.value);
+        }
+
         const { data } = await axios.post(
             creating ? '/settings/users' : `/settings/users/profile/${userId}/edit`,
-            values
+            formData,
+            { 
+                headers: { 'Content-Type': 'multipart/form-data' } 
+            }
         );
 
         if (crudAction === 'edit.auth-user') {
