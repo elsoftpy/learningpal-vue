@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Lists\Feature;
+namespace Tests\Feature\Lists;
 
 use App\Models\Profile;
 use App\Models\User;
