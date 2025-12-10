@@ -22,24 +22,26 @@ trait UserProfileTrait
     public function userData(User $user): array
     {
         $roles = $user->getRoleNames()->toArray();
+        $profile = $user->profile;
         return [
             'id' => $user->id,
             'name' => $user->name,
-            'type' => $user->profile->type ?? null,
-            'personal_id' => $user->profile->personal_id ?? null,
-            'first_name' => $user->profile->first_name ?? null,
-            'last_name' => $user->profile->last_name ?? null,
-            'company_name' => $user->profile->company_name ?? null,
-            'ruc' => $user->profile->ruc ?? null,
-            'phone' => $user->profile->phone ?? null,
-            'address' => $user->profile->address ?? null,
-            'gender' => $user->profile->gender ?? null,
-            'birth_date' => $user->profile->birth_date ?? null,
-            'full_name' => $user->profile->full_name ?? null,
+            'type' => $profile->type ?? null,
+            'personal_id' => $profile->personal_id ?? null,
+            'first_name' => $profile->first_name ?? null,
+            'last_name' => $profile->last_name ?? null,
+            'company_name' => $profile->company_name ?? null,
+            'ruc' => $profile->ruc ?? null,
+            'phone' => $profile->phone ?? null,
+            'address' => $profile->address ?? null,
+            'gender' => $profile->gender ?? null,
+            'birth_date' => $profile->birth_date ?? null,
+            'full_name' => $profile->full_name ?? null,
             'email' => $user->email,
             'status' => $user->status,
             'roles' => $roles,
-            'avatar_url' => $user->profile->getFirstMediaUrl('avatar') ?: null,
+            'avatar_url' => $profile->getFirstMediaUrl('avatar') ?: null,
+            'payment_receipt' => $profile->getFirstMediaUrl('payment_receipt') ?: null,
         ];
     }
 }

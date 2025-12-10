@@ -124,17 +124,6 @@
                     </div>
 
                     <div class="flex flex-col w-full md:w-1/6">
-                        <label for="payment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ $t('Payment') }}
-                        </label>
-                        <InputText
-                            id="payment"
-                            name="payment"
-                            :placeholder="$t('Payment')"
-                        />
-                    </div>
-
-                    <div class="flex flex-col w-full md:w-1/6">
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Status') }}
                             <span class="text-red-500">*</span>
@@ -150,6 +139,32 @@
                             class="w-full"
                         />
                     </div>
+
+                    <div class="flex flex-col w-full md:w-1/6">
+                        
+                            <FileUpload
+                                v-if="!hasPayment"
+                                id="payment"
+                                :label="$t('Payment')"
+                                :button-label="$t('Payment')"
+                                accept="image/*,application/pdf"
+                                :max-file-size="4096000"
+                                preview-class="h-16 w-16 rounded-full object-cover"
+                                @update:modelValue="onPaymentReceiptSelect"
+
+                            />
+                        
+                            <Button
+                                v-if="hasPayment"
+                                type="button"
+                                class="mt-6 ml-2"
+                                icon="pi pi-receipt"
+                                severity="primary"
+                                :label="$t('Payment')"
+                                :aria-label="$t('Payment')"
+                                @click="visible = true"
+                            />
+                    </div>
                 </div>
                 <!-- Submit button-->
                 <div class="flex justify-end mt-4">
@@ -161,6 +176,25 @@
                         severity="success"
                     />
                 </div>
+
+                <Dialog
+                    v-model:visible="visible"
+                    modal 
+                    :header="$t('Payment Receipt')" 
+                    :style="{ width: '25rem' }"
+                >
+                    <div class="flex flex-col items-center justify-center p-4">
+                        <img 
+                            v-if="paymentReceiptUrl" 
+                            :src="paymentReceiptUrl" 
+                            :alt="$t('Payment Receipt')"
+                            class="max-w-full h-auto rounded-lg shadow-md"
+                        />
+                        <p v-else class="text-gray-500">
+                            {{ $t('No payment receipt available.') }}
+                        </p>
+                    </div>
+                </Dialog>
             </template>
         </ProfilePage>
     </Form>
@@ -185,6 +219,8 @@ import ProgressSpinner from 'primevue/progressspinner';
 import Select from 'primevue/select';
 import MultiSelect from 'primevue/multiselect';
 import Message from 'primevue/message';
+import Dialog from 'primevue/dialog';
+import FileUpload from '@/components/form/FileUpload.vue';
 import axios from 'axios';
 
 const { locale, t: $t } = useI18n();
@@ -201,6 +237,7 @@ const statusList = ref([]);
 const rolesOptions = ref([]);
 const selectedAvatar = ref(null);
 const rolesLoading = ref(false);
+const visible = ref(false);
 let rolesDebounceTimer = null;
 
 const crudAction = route.meta?.crud || 'read';
@@ -208,12 +245,28 @@ const creating = crudAction === 'create';
 
 const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
 
+const emit = defineEmits(['update:paymentReceipt']);
+const selectedPaymentFile = ref(null);
+
 const currentAvatarUrl = computed(() => {
+    console.log('Computing currentAvatarUrl for crudAction:', auth.user?.avatar_url);
     if (crudAction === 'edit.auth-user') {
         return auth.user?.avatar_url || null;
     }
     return null;
 });
+
+const paymentReceiptUrl = computed(() => {
+    console.log('User has payment receipt:', auth.user?.payment_receipt);
+    if (crudAction === 'edit.auth-user') {
+        return auth.user?.payment_receipt;
+    }
+    return null;
+});
+
+const hasPayment = computed(() => !!paymentReceiptUrl.value);
+
+
 
 const initialValues = computed(() => {
     if (crudAction === 'create') {
@@ -229,7 +282,7 @@ const initialValues = computed(() => {
             name: '',
             password: '',
             roles: [],
-            payment: '',
+            payment_receipt: '',
             status: '',
         };
     }
@@ -252,7 +305,7 @@ const initialValues = computed(() => {
             name: auth.user?.name || '',
             password: auth.user?.password || '',
             roles: roleNames,
-            payment: auth.user?.payment || '',
+            payment_receipt: auth.user?.payment_receipt || '',
             status: auth.user?.status || '',
         };
     }
@@ -272,7 +325,7 @@ const { errors, loading, setErrors, clearErrors } = useAuthForm({
     name: '',
     password: '',
     roles: '',
-    payment: '',
+    payment_receipt: '',
     status: '',
 });
 
@@ -301,6 +354,21 @@ const onRolesFilter = (event) => {
 const onAvatarUpdate = (file) => {
     console.log('Avatar updated:', file);
     selectedAvatar.value = file;
+}
+
+const onPaymentReceiptSelect = (file) => {
+    if (!file ) {
+        onPaymentReceiptClear()
+        return
+    }
+    
+    selectedPaymentFile.value = file
+    emit('update:paymentReceipt', file)
+}
+
+const onPaymentReceiptClear = () => {
+    selectedPaymentFile.value = null
+    emit('update:paymentReceipt', null)
 }
 
 const handleSubmit =  async (formState) => {
@@ -338,6 +406,11 @@ const handleSubmit =  async (formState) => {
         console.log('Appending avatar to form data:', selectedAvatar.value);
         if (selectedAvatar.value) {
             formData.append('avatar', selectedAvatar.value);
+        }
+
+        console.log('Appending payment receipt to form data:', selectedPaymentFile.value);
+        if (selectedPaymentFile.value) {
+            formData.append('payment_receipt', selectedPaymentFile.value);
         }
 
         const { data } = await axios.post(

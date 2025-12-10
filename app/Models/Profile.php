@@ -48,6 +48,9 @@ class Profile extends Model implements HasMedia
                     ->width(300)
                     ->height(300);
             });
+        
+        $this->addMediaCollection('payment_receipt')
+            ->singleFile();
     }
 
 }

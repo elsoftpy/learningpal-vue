@@ -60,6 +60,12 @@ class UserProfileRequest extends FormRequest
                     'max:2048', // Max size in KB
                     'mimes:jpeg,png,jpg,gif,webp',
                 ],
+                'payment_receipt' => [
+                    'nullable',
+                    'file',
+                    'max:4096', // Max size in KB
+                    'mimes:jpeg,png,jpg,gif,webp,pdf',
+                ],
             ]
         );
     }

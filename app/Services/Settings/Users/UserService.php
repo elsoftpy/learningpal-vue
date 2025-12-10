@@ -28,6 +28,13 @@ class UserService
             unset($profileData['avatar']);
         }
 
+        if (array_key_exists('payment_receipt', $profileData) && $profileData['payment_receipt'] !== null) {
+            $profile->addMedia($profileData['payment_receipt'])
+                ->toMediaCollection('payment_receipt');
+
+            unset($profileData['payment_receipt']);
+        }
+
         $profile->update($profileData);
     }
 
