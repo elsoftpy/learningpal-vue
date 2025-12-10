@@ -116,6 +116,9 @@ export const useAuthStore = defineStore('auth', {
             } */
             //return this.user.permissions.includes(permission);
             return true; // Placeholder: always return true for now
+        },
+        setUser(user) {
+            this.user = user;
         }
     },
 });

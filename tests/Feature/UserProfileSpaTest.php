@@ -6,6 +6,7 @@ use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class UserProfileSpaTest extends TestCase
@@ -15,6 +16,8 @@ class UserProfileSpaTest extends TestCase
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
         ]);
+
+        $role = Role::first();
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
@@ -26,7 +29,7 @@ class UserProfileSpaTest extends TestCase
             'last_name' => 'Smith',
             'email' => 'jane.smith@example.com',
             'name' => $user->name,
-            'roles' => ['student'],
+            'roles' => [$role->id],
             'status' => 'disabled',
         ]);
 

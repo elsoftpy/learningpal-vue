@@ -45,6 +45,7 @@ class LoginSpaTest extends TestCase
                     'birth_date',
                     'full_name',
                     'status',
+                    'roles'
                 ],
             ],
         ]);
@@ -164,6 +165,7 @@ class LoginSpaTest extends TestCase
                     'birth_date',
                     'full_name',
                     'status',
+                    'roles'
                 ],
             ],
         ]);
@@ -223,6 +225,7 @@ class LoginSpaTest extends TestCase
                             'birth_date',
                             'full_name',
                             'status',
+                            'roles'
                         ],
                     ],
                 ]);

@@ -45,8 +45,8 @@ class UserProfileRequest extends FormRequest
                     'array',
                 ],
                 'roles.*' => [
-                    'string', 
-                    'exists:roles,name',
+                    'integer', 
+                    'exists:roles,id',
                 ],
                 'status' => [
                     'required', 

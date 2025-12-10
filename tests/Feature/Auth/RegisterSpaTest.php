@@ -47,6 +47,7 @@ class RegisterSpaTest extends TestCase
                             'birth_date',
                             'full_name',
                             'status',
+                            'roles',
                          ],
                      ],
                  ]);
@@ -106,6 +107,7 @@ class RegisterSpaTest extends TestCase
                             'birth_date',
                             'full_name',
                             'status',
+                            'roles',
                          ],
                      ],
                  ]);

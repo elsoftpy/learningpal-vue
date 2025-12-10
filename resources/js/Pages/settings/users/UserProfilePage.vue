@@ -14,7 +14,7 @@
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
-                    <div class="flex flex-col w-full md:w-1/5">
+                    <div class="flex flex-col w-full md:w-1/6">
                         <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Username') }}
                             <span class="text-red-500">*</span>
@@ -42,31 +42,67 @@
                         </Message>
                     </div>
                     
-                    <div class="flex flex-col w-full md:w-1/5">
+                    <div class="flex flex-col w-full md:w-1/6">
                         <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Password') }}
                         </label>
-                        <InputText
+                        <Password
                             id="password"
                             name="password"
                             :placeholder="$t('Password')"
                         />
+                        <Message
+                            v-if="$form.password?.invalid"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ $form.password.error?.message }}
+                        </Message>
+                        <Message
+                            v-if="errors?.password"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                        >
+                            {{ errors?.password }}
+                        </Message>
                     </div>
 
-                    <div class="flex flex-col w-full md:w-1/5">
-                        <ServerSideSelect
+                    <div class="flex flex-col w-full md:w-2/6">
+                        <label for="roles" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ $t('Roles') }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <MultiSelect 
                             id="roles"
                             name="roles"
-                            :label="$t('Roles')"
-                            :placeholder="$t('Select roles')"
-                            api-endpoint="/lists/roles"
+                            :options="rolesOptions"
                             option-label="name"
                             option-value="id"
-                            search-param="search"
+                            :placeholder="$t('Select roles')"
+                            filter
                             :filter-placeholder="$t('Search roles...')"
-                            :required="true"
-                            :multiple="true"
-                        />
+                            :show-clear="false"
+                            :loading="rolesLoading"
+                            @filter="onRolesFilter"
+                            class="w-full"
+                            display="chip"
+                            :max-selected-label="3"
+                        >
+                            <template #empty>
+                                <div class="p-3 text-center text-gray-500">
+                                    {{ $t('No results found.') }}
+                                </div>
+                            </template>
+
+                            <template #loader>
+                                <div class="flex items-center justify-center p-3">
+                                    <ProgressSpinner style="width: 20px; height: 20px" stroke-width="4" />
+                                    <span class="ml text-sm text-gray-600">{{ $t('Loading...') }}</span>
+                                </div>
+                            </template>
+                        </MultiSelect>
                         <Message
                             v-if="$form.roles?.invalid"
                             severity="error"
@@ -81,11 +117,11 @@
                             size="small"
                             variant="simple"
                         >
-                            {{ errors?.roles }}
+                            {{ Array.isArray(errors?.roles) ? errors?.roles.join(', ') : errors?.roles }}
                         </Message>
                     </div>
 
-                    <div class="flex flex-col w-full md:w-1/5">
+                    <div class="flex flex-col w-full md:w-1/6">
                         <label for="payment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Payment') }}
                         </label>
@@ -96,7 +132,7 @@
                         />
                     </div>
 
-                    <div class="flex flex-col w-full md:w-1/5">
+                    <div class="flex flex-col w-full md:w-1/6">
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Status') }}
                             <span class="text-red-500">*</span>
@@ -140,10 +176,12 @@ import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
 import InputText from 'primevue/inputtext';
+import Password from 'primevue/password';
 import ProfilePage from '../profiles/ProfilePage.vue';
 import Button from 'primevue/button';
-import ServerSideSelect from '@/components/form/ServerSideSelect.vue';
+import ProgressSpinner from 'primevue/progressspinner';
 import Select from 'primevue/select';
+import MultiSelect from 'primevue/multiselect';
 import Message from 'primevue/message';
 import axios from 'axios';
 
@@ -158,6 +196,9 @@ const toast = useToast();
 
 
 const statusList = ref([]);
+const rolesOptions = ref([]);
+const rolesLoading = ref(false);
+let rolesDebounceTimer = null;
 
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
@@ -184,6 +225,11 @@ const initialValues = computed(() => {
     }
 
     if (crudAction === 'edit.auth-user') {
+        const userRoles = auth.user?.roles || [];
+        const roleIds = Array.isArray(userRoles) 
+            ? userRoles.map(role => typeof role === 'object' ? role.id : role) 
+            : [];
+
         return {
             personal_id: auth.user?.personal_id || '',
             first_name: auth.user?.first_name || '',
@@ -195,7 +241,7 @@ const initialValues = computed(() => {
             avatar: auth.user?.avatar || '',
             name: auth.user?.name || '',
             password: auth.user?.password || '',
-            roles: auth.user?.roles || [],
+            roles: roleIds,
             payment: auth.user?.payment || '',
             status: auth.user?.status || '',
         };
@@ -219,6 +265,28 @@ const { errors, loading, setErrors, clearErrors } = useAuthForm({
     payment: '',
     status: '',
 });
+
+const fetchRoles = async (query = '') => {
+    rolesLoading.value = true;
+    try {
+        const params = query ? { search: query } : {};
+        const response = await axios.post('/lists/roles', { params });
+        rolesOptions.value = response.data.data || response.data || [];
+
+    } catch (error) {
+        console.error('Error fetching roles:', error);
+        rolesOptions.value = [];
+    } finally {
+        rolesLoading.value = false;
+    }
+};
+
+const onRolesFilter = (event) => {
+    clearTimeout(rolesDebounceTimer);
+    rolesDebounceTimer = setTimeout(() => {
+        fetchRoles(event.value);
+    }, 300);
+};
 
 const handleSubmit =  async (formState) => {
     errors.value = {};
@@ -251,11 +319,15 @@ const handleSubmit =  async (formState) => {
             values
         );
 
+        if (crudAction === 'edit.auth-user') {
+            data.data?.user ? auth.setUser(data.data.user) : await auth.checkAuth();
+        }
+
         toast.add({ 
             severity: 'success', 
             summary: $t('Success'), 
             detail: $t('User saved successfully.'),
-            life: 5000 
+            life: 3000 
         });
 
         router.push({ name: 'settings.users.list' });
@@ -292,6 +364,8 @@ onMounted(async () => {
         statusList.value = await axios.post('/lists/status').then(response => {
             return response.data;
         });
+
+        await fetchRoles();
     } catch (error) {
         console.error('Error during component mount:', error);
     }

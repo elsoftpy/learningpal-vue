@@ -30,7 +30,7 @@ export const createUserSchema = (t, locale) => {
     avatar: z.url(t('Avatar must be a valid URL')).optional(),
     name: z.string().min(1, t('Username is required')),
     password: z.string().optional(),
-    roles: z.array(z.string()).min(1, t('Select at least one role')),
+    roles: z.array(z.number()).min(1, t('At least one role must be selected')),
     status: z.string().min(1, t('Select Status')),
   });
 }

@@ -4,9 +4,9 @@ namespace App\Services\Traits;
 
 use App\Models\User;
 
-trait ProfileTrait
+trait UserProfileTrait
 {
-     protected function getFullName(string $type, ?string $firstName, ?string $lastName, ?string $companyName): string
+    protected function getFullName(string $type, ?string $firstName, ?string $lastName, ?string $companyName): string
     {
         if ($type === 'person') {
             return trim($firstName . ' ' . $lastName);
@@ -21,6 +21,7 @@ trait ProfileTrait
 
     public function userData(User $user): array
     {
+        $roles = $user->roles->pluck('id')->toArray();
         return [
             'id' => $user->id,
             'name' => $user->name,
@@ -37,6 +38,7 @@ trait ProfileTrait
             'full_name' => $user->profile->full_name ?? null,
             'email' => $user->email,
             'status' => $user->status,
+            'roles' => $roles,
         ];
     }
 }

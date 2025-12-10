@@ -3,11 +3,11 @@
 namespace App\Services\Settings\Users;
 
 use App\Enums\ProfileTypeEnum;
-use App\Services\Traits\ProfileTrait;
+use App\Services\Traits\UserProfileTrait;
 
 class UserService
 {
-    use ProfileTrait;
+    use UserProfileTrait;
 
     public function updateUserProfile($user, array $profileData): void
     {
@@ -24,6 +24,12 @@ class UserService
 
     public function updateUserData($user, array $userData): void
     {
+        if (!empty($userData['password'])) {
+            $userData['password'] = bcrypt($userData['password']);
+        } else {
+            unset($userData['password']);
+        }
+        
         $user->update($userData);
 
         if (isset($userData['roles'])) {

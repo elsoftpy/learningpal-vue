@@ -7,13 +7,13 @@ use App\Models\User;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Profile;
-use App\Services\Traits\ProfileTrait;
+use App\Services\Traits\UserProfileTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class UserService
 {
-   use ProfileTrait;
+   use UserProfileTrait;
 
     public function loginAttempt(LoginRequest $request): bool
     {
