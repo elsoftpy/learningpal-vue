@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth'; 
 import { title } from '@primeuix/themes/aura/card';
+import { header } from '@primeuix/themes/aura/accordion';
 
 const routes = [
   /* Default Route */
@@ -59,6 +60,7 @@ const routes = [
       requiresAuth: true,
       module: 'settings', 
       title: 'Users List',
+      headerIcon: 'list',
       crud: 'read',
     },
   },
@@ -70,6 +72,7 @@ const routes = [
       requiresAuth: true,
       module: 'settings', 
       title: 'User Profile',
+      headerIcon: 'pencil',
       crud: 'edit.auth-user',
     },
   },
@@ -83,6 +86,7 @@ const routes = [
       module: 'academic', 
       submodule: 'settings', 
       title: 'Language Levels',
+      headerIcon: 'list',
       crud: 'read',
     },
   },
@@ -95,6 +99,7 @@ const routes = [
       module: 'academic', 
       submodule: 'classes', 
       title: 'Class Schedules',
+      headerIcon: 'list',
       crud: 'read',
     },
   },

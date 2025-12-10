@@ -22,6 +22,7 @@ trait UserProfileTrait
     public function userData(User $user): array
     {
         $roles = $user->getRoleNames()->toArray();
+        $translatedRoles = array_map(fn($role) => ucfirst(__($role)), $roles);
         $profile = $user->profile;
         return [
             'id' => $user->id,
@@ -39,7 +40,9 @@ trait UserProfileTrait
             'full_name' => $profile->full_name ?? null,
             'email' => $user->email,
             'status' => $user->status,
+            'display_status' => ucfirst(__($user->status)),
             'roles' => $roles,
+            'display_roles' => $translatedRoles,
             'avatar_url' => $profile->getFirstMediaUrl('avatar') ?: null,
             'payment_receipt' => $profile->getFirstMediaUrl('payment_receipt') ?: null,
         ];

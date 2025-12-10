@@ -89,5 +89,13 @@
   "Please correct the errors in the form.": "Por favor, corrija os erros no formulário.",
   "An unexpected error occurred. Please try again.": "Ocorreu um erro inesperado. Por favor, tente novamente.",
   "Roles": "Funções",
-  "Select roles": "Selecione funções"
+  "Select roles": "Selecione funções",
+  "Loading users...": "Carregando usuários...",
+  "Search user": "Pesquisar usuário",
+  "Avatar": "Avatar",  
+  "View": "Ver",
+  "None": "Nenhum",
+  "Actions": "Ações",
+  "Edit": "Editar",
+  "Delete": "Excluir"
 }

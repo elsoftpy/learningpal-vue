@@ -89,5 +89,13 @@
   "Please correct the errors in the form.": "Please correct the errors in the form.",
   "An unexpected error occurred. Please try again.": "An unexpected error occurred. Please try again.",
   "Roles": "Roles",  
-  "Select roles": "Select roles"
+  "Select roles": "Select roles",
+  "Loading users...": "Loading users...",
+  "Search user": "Search user",
+  "Avatar": "Avatar",
+  "View": "View",
+  "None": "None",
+  "Actions": "Actions",
+  "Edit": "Edit",
+  "Delete": "Delete"
 }

@@ -5,7 +5,7 @@
                 <div class="flex w-full justify-between items-center bg-blue-500 dark:bg-blue-800 rounded-md p-4">
                     <div class="flex space-x-2 items-center font-semibold text-slate-50">
                         <IconWrapper 
-                            name="pencil" 
+                            :name="headerIcon" 
                             class="w-8 h-8"
                         />                    
                         <div class="text-2xl">
@@ -44,8 +44,12 @@ const router = useRouter();
 const fallbackRoute = { name: 'dashboard' };
 
 const pageTitle = computed(() => {
-    const key = route.meta?.title ?? 'Leka';
+    const key = route.meta?.title ?? '';
     return key ? t(key) : '';
+});
+
+const headerIcon = computed(() => {
+    return route.meta?.headerIcon ?? 'list';
 });
 
 const goBack = () => {

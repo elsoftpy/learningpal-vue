@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Vite;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -38,6 +39,7 @@ class Profile extends Model implements HasMedia
     {
         $this->addMediaCollection('avatar')
             ->singleFile()
+            ->useFallbackUrl(Vite::asset('resources/js/images/default-avatar.png'))
             ->registerMediaConversions(function () {
                 $this->addMediaConversion('thumb')
                     ->width(100)

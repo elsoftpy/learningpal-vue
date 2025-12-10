@@ -12,6 +12,52 @@ use Illuminate\Support\Facades\DB;
 
 class UserProfileController extends Controller
 {
+    public function index(Request $request)
+    {
+        $page = (int) $request->page;
+        $perPage = (int) $request->per_page;
+        $search = $request->search;
+        $filters = $this->resolveFilters($request->filters);
+
+        $users = User::query()
+            ->with('profile');
+
+        if ($search) {
+            $users->where(function ($query) use ($search) {
+                $query->whereHas('profile', function ($q) use ($search) {
+                    $q->where('full_name', 'like', '%' . $search . '%')
+                        ->orWhere('company_name', 'like', '%' . $search . '%');
+                })
+                ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        if (array_key_exists('name', $filters)) {
+            $nameFilter = trim((string) $filters['name']);
+            if ($nameFilter !== '') {
+                $users->where(function ($query) use ($nameFilter) {
+                    $query->whereHas('profile', function ($q) use ($nameFilter) {
+                            $q->where('full_name', 'like', '%' . $nameFilter . '%');
+                        });
+                });
+            }
+        }
+
+        $paginated = $users->paginate($perPage, ['*'], 'page', $page);
+        
+        $users = $paginated->getCollection()->map(function (User $user) {
+
+            return app(UserService::class)->userData($user);
+        });
+
+        return ResponseService::success(
+            data: [
+                'users' => $users,
+                'total' => $paginated->total(),
+            ]
+        );
+    }
+
     public function update(UserProfileRequest $request, User $user, UserService $userService)
     {
         $profileData = $request->except(['name', 'password']);
@@ -29,5 +75,19 @@ class UserProfileController extends Controller
                 'user' => $userService->userData($user),
             ]
         );
+    }
+
+    private function resolveFilters($filters): array
+    {
+        if (is_array($filters)) {
+            return $filters;
+        }
+
+        if (is_string($filters)) {
+            $decoded = json_decode($filters, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
     }
 }

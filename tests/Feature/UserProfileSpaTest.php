@@ -17,8 +17,6 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        $role = Role::first();
-
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
 
@@ -29,7 +27,7 @@ class UserProfileSpaTest extends TestCase
             'last_name' => 'Smith',
             'email' => 'jane.smith@example.com',
             'name' => $user->name,
-            'roles' => [$role->id],
+            'roles' => ['student'],
             'status' => 'disabled',
         ]);
 
@@ -69,6 +67,46 @@ class UserProfileSpaTest extends TestCase
             'id' => $user->id,
             'email' => 'jane.smith@example.com',
             'status' => 'disabled',
+        ]);
+    }
+
+    public function test_user_can_list_users()
+    {
+        $user = User::factory()->create();
+
+        /** @var \App\Models\User $user */
+        $this->actingAs($user, 'web');
+
+        $response = $this->getJson(route('settings.users.index'));
+
+        $response->assertStatus(200);
+
+        $response->assertJsonStructure([
+            'success',
+            'message',
+            'data' => [
+                'users' => [
+                    '*' => [
+                        'id',
+                        'type',
+                        'personal_id',
+                        'first_name',
+                        'last_name',
+                        'company_name',
+                        'ruc',
+                        'email',
+                        'phone',
+                        'address',
+                        'gender',
+                        'birth_date',
+                        'full_name',
+                        'status',
+                        'roles',
+                        'avatar_url',
+                        'payment_receipt'
+                    ],
+                ],
+            ],
         ]);
     }
 }
