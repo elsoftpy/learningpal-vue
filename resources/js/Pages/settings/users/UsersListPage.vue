@@ -6,7 +6,7 @@
                 <div v-if="loading" class="w-full">
                     <Skeleton width="100%" height="4rem" class="mb-6" />
                     <Skeleton width="100%" height="2rem" class="mb-4" />
-                    <div v-for="n in 5" :key="n" class="flex items-center mb-3">
+                    <div v-for="n in perPage" :key="n" class="flex items-center mb-3">
                         <Skeleton width="40px" height="40px" shape="circle" class="mr-4" />
                         <div class="flex space-x-2 w-full">
                             <Skeleton class="w-1/6" />
@@ -24,8 +24,9 @@
                     :value="users"
                     :lazy="true"
                     paginator
-                    :rows="5"
+                    :rows="perPage"
                     :totalRecords="totalRecords"
+                    :first="(currentPage - 1) * perPage"
                     @page="onPageChange"
                     v-model:filters="filters"
                     filterDisplay="row"
@@ -213,6 +214,8 @@ import Skeleton from 'primevue/skeleton';
 
 const users = ref([]);
 const totalRecords = ref(0);
+const perPage = ref(5);
+const currentPage = ref(1);
 const loading = ref(true);
 const searchQuery = ref('');
 const filters = ref({
@@ -249,7 +252,8 @@ const buildActiveFilters = () => {
 watch(filters, () => {
     clearTimeout(filterDebounceTimer);
     filterDebounceTimer = setTimeout(() => {
-        fetchUsers(1, 5);
+        currentPage.value = 1;
+        fetchUsers(currentPage.value, perPage.value);
     }, 300);
 }, { deep: true });
 
@@ -257,12 +261,15 @@ watch(filters, () => {
 const onSearchInput = () => {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
-        fetchUsers(1, 5);
+        currentPage.value = 1;
+        fetchUsers(currentPage.value, perPage.value);
     }, 300);
 };
 
 function onPageChange(event) {
-    fetchUsers(event.page + 1, event.rows);
+    currentPage.value = event.page + 1;
+    perPage.value = event.rows;
+    fetchUsers(currentPage.value, perPage.value);
 }
 
 async function fetchUsers(page, perPage) {
@@ -297,8 +304,8 @@ async function fetchUsers(page, perPage) {
 }
 
 /* Fetch users */
-onMounted(async () => {
-    fetchUsers(1, 5);
+onMounted(() => {
+    fetchUsers(currentPage.value, perPage.value);
 });
 
 /* Status colors */
@@ -335,7 +342,7 @@ async function deleteUser() {
         await axios.post(`/settings/users/profile/${userIdToDelete.value}/destroy`);
         deleteDialog.value = false;
         userIdToDelete.value = null;
-        fetchUsers(1, 5);
+        fetchUsers(currentPage.value, perPage.value);
         toast.add({ 
             severity: 'success', 
             summary: $t('Success'), 
