@@ -32,8 +32,8 @@ class UserProfileController extends Controller
             });
         }
 
-        if (array_key_exists('name', $filters)) {
-            $nameFilter = trim((string) $filters['name']);
+        if (array_key_exists('full_name', $filters)) {
+            $nameFilter = trim((string) $filters['full_name']);
             if ($nameFilter !== '') {
                 $users->where(function ($query) use ($nameFilter) {
                     $query->whereHas('profile', function ($q) use ($nameFilter) {

@@ -59,7 +59,7 @@
                     </Column>
                     <!-- Name -->
                     <Column 
-                        field="name"
+                        field="full_name"
                         :header="$t('Name')" 
                         :showFilterMenu="false"
                         style="min-width:15%"
@@ -75,7 +75,7 @@
                         </template>
 
                         <template #body="{ data }">
-                            {{ data.first_name }} {{ data.last_name }}
+                            {{ data.full_name }}
                         </template>
 
                     </Column>
@@ -175,7 +175,7 @@ const searchQuery = ref('');
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    full_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 
 let searchDebounceTimer = null;

@@ -31,6 +31,7 @@ trait UserProfileTrait
             'personal_id' => $profile->personal_id ?? null,
             'first_name' => $profile->first_name ?? null,
             'last_name' => $profile->last_name ?? null,
+            'full_name' => $profile->full_name ?? null,
             'company_name' => $profile->company_name ?? null,
             'ruc' => $profile->ruc ?? null,
             'phone' => $profile->phone ?? null,
