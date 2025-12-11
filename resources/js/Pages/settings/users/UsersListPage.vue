@@ -265,7 +265,7 @@ const getStatusSeverity = (status) => {
     switch (status) {
         case 'active': return 'success';
         case 'disabled': return 'danger';
-        case 'pending': return 'warning';
+        case 'pending': return 'warn';
         default: return 'info';
     }
 };

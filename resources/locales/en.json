@@ -97,5 +97,7 @@
   "None": "None",
   "Actions": "Actions",
   "Edit": "Edit",
-  "Delete": "Delete"
+  "Delete": "Delete",
+  "Search by name": "Search by name",
+  "ID": "ID"
 }
