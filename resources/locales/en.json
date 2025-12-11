@@ -99,5 +99,10 @@
   "Edit": "Edit",
   "Delete": "Delete",
   "Search by name": "Search by name",
-  "ID": "ID"
+  "ID": "ID",
+  "An error occurred while deleting the user.": "An error occurred while deleting the user.",
+  "Are you sure you want to delete this user?": "Are you sure you want to delete this user?",
+  "User deleted successfully.": "User deleted successfully.",
+  "Cancel": "Cancel",
+  "Delete Confirmation": "Delete Confirmation"
 }

@@ -99,5 +99,10 @@
   "Edit": "Editar",
   "Delete": "Excluir",
   "Search by name": "Pesquisar por nome",
-  "ID": "ID"
+  "ID": "ID",
+  "Are you sure you want to delete this user?": "Tem certeza de que deseja excluir este usuário?",
+  "An error occurred while deleting the user.": "Ocorreu um erro ao excluir o usuário.",
+  "User deleted successfully.": "Usuário excluído com sucesso.",
+  "Cancel": "Cancelar",
+  "Delete Confirmation": "Confirmação de exclusão"
 }

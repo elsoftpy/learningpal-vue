@@ -49,5 +49,6 @@
     "Username may not be greater than :max characters.": "Username may not be greater than :max characters.",
     "This username is already taken.": "This username is already taken.",
     "Password does not meet the required criteria.": "Password does not meet the required criteria.",
-    "User profile updated successfully.": "User profile updated successfully."
+    "User profile updated successfully.": "User profile updated successfully.",
+    "User deleted successfully.": "User deleted successfully."
 }

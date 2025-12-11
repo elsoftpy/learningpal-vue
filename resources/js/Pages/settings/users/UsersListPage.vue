@@ -134,11 +134,11 @@
                                     :to="`/settings/users/${data.id}/edit`"
                                 />
                                 <Button
+                                    @click="showDeleteDialog(data.id)"
                                     :label="$t('Delete')"
                                     icon="pi pi-trash"
                                     size="small"
                                     class="p-button-danger"
-                                    :to="`/settings/users/${data.id}/delete`"
                                 />
                             </div>
                         </template>
@@ -149,6 +149,45 @@
                 <Dialog v-model:visible="receiptModal" header="Payment Receipt" modal>
                     <img :src="receiptUrl" class="w-full rounded">
                 </Dialog>
+
+                <!-- Delete Confirmation Dialog -->
+                <Dialog
+                    v-model:visible="deleteDialog"
+                    modal
+                    :closable="false"
+                >
+                    <template #header >
+                        <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-red-500">
+                            <span class="text-xl font-semibold">{{ $t('Delete Confirmation') }}</span>
+                            <Button
+                                icon="pi pi-times"
+                                rounded
+                                size="small"
+                                severity="danger"
+                                variant="outlined"
+                                class="text-white! border-2!"
+                                @click="deleteDialog = false"
+                            />
+                        </div>
+                    </template>
+                    <span class="flex p-4 items-center font-semibold mb-4 text-center">
+                        {{ $t('Are you sure you want to delete this user?') }}
+                    </span>
+                    <div class="flex justify-end gap-2">
+                        <Button 
+                            type="button" 
+                            :label="$t('Cancel')" 
+                            severity="secondary" 
+                            @click="deleteDialog = false">
+                        </Button>
+                        <Button 
+                            type="button" 
+                            :label="$t('Delete')"
+                            severity="danger" 
+                            @click="deleteUser">
+                        </Button>
+                    </div>
+                </Dialog>
             </div>
 
         </template>
@@ -156,9 +195,11 @@
 </template>
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { FilterMatchMode } from '@primevue/core/api';
+import { useToast } from 'primevue/usetoast';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
-
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Tag from 'primevue/tag';
@@ -169,17 +210,17 @@ import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Skeleton from 'primevue/skeleton';
 
-import { FilterMatchMode } from '@primevue/core/api';
 
 const users = ref([]);
 const totalRecords = ref(0);
 const loading = ref(true);
 const searchQuery = ref('');
-
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     full_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
+const { t: $t } = useI18n();
+const toast = useToast();
 
 let searchDebounceTimer = null;
 let filterDebounceTimer = null;
@@ -277,5 +318,40 @@ const receiptUrl = ref(null);
 function showReceipt(url) {
     receiptUrl.value = url;
     receiptModal.value = true;
+}
+
+/* Delete user functionality */
+const deleteDialog = ref(false);
+const userIdToDelete = ref(null);
+
+
+function showDeleteDialog(userId) {
+    userIdToDelete.value = userId;
+    deleteDialog.value = true;
+}
+
+async function deleteUser() {
+    try {
+        await axios.post(`/settings/users/profile/${userIdToDelete.value}/destroy`);
+        deleteDialog.value = false;
+        userIdToDelete.value = null;
+        fetchUsers(1, 5);
+        toast.add({ 
+            severity: 'success', 
+            summary: $t('Success'), 
+            detail: $t('User deleted successfully.'),
+            life: 3000 
+        });
+    } catch (error) {
+        toast.add({ 
+            severity: 'error', 
+            summary: $t('Error'), 
+            detail: $t('An error occurred while deleting the user.'),
+            life: 3000 
+        });
+
+        deleteDialog.value = false;
+        userIdToDelete.value = null;
+    }
 }
 </script>

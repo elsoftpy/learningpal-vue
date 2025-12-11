@@ -41,6 +41,9 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
 
         Route::post('profile/{user}/edit', [UserProfileController::class, 'update'])
             ->name('profile.update');
+
+        Route::post('profile/{user}/destroy', [UserProfileController::class, 'destroy'])
+            ->name('profile.destroy');
     });
 });
 

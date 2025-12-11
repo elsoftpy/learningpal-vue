@@ -77,6 +77,21 @@ class UserProfileController extends Controller
         );
     }
 
+    public function destroy(User $user)
+    {
+        DB::transaction(function () use ($user) {
+            $profile = $user->profile;
+            $profile->clearMediaCollection('avatar');
+            $profile->clearMediaCollection('payment_receipt');
+            $user->delete();
+            $profile->delete();
+        });
+
+        return ResponseService::success(
+            message: __('User deleted successfully.')
+        );
+    }
+
     private function resolveFilters($filters): array
     {
         if (is_array($filters)) {
