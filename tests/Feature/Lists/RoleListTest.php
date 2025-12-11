@@ -49,7 +49,7 @@ class RoleListTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment([
-                'name' => 'Student',
+                'label' => 'Student',
             ]);
     }
 
@@ -69,7 +69,7 @@ class RoleListTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment([
-                'name' => 'Estudiante',
+                'label' => 'Estudiante',
             ]);
     }
 
@@ -90,7 +90,7 @@ class RoleListTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment([
-                'name' => 'Estudante',
+                'label' => 'Estudante',
             ]);
     }
 
@@ -110,13 +110,13 @@ class RoleListTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment([
-                'name' => 'Admin',
+                'label' => 'Admin',
             ])
             ->assertJsonFragment([
-                'name' => 'Student',
+                'label' => 'Student',
             ])
             ->assertJsonFragment([
-                'name' => 'Teacher',
+                'label' => 'Teacher',
             ]);
     }
         

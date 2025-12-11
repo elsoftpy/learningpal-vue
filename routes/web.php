@@ -37,19 +37,23 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
 Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserProfileController::class, 'index'])
-            ->name('index');
+            ->name('index')
+            ->middleware('can:view users');
 
         Route::post('/', [UserProfileController::class, 'store'])
-            ->name('store');
+            ->name('store')
+            ->middleware('can:create users');
 
         Route::post('profile/{user}/data', [UserProfileController::class, 'userData'])
-            ->name('profile.user.data');
+            ->name('profile.user.data')
+            ->middleware('can:view users');
 
         Route::post('profile/{user}/edit', [UserProfileController::class, 'update'])
             ->name('profile.update');
 
         Route::post('profile/{user}/destroy', [UserProfileController::class, 'destroy'])
-            ->name('profile.destroy');
+            ->name('profile.destroy')
+            ->middleware('can:delete users');
     });
 });
 

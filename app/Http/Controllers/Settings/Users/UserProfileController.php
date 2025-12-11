@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Settings\Users\UserService;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserProfileController extends Controller
@@ -90,6 +91,14 @@ class UserProfileController extends Controller
 
     public function update(UserProfileRequest $request, User $user, UserService $userService)
     {
+        $isEditingOwnProfile = $user->id === Auth::id();
+
+        if (!$isEditingOwnProfile && $request->user()->cannot('edit users')) {
+            return ResponseService::unauthorized(
+                message: __('You do not have permission to edit this user.')
+            );
+        }
+
         $profileData = $request->except(['name', 'password']);
         $userData = $request->only(['name', 'email', 'password', 'roles', 'status']);
         
