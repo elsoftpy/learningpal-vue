@@ -52,9 +52,9 @@
                     <!-- Empty Message -->
                     <template #empty>{{$t('No users found.')}}</template>
                     <!-- Avatar -->
-                    <Column :header="$t('Avatar')" style="width: 5%">
+                    <Column :header="$t('ID')" style="width: 1%">
                         <template #body="{ data }">     
-                            <img :src="data.avatar_url" class="w-10 h-10 rounded-full object-cover" />
+                            {{ data.id }}
                         </template>
                     </Column>
                     <!-- Name -->
@@ -75,7 +75,10 @@
                         </template>
 
                         <template #body="{ data }">
-                            {{ data.full_name }}
+                            <div class="flex items-center space-x-2">
+                                <img :src="data.avatar_url" class="w-10 h-10 rounded-full object-cover" />
+                                <span>{{ data.full_name }}</span>
+                            </div>
                         </template>
 
                     </Column>
