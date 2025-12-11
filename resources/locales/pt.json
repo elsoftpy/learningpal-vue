@@ -108,5 +108,8 @@
   "Payment Receipt": "Recibo de Pagamento",
   "No records found.": "Nenhum registro encontrado.",
   "Clear filters": "Limpar filtros",
-  "At least one role must be selected": "Pelo menos uma função deve ser selecionada"
+  "At least one role must be selected": "Pelo menos uma função deve ser selecionada",
+  "Success": "Sucesso",
+  "User saved successfully": "Usuário salvo com sucesso",
+  "Users List": "Lista de usuários"
 }
