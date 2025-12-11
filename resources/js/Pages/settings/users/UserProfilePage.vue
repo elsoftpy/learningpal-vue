@@ -488,6 +488,8 @@ const handleSubmit =  async (formState) => {
 
             return;
         }
+
+        setErrors({ general: apiError?.message || $t('An unexpected error occurred. Please try again.') });
         
         toast.add({ 
             severity: 'error', 

@@ -1,8 +1,18 @@
 <template>
     <PageContainer>
         <template #body>
+            <Message
+                v-if="errors.general"
+                severity="error"
+                size="small"
+                variant="outlined"
+                :closable="true"
+                class="w-full mb-4"
+            >
+                {{ errors.general }}
+            </Message>
             <div class="flex flex-col w-full space-y-4">
-                <div class="space-y-4 md:space-y-0 md:flex md:items-center md:space-x-4">
+                <div class="space-y-4 md:space-y-0 md:flex md:space-x-4">
                     <!-- Avatar -->
                     <div v-if="isPersonProfile" class="flex justify-center w-full md:max-w-16">
                         <img

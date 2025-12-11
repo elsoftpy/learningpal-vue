@@ -53,6 +53,18 @@ const routes = [
   },
   /* Settings Module */
   {
+    path: '/settings/users/create',
+    name: 'settings.users.create',
+    component: () => import('../Pages/settings/users/UserProfilePage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'settings', 
+      title: 'Create User',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
     path: '/settings/users',
     name: 'settings.users.list',
     component: () => import('../Pages/settings/users/UsersListPage.vue'),

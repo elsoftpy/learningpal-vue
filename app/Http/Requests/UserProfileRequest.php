@@ -33,7 +33,7 @@ class UserProfileRequest extends FormRequest
                     'required', 
                     'string', 
                     'max:255', 
-                    'unique:users,name,' . $this->user->id,
+                    Rule::unique('users', 'name')->ignore($this->user?->id),
                 ],
                 'password' => [
                     'nullable', 
@@ -87,7 +87,7 @@ class UserProfileRequest extends FormRequest
     public function prepareForValidation()
     {
         $this->merge([
-            'profile' => $this->user->profile,
+            'profile' => $this->user?->profile,
         ]);
     }
 }

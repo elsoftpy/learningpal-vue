@@ -24,24 +24,34 @@
                     <!-- Table Header with Search -->
                     <template #header>
                         <div class="flex flex-wrap items-center justify-end gap-3">
-                            <Button
-                                v-if="hasActiveFilters"
-                                size="small"
-                                severity="secondary"
-                                icon="pi pi-filter-slash"
-                                :label="$t('Clear filters')"
-                                @click="clearFilters"
-                            />
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search"></i>
-                                </InputIcon>
-                                <InputText
-                                    v-model="searchQuery"
-                                    :placeholder="$t('Search user')"
-                                    @input="onSearchInput"
+                            <div class="flex flex-1">
+                                <Button
+                                    :label="$t('Add User')"
+                                    icon="pi pi-plus"
+                                    size="small"
+                                    @click="router.push({ name: 'settings.users.create' })"
                                 />
-                            </IconField>
+                            </div>
+                            <div class="flex space-x-2">
+                                <Button
+                                    v-if="hasActiveFilters"
+                                    size="small"
+                                    severity="secondary"
+                                    icon="pi pi-filter-slash"
+                                    :label="$t('Clear filters')"
+                                    @click="clearFilters"
+                                />
+                                <IconField>
+                                    <InputIcon>
+                                        <i class="pi pi-search"></i>
+                                    </InputIcon>
+                                    <InputText
+                                        v-model="searchQuery"
+                                        :placeholder="$t('Search user')"
+                                        @input="onSearchInput"
+                                    />
+                                </IconField>
+                            </div>
                         </div>
                     </template>
                     <!-- Empty Message -->
@@ -127,7 +137,6 @@
                                     icon="pi pi-pencil"
                                     size="small"
                                     class="mr-2"
-                                    
                                 />
                                 <Button
                                     @click="showDeleteDialog(data.id)"

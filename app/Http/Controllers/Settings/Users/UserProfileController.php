@@ -58,6 +58,27 @@ class UserProfileController extends Controller
         );
     }
 
+    public function store(UserProfileRequest $request, UserService $userService)
+    {
+        $profileData = $request->except(['name', 'password']);
+        $userData = $request->only(['name', 'email', 'password', 'roles', 'status']);
+
+        $user = null;
+
+        $user = DB::transaction(function () use ($profileData, $userData, $userService) {
+            $user = $userService->createUser($userData, $profileData);
+            
+            return $user;
+        });
+
+        return ResponseService::success(
+            message: __('User saved successfully.'),
+            data: [
+                'user' => $userService->userData($user),
+            ]
+        );
+    }
+
     public function userData(User $user, UserService $userService)
     {
         return ResponseService::success(
