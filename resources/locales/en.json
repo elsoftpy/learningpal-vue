@@ -107,5 +107,6 @@
   "Delete Confirmation": "Delete Confirmation",
   "Payment Receipt": "Payment Receipt",
   "No records found.": "No records found.",
-  "Clear filters": "Clear filters"
+  "Clear filters": "Clear filters",
+  "At least one role must be selected": "At least one role must be selected"
 }

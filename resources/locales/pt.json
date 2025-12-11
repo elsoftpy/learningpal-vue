@@ -107,5 +107,6 @@
   "Delete Confirmation": "Confirmação de exclusão",
   "Payment Receipt": "Recibo de Pagamento",
   "No records found.": "Nenhum registro encontrado.",
-  "Clear filters": "Limpar filtros"
+  "Clear filters": "Limpar filtros",
+  "At least one role must be selected": "Pelo menos uma função deve ser selecionada"
 }
