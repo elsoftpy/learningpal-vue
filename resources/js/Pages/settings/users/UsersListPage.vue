@@ -3,21 +3,7 @@
         <template #body>
             <div class="flex flex-col w-full">
                 <!-- Loading Skeleton -->
-                <div v-if="loading" class="w-full">
-                    <Skeleton width="100%" height="4rem" class="mb-6" />
-                    <Skeleton width="100%" height="2rem" class="mb-4" />
-                    <div v-for="n in perPage" :key="n" class="flex items-center mb-3">
-                        <Skeleton width="40px" height="40px" shape="circle" class="mr-4" />
-                        <div class="flex space-x-2 w-full">
-                            <Skeleton class="w-1/6" />
-                            <Skeleton class="w-1/6" />
-                            <Skeleton class="w-1/6" />
-                            <Skeleton class="w-1/6" />
-                            <Skeleton class="w-1/6" />
-                            <Skeleton class="w-1/6" />
-                        </div>
-                    </div>
-                </div>
+                <SkeletonBuilder v-if="loading" :perPage="perPage" count="5" />
                 <!-- Users DataTable -->
                 <DataTable
                     v-else
@@ -128,11 +114,12 @@
                         <template #body="{ data }">
                             <div class="space-y-1">
                                 <Button
+                                    @click="navigateToEdit(data.id)"
                                     :label="$t('Edit')"
                                     icon="pi pi-pencil"
                                     size="small"
                                     class="mr-2"
-                                    :to="`/settings/users/${data.id}/edit`"
+                                    
                                 />
                                 <Button
                                     @click="showDeleteDialog(data.id)"
@@ -197,6 +184,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
+import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
@@ -209,7 +197,7 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
-import Skeleton from 'primevue/skeleton';
+import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 
 
 const users = ref([]);
@@ -224,6 +212,7 @@ const filters = ref({
 });
 const { t: $t } = useI18n();
 const toast = useToast();
+const router = useRouter();
 
 let searchDebounceTimer = null;
 let filterDebounceTimer = null;
@@ -335,6 +324,10 @@ const userIdToDelete = ref(null);
 function showDeleteDialog(userId) {
     userIdToDelete.value = userId;
     deleteDialog.value = true;
+}
+
+function navigateToEdit(userId) {
+   router.push({name: 'settings.users.data.edit', params: { userId: userId }});
 }
 
 async function deleteUser() {
