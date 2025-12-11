@@ -105,5 +105,7 @@
   "User deleted successfully.": "User deleted successfully.",
   "Cancel": "Cancel",
   "Delete Confirmation": "Delete Confirmation",
-  "Payment Receipt": "Payment Receipt"
+  "Payment Receipt": "Payment Receipt",
+  "No records found.": "No records found.",
+  "Clear filters": "Clear filters"
 }

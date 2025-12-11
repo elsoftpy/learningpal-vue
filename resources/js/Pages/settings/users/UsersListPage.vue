@@ -23,7 +23,15 @@
                 >
                     <!-- Table Header with Search -->
                     <template #header>
-                        <div class="flex justify-end">
+                        <div class="flex flex-wrap items-center justify-end gap-3">
+                            <Button
+                                v-if="hasActiveFilters"
+                                size="small"
+                                severity="secondary"
+                                icon="pi pi-filter-slash"
+                                :label="$t('Clear filters')"
+                                @click="clearFilters"
+                            />
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search"></i>
@@ -37,7 +45,7 @@
                         </div>
                     </template>
                     <!-- Empty Message -->
-                    <template #empty>{{$t('No users found.')}}</template>
+                    <template #empty>{{$t('No records found.')}}</template>
                     <!-- Avatar -->
                     <Column :header="$t('ID')" style="width: 1%">
                         <template #body="{ data }">     
@@ -208,7 +216,7 @@
     </PageContainer>
 </template>
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
@@ -243,6 +251,7 @@ const router = useRouter();
 
 let searchDebounceTimer = null;
 let filterDebounceTimer = null;
+let skipFilterWatcher = false;
 
 const buildActiveFilters = () => {
     return Object.entries(filters.value).reduce((acc, [key, filter]) => {
@@ -264,8 +273,30 @@ const buildActiveFilters = () => {
     }, {});
 };
 
+const hasActiveFilters = computed(() => {
+    if (searchQuery.value.trim().length > 0) {
+        return true;
+    }
+
+    return Object.values(filters.value).some(filter => {
+        if (!filter) {
+            return false;
+        }
+
+        if (typeof filter.value === 'string') {
+            return filter.value.trim().length > 0;
+        }
+
+        return filter.value !== null && filter.value !== undefined;
+    });
+});
+
 // Watch for column filter changes
 watch(filters, () => {
+    if (skipFilterWatcher) {
+        skipFilterWatcher = false;
+        return;
+    }
     clearTimeout(filterDebounceTimer);
     filterDebounceTimer = setTimeout(() => {
         currentPage.value = 1;
@@ -281,6 +312,18 @@ const onSearchInput = () => {
         fetchUsers(currentPage.value, perPage.value);
     }, 300);
 };
+
+function clearFilters() {
+    searchQuery.value = '';
+    skipFilterWatcher = true;
+    Object.values(filters.value).forEach(filter => {
+        if (filter) {
+            filter.value = null;
+        }
+    });
+    currentPage.value = 1;
+    fetchUsers(currentPage.value, perPage.value);
+}
 
 function onPageChange(event) {
     currentPage.value = event.page + 1;

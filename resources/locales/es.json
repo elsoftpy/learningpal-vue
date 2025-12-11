@@ -105,5 +105,7 @@
   "User deleted successfully.": "Usuario eliminado con éxito.",
   "Cancel": "Cancelar",
   "Delete Confirmation": "Confirmación de eliminación",
-  "Payment Receipt": "Recibo de pago"
+  "Payment Receipt": "Recibo de pago",
+  "No records found.": "No se encontraron registros.",
+  "Clear filters": "Limpiar filtros"
 }
