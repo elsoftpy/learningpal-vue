@@ -137,10 +137,10 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
+import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/auth'
-import { useFormSubmitter } from '@/composable/useFormSubmitter'
+import { useFormSubmitter } from '@/composables/useFormSubmitter'
 import { createLoginSchema } from '@/schemas/login'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'

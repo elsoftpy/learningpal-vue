@@ -207,8 +207,9 @@ import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createUserSchema } from '@/schemas/user';
-import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
-import { useFormSubmitter } from '@/composable/useFormSubmitter'
+import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
+import { useFormSubmitter } from '@/composables/useFormSubmitter'
+import { usePermissions } from '@/composables/usePermissions';
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
@@ -225,6 +226,7 @@ import FileUpload from '@/components/form/FileUpload.vue';
 import axios from 'axios';
 
 const { locale, t: $t } = useI18n();
+const { can } = usePermissions();
 const { handleApiError } = useApiErrorHandler();
 const userSchema = computed(() => createUserSchema($t, locale.value));
 const resolver = zodResolver(userSchema.value);
@@ -510,8 +512,19 @@ onMounted(async () => {
 
         await fetchRoles();
 
-        console.log('Mounted UserProfilePage with crudAction:', crudAction, 'and userId:', userId);
         if (crudAction === 'edit' && userId) {
+            if (!can('edit users')) {
+                toast.add({ 
+                    severity: 'error', 
+                    summary: $t('Unauthorized'), 
+                    detail: $t('You do not have permission to edit users.'),
+                    life: 5000 
+                });
+                router.push({ name: 'settings.users.list' });
+            
+                return;
+            }
+
             await fetchUserData();
         }
     } catch (error) {

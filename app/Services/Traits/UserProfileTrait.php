@@ -24,6 +24,9 @@ trait UserProfileTrait
         $roles = $user->getRoleNames()->toArray();
         $translatedRoles = array_map(fn($role) => ucfirst(__($role)), $roles);
         $profile = $user->profile;
+
+        $permissions = $user->getAllPermissions()->pluck('name'); 
+
         return [
             'id' => $user->id,
             'name' => $user->name,
@@ -46,6 +49,7 @@ trait UserProfileTrait
             'display_roles' => $translatedRoles,
             'avatar_url' => $profile->getFirstMediaUrl('avatar') ?: null,
             'payment_receipt' => $profile->getFirstMediaUrl('payment_receipt') ?: null,
+            'permissions' => $permissions,
         ];
     }
 }

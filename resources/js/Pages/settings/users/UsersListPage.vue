@@ -132,6 +132,7 @@
                         <template #body="{ data }">
                             <div class="space-y-1">
                                 <Button
+                                    v-if="can('edit users')"
                                     @click="navigateToEdit(data.id)"
                                     :label="$t('Edit')"
                                     icon="pi pi-pencil"
@@ -139,6 +140,7 @@
                                     class="mr-2"
                                 />
                                 <Button
+                                    v-if="can('delete users')"
                                     @click="showDeleteDialog(data.id)"
                                     :label="$t('Delete')"
                                     icon="pi pi-trash"
@@ -227,6 +229,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
+import { usePermissions } from '@/composables/usePermissions.js';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
@@ -245,6 +248,7 @@ import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 
 
 const { t: $t } = useI18n();
+const { can } = usePermissions();
 const users = ref([]);
 const totalRecords = ref(0);
 const perPage = ref(5);
