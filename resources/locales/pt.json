@@ -104,5 +104,6 @@
   "An error occurred while deleting the user.": "Ocorreu um erro ao excluir o usuário.",
   "User deleted successfully.": "Usuário excluído com sucesso.",
   "Cancel": "Cancelar",
-  "Delete Confirmation": "Confirmação de exclusão"
+  "Delete Confirmation": "Confirmação de exclusão",
+  "Payment Receipt": "Recibo de Pagamento"
 }

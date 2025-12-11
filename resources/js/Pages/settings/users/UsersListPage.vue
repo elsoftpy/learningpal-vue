@@ -134,8 +134,34 @@
                 </DataTable>
 
                 <!-- Modal for Payment Receipt -->
-                <Dialog v-model:visible="receiptModal" header="Payment Receipt" modal>
-                    <img :src="receiptUrl" class="w-full rounded">
+                <Dialog 
+                    v-model:visible="receiptModal" 
+                    modal
+                    :closable="false"
+                >
+                    <template #header >
+                        <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-blue-500">
+                            <span class="text-xl font-semibold">{{ $t('Payment Receipt') }}</span>
+                            <Button
+                                icon="pi pi-times"
+                                rounded
+                                size="small"
+                                severity="primary"
+                                variant="outlined"
+                                class="text-white! border-2! hover:text-gray-800!"
+                                @click="receiptModal = false"
+                            />
+                        </div>
+                    </template>
+                    <a :href="receiptUrl" target="_blank" rel="noopener noreferrer">
+                        <img v-if="isImageUrl(receiptUrl)" :src="receiptUrl" class="w-full rounded">
+                        <IconWrapper
+                            v-else
+                            name="file-pdf"
+                            class="text-red-600 text-center mx-auto my-8"
+                            size="256"
+                        />
+                    </a>
                 </Dialog>
 
                 <!-- Delete Confirmation Dialog -->
@@ -153,7 +179,7 @@
                                 size="small"
                                 severity="danger"
                                 variant="outlined"
-                                class="text-white! border-2!"
+                                class="text-white! border-2! hover:text-gray-800!"
                                 @click="deleteDialog = false"
                             />
                         </div>
@@ -196,6 +222,7 @@ import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import IconField from 'primevue/iconfield';
+import IconWrapper from '@/components/common/IconWrapper.vue';
 import InputIcon from 'primevue/inputicon';
 import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 
@@ -314,6 +341,10 @@ const receiptUrl = ref(null);
 function showReceipt(url) {
     receiptUrl.value = url;
     receiptModal.value = true;
+}
+
+function isImageUrl(url) {
+    return(url.match(/\.(jpeg|jpg|gif|png|svg)$/) != null);
 }
 
 /* Delete user functionality */
