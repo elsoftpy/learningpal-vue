@@ -14,7 +14,7 @@
         v-if="errors.general"
         severity="error"
         size="small"
-        variant="simple"
+        variant="outlined"
       >
         {{ errors.general }}
       </Message>
