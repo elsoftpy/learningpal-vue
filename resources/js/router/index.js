@@ -76,6 +76,18 @@ const routes = [
       crud: 'edit.auth-user',
     },
   },
+  {
+    path: '/settings/users/:userId/data',
+    name: 'settings.users.data.edit',
+    component: () => import('../Pages/settings/users/UserProfilePage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'settings', 
+      title: 'Edit User',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
   /* Academic Module */
   {
     path: '/academic/settings/language-levels',

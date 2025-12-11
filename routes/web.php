@@ -39,6 +39,9 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
         Route::get('/', [UserProfileController::class, 'index'])
             ->name('index');
 
+        Route::post('profile/{user}/data', [UserProfileController::class, 'userData'])
+            ->name('profile.user.data');
+
         Route::post('profile/{user}/edit', [UserProfileController::class, 'update'])
             ->name('profile.update');
 

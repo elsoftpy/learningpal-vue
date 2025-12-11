@@ -1,5 +1,6 @@
 <template>
     <Form
+        :key="formKey"
         v-slot="$form"
         :resolver="resolver"
         :initial-values="initialValues"
@@ -201,7 +202,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -238,12 +239,14 @@ const rolesOptions = ref([]);
 const selectedAvatar = ref(null);
 const rolesLoading = ref(false);
 const visible = ref(false);
+const userData = ref(null);
+const formKey = ref(0);
 let rolesDebounceTimer = null;
 
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
 
-const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
+const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.userId;
 
 const emit = defineEmits(['update:paymentReceipt']);
 const selectedPaymentFile = ref(null);
@@ -266,7 +269,11 @@ const paymentReceiptUrl = computed(() => {
 
 const hasPayment = computed(() => !!paymentReceiptUrl.value);
 
-
+watch(userData, (newData) => {
+    if (newData) {
+        formKey.value++; // Forces form to re-initialize
+    }
+});
 
 const initialValues = computed(() => {
     if (crudAction === 'create') {
@@ -278,21 +285,15 @@ const initialValues = computed(() => {
             phone: '',
             email: '',
             birth_date: '',
-            avatar: '',
             name: '',
             password: '',
             roles: [],
-            payment_receipt: '',
             status: '',
         };
     }
 
     if (crudAction === 'edit.auth-user') {
-        const userRoles = auth.user?.roles || [];
-        const roleNames = Array.isArray(userRoles) 
-            ? userRoles.map(role => typeof role === 'object' ? role.name : role) 
-            : [];
-
+        const roleNames = getRoleNames(auth.user?.roles || []);
         return {
             personal_id: auth.user?.personal_id || '',
             first_name: auth.user?.first_name || '',
@@ -301,15 +302,29 @@ const initialValues = computed(() => {
             phone: auth.user?.phone || '',
             email: auth.user?.email || '',
             birth_date: auth.user?.birth_date || '',
-            avatar: auth.user?.avatar || '',
             name: auth.user?.name || '',
             password: auth.user?.password || '',
             roles: roleNames,
-            payment_receipt: auth.user?.payment_receipt || '',
             status: auth.user?.status || '',
         };
     }
-    return {};
+
+    const roleNames = getRoleNames(userData.value?.roles || []);
+    const data = userData.value || {};
+
+    return {
+        personal_id: data.personal_id || '',
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
+        address: data.address || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        birth_date: data.birth_date || '',
+        name: data.name || '',
+        password: data.password || '',
+        roles: roleNames,
+        status: data.status || '',
+    };
 });
 
 
@@ -343,6 +358,29 @@ const fetchRoles = async (query = '') => {
         rolesLoading.value = false;
     }
 };
+
+const fetchUserData = async () => {
+    try {
+        const response = await axios.post(`/settings/users/profile/${userId}/data`);
+        userData.value = response.data.data.user || response.data.user || {};
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        userData.value = null;
+        toast.add({ 
+            severity: 'error', 
+            summary: $t('Error'), 
+            detail: $t('Failed to load user data. Please try again.'),
+            life: 5000 
+        });
+    }
+};
+
+const getRoleNames = (roles) => {
+
+    return Array.isArray(roles) 
+        ? roles.map(role => typeof role === 'object' ? role.name : role) 
+        : [];
+}
 
 const onRolesFilter = (event) => {
     clearTimeout(rolesDebounceTimer);
@@ -468,6 +506,11 @@ onMounted(async () => {
         });
 
         await fetchRoles();
+
+        console.log('Mounted UserProfilePage with crudAction:', crudAction, 'and userId:', userId);
+        if (crudAction === 'edit' && userId) {
+            await fetchUserData();
+        }
     } catch (error) {
         console.error('Error during component mount:', error);
     }

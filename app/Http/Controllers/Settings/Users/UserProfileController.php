@@ -58,6 +58,15 @@ class UserProfileController extends Controller
         );
     }
 
+    public function userData(User $user, UserService $userService)
+    {
+        return ResponseService::success(
+            data: [
+                'user' => $userService->userData($user),
+            ]
+        );
+    }
+
     public function update(UserProfileRequest $request, User $user, UserService $userService)
     {
         $profileData = $request->except(['name', 'password']);
