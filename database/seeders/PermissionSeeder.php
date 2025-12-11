@@ -14,7 +14,19 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $permissions = [
+        $menuPermissions = [
+            'show system menu',
+            'show system settings menu',
+            'show academic menu',
+            'show academic settings menu',
+            'show academic classes menu',
+        ];
+
+        foreach ($menuPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        $usersPermissions = [
             'view users',
             'create users',
             'edit users',
@@ -22,7 +34,22 @@ class PermissionSeeder extends Seeder
             'edit own profile',
         ];
 
-        foreach ($permissions as $permission) {
+        foreach ($usersPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        $academicSettingsPermissions = [
+            'view language levels',
+            'create language levels',
+            'edit language levels',
+            'delete language levels',
+            'view class schedules',
+            'create class schedules',
+            'edit class schedules',
+            'delete class schedules',
+        ];
+
+        foreach ($academicSettingsPermissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
@@ -30,9 +57,31 @@ class PermissionSeeder extends Seeder
         $admin->givePermissionTo(Permission::all());
 
         $student = Role::firstOrCreate(['name' => 'student']);
-        $student->givePermissionTo(['edit own profile']);
+        $student->givePermissionTo([
+            // system
+            'edit own profile',
+            // academic
+            'show academic menu',
+            // academic classes
+            'show academic classes menu',
+        ]);
 
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
-        $teacher->givePermissionTo(['view users', 'edit own profile']);
+        $teacher->givePermissionTo([
+            // system
+            'show system menu',
+            'show system settings menu',
+            // users
+            'view users', 
+            'edit own profile',
+            // academic
+            'show academic menu', 
+            // academic settings
+            'show academic settings menu',
+            'view language levels',
+            'view class schedules',
+            // academic classes
+            'show academic classes menu',
+        ]);
     }
 }

@@ -26,6 +26,7 @@
                         <div class="flex flex-wrap items-center justify-end gap-3">
                             <div class="flex flex-1">
                                 <Button
+                                    v-if="can('create users')"
                                     :label="$t('Add User')"
                                     icon="pi pi-plus"
                                     size="small"

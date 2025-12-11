@@ -6,8 +6,8 @@
             icon="house-line"
         />
         <!-- System Settings Menu -->
-        <template v-if="auth.hasPermission('show system menu')">
-            <template v-if="auth.hasPermission('show system settings menu')">
+        <template v-if="can('show system menu')">
+            <template v-if="can('show system settings menu')">
                 <ModuleMenuItem
                     module="settings"
                     :moduleName="$t('Settings')"
@@ -15,7 +15,7 @@
                 >
                     <template #items>
                         <PlainMenuItem
-                            v-if="auth.hasPermission('list users')"
+                            v-if="can('view users')"
                             :route="{ name: 'settings.users.list' }"
                             baseRoute="settings.users"
                             :title="$t('Users')"
@@ -25,14 +25,14 @@
             </template>
         </template>
         <!-- Academic Menu -->
-        <template v-if="auth.hasPermission('show academic menu')">
+        <template v-if="can('show academic menu')">
             <ModuleMenuItem
                 module="academic"
                 :moduleName="$t('Academic')"
                 icon="graduation-cap"
             >
                 <template #items>
-                    <template v-if="auth.hasPermission('show academic settings menu')">
+                    <template v-if="can('show academic settings menu')">
                         <!-- Academic Settings Menu-->
                         <SubmoduleMenuItem
                             submodule="settings"
@@ -41,7 +41,7 @@
                         >
                             <template #items>
                                 <PlainMenuItem
-                                    v-if="auth.hasPermission('list language levels')"
+                                    v-if="can('view language levels')"
                                     :route="{ name: 'academic.settings.language-levels.list' }"
                                     baseRoute="academic.settings.language-levels"
                                     :title="$t('Language Levels')"
@@ -56,7 +56,7 @@
                         >
                             <template #items>
                                 <PlainMenuItem
-                                    v-if="auth.hasPermission('view class schedules')"
+                                    v-if="can('view class schedules')"
                                     :route="{ name: 'academic.classes.class-schedules.list' }"
                                     baseRoute="academic.classes.class-schedules"
                                     :title="$t('Class Schedules')"
@@ -70,13 +70,14 @@
     </ul>
 </template>
 <script setup>
+import { useAuthStore } from '@/stores/auth';
+import { usePermissions } from '@/composables/usePermissions';
 import IconMenuItem from './IconMenuItem.vue';
 import ModuleMenuItem from './ModuleMenuItem.vue';
 import SubmoduleMenuItem from './SubmoduleMenuItem.vue';
 import PlainMenuItem from './PlainMenuItem.vue';
-import { useAuthStore } from '@/stores/auth';
-import { useI18n } from 'vue-i18n';
 
 const auth = useAuthStore();
-const { t } = useI18n();
+const { can } = usePermissions();
+
 </script>

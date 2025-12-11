@@ -41,6 +41,7 @@ class UserProfileRequest extends FormRequest
                     Password::default(), 
                 ],
                 'roles' => [
+                    'sometimes',
                     'required', 
                     'array',
                 ],
@@ -49,6 +50,7 @@ class UserProfileRequest extends FormRequest
                     'exists:roles,name',
                 ],
                 'status' => [
+                    'sometimes',
                     'required', 
                     'string', 
                     Rule::in(StatusEnum::values()),

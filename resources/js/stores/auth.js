@@ -110,13 +110,7 @@ export const useAuthStore = defineStore('auth', {
                 this.loading = false;
             }
         },
-        async hasPermission(permission) {
-            /* if (!this.isAuthenticated || !this.user || !this.user.permissions) {
-                return false;
-            } */
-            //return this.user.permissions.includes(permission);
-            return true; // Placeholder: always return true for now
-        },
+        
         setUser(user) {
             this.user = user;
         }
