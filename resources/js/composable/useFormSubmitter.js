@@ -1,77 +1,70 @@
-// composables/useAuthForm.js - Specialized for auth forms
+import { ref } from 'vue'
 import { useFormErrors } from './useFormErrors'
 import { useApiErrorHandler } from './useApiErrorHandler'
-import { ref } from 'vue'
 
-export const useAuthForm = (formFields = {}) => {
+export const useFormSubmitter = (formFields = {}) => {
   const { errors, setErrors, clearErrors } = useFormErrors(formFields)
-  const { handleApiError, extractFieldErrors } = useApiErrorHandler()
-  
+  const { handleApiError } = useApiErrorHandler()
+
   const loading = ref(false)
   const success = ref(false)
-  
+
   const submit = async (action, data, options = {}) => {
     const {
       onSuccess = () => {},
       onError = () => {},
-      redirectTo = null,
+      redirectTo = null, // retained for backward compatibility
       mapErrors = {}
     } = options
-    
+
     clearErrors()
     loading.value = true
     success.value = false
-    
+
     try {
       const result = await action(data)
       success.value = true
-      
-      // Call success callback
+
       await onSuccess(result)
-      
       return { success: true, data: result }
-      
     } catch (error) {
       const errorInfo = handleApiError(error)
-      
+
       if (errorInfo.type === 'validation') {
-        // Map server field names to form field names if needed
         const mappedErrors = mapErrorFields(errorInfo.errors, mapErrors)
         setErrors(mappedErrors)
+      } else if (Object.prototype.hasOwnProperty.call(errors, 'general')) {
+        errors.general = errorInfo.message
       } else {
-        // Set general error (usually on password field for auth forms)
-        errors.password = errorInfo.message
+        const fallbackField = Object.keys(formFields)[0]
+        if (fallbackField && Object.prototype.hasOwnProperty.call(errors, fallbackField)) {
+          errors[fallbackField] = errorInfo.message
+        }
       }
-      
-      // Call error callback
+
       await onError(errorInfo)
-      
       return { success: false, error: errorInfo }
-      
     } finally {
       loading.value = false
     }
   }
-  
-  /**
-   * Map server error field names to form field names
-   */
+
   const mapErrorFields = (serverErrors, mapping) => {
     if (!mapping || Object.keys(mapping).length === 0) {
       return serverErrors
     }
-    
+
     const mapped = {}
     Object.keys(serverErrors).forEach(serverField => {
       const formField = mapping[serverField] || serverField
-      if (formFields.hasOwnProperty(formField)) {
+      if (Object.prototype.hasOwnProperty.call(formFields, formField)) {
         mapped[formField] = serverErrors[serverField]
       }
     })
-    
+
     return mapped
   }
-  
+
   return {
     errors,
     loading,

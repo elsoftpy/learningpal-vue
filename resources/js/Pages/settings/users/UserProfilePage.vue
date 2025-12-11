@@ -208,7 +208,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createUserSchema } from '@/schemas/user';
 import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
-import { useAuthForm } from '@/composable/useAuthForm'
+import { useFormSubmitter } from '@/composable/useFormSubmitter'
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
@@ -328,7 +328,7 @@ const initialValues = computed(() => {
 });
 
 
-const { errors, loading, setErrors, clearErrors } = useAuthForm({
+const { errors, loading, setErrors, clearErrors } = useFormSubmitter({
     personal_id: '',
     first_name: '', 
     last_name: '',
@@ -342,6 +342,7 @@ const { errors, loading, setErrors, clearErrors } = useAuthForm({
     roles: '',
     payment_receipt: '',
     status: '',
+    general: '',
 });
 
 const fetchRoles = async (query = '') => {

@@ -10,6 +10,15 @@
       class="flex flex-col gap-4"
     >
 
+      <Message
+        v-if="errors.general"
+        severity="error"
+        size="small"
+        variant="simple"
+      >
+        {{ errors.general }}
+      </Message>
+
       <!-- Username Input -->
       <div class="mt-4">
         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -131,7 +140,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useApiErrorHandler } from '@/composable/useApiErrorHandler'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/auth'
-import { useAuthForm } from '@/composable/useAuthForm'
+import { useFormSubmitter } from '@/composable/useFormSubmitter'
 import { createLoginSchema } from '@/schemas/login'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -159,9 +168,10 @@ const form = reactive({
   remember: false
 })
 
-const { errors, loading, setErrors, clearErrors } = useAuthForm({
+const { errors, loading, setErrors, clearErrors } = useFormSubmitter({
   name: '',
   password: '',
+  general: '',
 })
 
 
@@ -188,7 +198,7 @@ const handleLogin = async ({valid, values}) => {
       return
     }
 
-    errors.password = apiError?.message || $t('An unexpected error occurred. Please try again.')
+    errors.general = apiError?.message || $t('An unexpected error occurred. Please try again.')
   } finally {
     loading.value = false
   }
