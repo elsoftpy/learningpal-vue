@@ -235,6 +235,7 @@ import InputIcon from 'primevue/inputicon';
 import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 
 
+const { t: $t } = useI18n();
 const users = ref([]);
 const totalRecords = ref(0);
 const perPage = ref(5);
@@ -245,10 +246,10 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     full_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
-const { t: $t } = useI18n();
 const toast = useToast();
 const router = useRouter();
 
+/* Filter and Search Debounce */
 let searchDebounceTimer = null;
 let filterDebounceTimer = null;
 let skipFilterWatcher = false;
@@ -325,12 +326,14 @@ function clearFilters() {
     fetchUsers(currentPage.value, perPage.value);
 }
 
+/* Pagination change */
 function onPageChange(event) {
     currentPage.value = event.page + 1;
     perPage.value = event.rows;
     fetchUsers(currentPage.value, perPage.value);
 }
 
+/* Fetch users */
 async function fetchUsers(page, perPage) {
     users.value = [];
     loading.value = true;
@@ -362,7 +365,6 @@ async function fetchUsers(page, perPage) {
     }
 }
 
-/* Fetch users */
 onMounted(() => {
     fetchUsers(currentPage.value, perPage.value);
 });
@@ -400,6 +402,7 @@ function showDeleteDialog(userId) {
     deleteDialog.value = true;
 }
 
+/* Actions */
 function navigateToEdit(userId) {
    router.push({name: 'settings.users.data.edit', params: { userId: userId }});
 }
