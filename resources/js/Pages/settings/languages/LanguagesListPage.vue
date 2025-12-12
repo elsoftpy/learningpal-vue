@@ -66,6 +66,13 @@
                         </template>
                     </Column>
                 </DataTable>
+                <!-- Delete Confirmation Dialog -->
+                <DeleteDialog
+                    v-model:visible="deleteDialogVisible"
+                    :message="$t('Are you sure you want to delete this language?')"
+                    :onDelete="deleteLanguage"
+                    :loading="loading"
+                />
             </div>
         </template>
     </PageContainer>    
@@ -73,6 +80,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useToast } from 'primevue/usetoast';
 import { usePermissions } from '@/composables/usePermissions';
 import { FilterMatchMode } from '@primevue/core/api';
 import axios from 'axios';
@@ -82,6 +90,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
+import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
@@ -94,6 +103,7 @@ const searchQuery = ref('');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
+const toast = useToast();
 
 function onPageChange(event) {
     currentPage.value = event.page + 1;
@@ -155,6 +165,42 @@ function clearFilters() {
     });
     currentPage.value = 1;
     fetchLanguages(currentPage.value, perPage.value);
+}
+
+/* Delete Language */
+const deleteDialogVisible = ref(false);
+const languageIdToDelete = ref(null);
+
+function showDeleteDialog(languageId) {
+    languageIdToDelete.value = languageId;
+    deleteDialogVisible.value = true;
+}
+
+async function deleteLanguage() {
+    try {
+        await axios.post(`/settings/languages/${languageIdToDelete.value}/destroy`);
+        deleteDialogVisible.value = false;
+        languageIdToDelete.value = null;
+
+        fetchLanguages(currentPage.value, perPage.value);
+        
+        toast.add({ 
+            severity: 'success', 
+            summary: $t('Success'), 
+            detail: $t('Language deleted successfully.'),
+            life: 3000 
+        });
+    } catch (error) {
+        toast.add({ 
+            severity: 'error', 
+            summary: $t('Error'), 
+            detail: $t('An error occurred while deleting the user.'),
+            life: 3000 
+        });
+
+        deleteDialogVisible.value = false;
+        languageIdToDelete.value = null;
+    }
 }
 
 /* Fetching */
