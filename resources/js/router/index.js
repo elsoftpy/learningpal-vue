@@ -100,6 +100,18 @@ const routes = [
       crud: 'edit',
     },
   },
+  {
+    path: '/settings/languages',
+    name: 'settings.languages.list',
+    component: () => import('../Pages/settings/languages/LanguagesListPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'settings', 
+      title: 'Languages',
+      headerIcon: 'list',
+      crud: 'read',
+    },
+  },
   /* Academic Module */
   {
     path: '/academic/settings/language-levels',

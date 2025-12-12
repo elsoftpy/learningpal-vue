@@ -20,6 +20,12 @@
                             baseRoute="settings.users"
                             :title="$t('Users')"
                         />
+                        <PlainMenuItem
+                            v-if="can('view languages')"
+                            :route="{ name: 'settings.languages.list' }"
+                            baseRoute="settings.languages"
+                            :title="$t('Languages')"
+                        />
                     </template>
                 </ModuleMenuItem>
             </template>

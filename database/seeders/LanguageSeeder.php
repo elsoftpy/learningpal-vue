@@ -17,6 +17,12 @@ class LanguageSeeder extends Seeder
             'English',
             'Spanish',
             'Portuguese',
+            'French',
+            'German',
+            'Italian',
+            'Chinese',
+            'Japanese',
+            'Russian',
         ];
 
         foreach ($languages as $language) {
