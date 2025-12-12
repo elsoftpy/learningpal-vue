@@ -187,43 +187,12 @@
                 </Dialog>
 
                 <!-- Delete Confirmation Dialog -->
-                <Dialog
-                    v-model:visible="deleteDialog"
-                    modal
-                    :closable="false"
-                >
-                    <template #header >
-                        <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-red-500">
-                            <span class="text-xl font-semibold">{{ $t('Delete Confirmation') }}</span>
-                            <Button
-                                icon="pi pi-times"
-                                rounded
-                                size="small"
-                                severity="danger"
-                                variant="outlined"
-                                class="text-white! border-2! hover:text-gray-800!"
-                                @click="deleteDialog = false"
-                            />
-                        </div>
-                    </template>
-                    <span class="flex p-4 items-center font-semibold mb-4 text-center">
-                        {{ $t('Are you sure you want to delete this user?') }}
-                    </span>
-                    <div class="flex justify-end gap-2">
-                        <Button 
-                            type="button" 
-                            :label="$t('Cancel')" 
-                            severity="secondary" 
-                            @click="deleteDialog = false">
-                        </Button>
-                        <Button 
-                            type="button" 
-                            :label="$t('Delete')"
-                            severity="danger" 
-                            @click="deleteUser">
-                        </Button>
-                    </div>
-                </Dialog>
+                <DeleteDialog
+                    v-model:visible="deleteDialogVisible"
+                    :message="$t('Are you sure you want to delete this user?')"
+                    :onDelete="deleteUser"
+                    :loading="loading"
+                />
             </div>
 
         </template>
@@ -248,6 +217,7 @@ import IconWrapper from '@/components/common/IconWrapper.vue';
 import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
+import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 
 const { t: $t } = useI18n();
@@ -411,13 +381,13 @@ function isImageUrl(url) {
 }
 
 /* Delete user functionality */
-const deleteDialog = ref(false);
+const deleteDialogVisible = ref(false);
 const userIdToDelete = ref(null);
 
 
 function showDeleteDialog(userId) {
     userIdToDelete.value = userId;
-    deleteDialog.value = true;
+    deleteDialogVisible.value = true;
 }
 
 /* Actions */
@@ -428,9 +398,11 @@ function navigateToEdit(userId) {
 async function deleteUser() {
     try {
         await axios.post(`/settings/users/profile/${userIdToDelete.value}/destroy`);
-        deleteDialog.value = false;
+        deleteDialogVisible.value = false;
         userIdToDelete.value = null;
+
         fetchUsers(currentPage.value, perPage.value);
+        
         toast.add({ 
             severity: 'success', 
             summary: $t('Success'), 
@@ -445,7 +417,7 @@ async function deleteUser() {
             life: 3000 
         });
 
-        deleteDialog.value = false;
+        deleteDialogVisible.value = false;
         userIdToDelete.value = null;
     }
 }
