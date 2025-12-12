@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Api\Settings;
 
 use App\Enums\ProfileTypeEnum;
 use App\Enums\StatusEnum;
