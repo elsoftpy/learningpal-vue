@@ -32,6 +32,7 @@ class PermissionSeeder extends Seeder
             'edit users',
             'delete users',
             'edit own profile',
+            'view profile data',
         ];
 
         foreach ($usersPermissions as $permission) {
@@ -57,6 +58,7 @@ class PermissionSeeder extends Seeder
         $admin->givePermissionTo(Permission::all());
 
         $student = Role::firstOrCreate(['name' => 'student']);
+        $student->revokePermissionTo(Permission::all());
         $student->givePermissionTo([
             // system
             'edit own profile',
@@ -67,6 +69,7 @@ class PermissionSeeder extends Seeder
         ]);
 
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
+        $teacher->revokePermissionTo(Permission::all());
         $teacher->givePermissionTo([
             // system
             'show system menu',

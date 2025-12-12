@@ -60,7 +60,7 @@
                     <!-- Empty Message -->
                     <template #empty>{{$t('No records found.')}}</template>
                     <!-- Expander -->
-                    <Column expander style="width: 1%" />
+                    <Column v-if="can('view profile data')" expander style="width: 1%" />
                     <!-- Avatar -->
                     <Column :header="$t('ID')" style="width: 1%">
                         <template #body="{ data }">     
@@ -127,7 +127,7 @@
                         </template>
                     </Column>   
                     <!-- Actions Buttons-->
-                    <Column :header="$t('Actions')" style="min-width: 15%">
+                    <Column v-if="can(['edit users', 'delete users'])" :header="$t('Actions')" style="min-width: 15%">
                         <template #body="{ data }">
                             <div class="space-y-1">
                                 <Button
@@ -150,7 +150,7 @@
                         </template>
                     </Column>
 
-                    <template #expansion="{ data }">
+                    <template v-if="can('view profile data')" #expansion="{ data }">
                         <Transition name="table-expand" appear>
                             <div class="expand-panel bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
                                 <div class="overflow-x-auto">
