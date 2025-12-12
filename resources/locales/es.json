@@ -111,5 +111,6 @@
   "At least one role must be selected": "Debe seleccionar al menos un rol",
   "Success": "Éxito",
   "User saved successfully.": "Usuario guardado con éxito",
-  "Users List": "Lista de usuarios"
+  "Users List": "Lista de usuarios",
+  "Add User": "Agregar usuario"
 }
