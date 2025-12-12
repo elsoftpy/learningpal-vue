@@ -13,6 +13,8 @@
                     :rows="perPage"
                     :totalRecords="totalRecords"
                     :first="(currentPage - 1) * perPage"
+                    v-model:expandedRows="expandedRows"
+                    expansionMode="single"
                     @page="onPageChange"
                     v-model:filters="filters"
                     filterDisplay="row"
@@ -57,6 +59,8 @@
                     </template>
                     <!-- Empty Message -->
                     <template #empty>{{$t('No records found.')}}</template>
+                    <!-- Expander -->
+                    <Column expander style="width: 1%" />
                     <!-- Avatar -->
                     <Column :header="$t('ID')" style="width: 1%">
                         <template #body="{ data }">     
@@ -87,12 +91,6 @@
                             </div>
                         </template>
 
-                    </Column>
-                    <!-- Email -->
-                    <Column :header="$t('Email')" style="min-width: 15%">
-                        <template #body="{ data }">
-                            {{ data.email }}
-                        </template>
                     </Column>
                     <!-- Roles -->
                     <Column :header="$t('Roles')" style="min-width: 15%">
@@ -151,6 +149,33 @@
                             </div>
                         </template>
                     </Column>
+
+                    <template #expansion="{ data }">
+                        <Transition name="table-expand" appear>
+                            <div class="expand-panel bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-left text-xs uppercase tracking-wide text-slate-500">
+                                            <th class="pb-2 pr-4">{{ $t('Personal ID') }}</th>
+                                            <th class="pb-2 pr-4">{{ $t('Email') }}</th>
+                                            <th class="pb-2 pr-4">{{ $t('Phone') }}</th>
+                                            <th class="pb-2">{{ $t('Address') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-t border-slate-200 dark:border-slate-700">
+                                            <td class="py-2 pr-4 font-medium">{{ data.personal_id || '—' }}</td>
+                                            <td class="py-2 pr-4">{{ data.email || '—' }}</td>
+                                            <td class="py-2 pr-4">{{ data.phone || '—' }}</td>
+                                            <td class="py-2">{{ data.address || '—' }}</td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </Transition>
+                    </template>
                 </DataTable>
 
                 <!-- Modal for Payment Receipt -->
@@ -255,6 +280,7 @@ const totalRecords = ref(0);
 const perPage = ref(5);
 const currentPage = ref(1);
 const loading = ref(true);
+const expandedRows = ref([]);
 const searchQuery = ref('');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -374,6 +400,7 @@ async function fetchUsers(page, perPage) {
         });
         users.value = res.data.data.users;
         totalRecords.value = res.data.data.total;
+        expandedRows.value = [];
     } finally {
         loading.value = false;
     }
@@ -446,3 +473,26 @@ async function deleteUser() {
     }
 }
 </script>
+
+<style scoped>
+.expand-panel {
+    overflow: hidden;
+}
+
+.table-expand-enter-active,
+.table-expand-leave-active {
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.table-expand-enter-from,
+.table-expand-leave-to {
+    max-height: 0;
+    opacity: 0;
+}
+
+.table-expand-enter-to,
+.table-expand-leave-from {
+    max-height: 480px;
+    opacity: 1;
+}
+</style>
