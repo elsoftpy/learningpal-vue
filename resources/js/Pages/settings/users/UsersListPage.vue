@@ -25,8 +25,15 @@
                 >
                     <!-- Table Header with Search -->
                     <template #header>
-                        <div class="flex flex-wrap items-center justify-end gap-3">
-                            <div class="flex flex-1">
+                        <DataTableToolbar
+                            v-model:search-query="searchQuery"
+                            :search-placeholder="$t('Search user')"
+                            :clear-label="$t('Clear filters')"
+                            :has-active-filters="hasActiveFilters"
+                            @search-input="onSearchInput"
+                            @clear-filters="clearFilters"
+                        >
+                            <template #actions>
                                 <Button
                                     v-if="can('create users')"
                                     :label="$t('Add User')"
@@ -34,28 +41,8 @@
                                     size="small"
                                     @click="router.push({ name: 'settings.users.create' })"
                                 />
-                            </div>
-                            <div class="flex space-x-2">
-                                <Button
-                                    v-if="hasActiveFilters"
-                                    size="small"
-                                    severity="secondary"
-                                    icon="pi pi-filter-slash"
-                                    :label="$t('Clear filters')"
-                                    @click="clearFilters"
-                                />
-                                <IconField>
-                                    <InputIcon>
-                                        <i class="pi pi-search"></i>
-                                    </InputIcon>
-                                    <InputText
-                                        v-model="searchQuery"
-                                        :placeholder="$t('Search user')"
-                                        @input="onSearchInput"
-                                    />
-                                </IconField>
-                            </div>
-                        </div>
+                            </template>
+                        </DataTableToolbar>
                     </template>
                     <!-- Empty Message -->
                     <template #empty>{{$t('No records found.')}}</template>
@@ -129,24 +116,14 @@
                     <!-- Actions Buttons-->
                     <Column v-if="can(['edit users', 'delete users'])" :header="$t('Actions')" style="min-width: 15%">
                         <template #body="{ data }">
-                            <div class="space-y-1">
-                                <Button
-                                    v-if="can('edit users')"
-                                    @click="navigateToEdit(data.id)"
-                                    :label="$t('Edit')"
-                                    icon="pi pi-pencil"
-                                    size="small"
-                                    class="mr-2"
-                                />
-                                <Button
-                                    v-if="can('delete users')"
-                                    @click="showDeleteDialog(data.id)"
-                                    :label="$t('Delete')"
-                                    icon="pi pi-trash"
-                                    size="small"
-                                    class="p-button-danger"
-                                />
-                            </div>
+                            <RowActionButtons
+                                :can-edit="can('edit users')"
+                                :can-delete="can('delete users')"
+                                :edit-label="$t('Edit')"
+                                :delete-label="$t('Delete')"
+                                @edit="navigateToEdit(data.id)"
+                                @delete="showDeleteDialog(data.id)"
+                            />
                         </template>
                     </Column>
 
@@ -267,10 +244,10 @@ import Tag from 'primevue/tag';
 import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
-import IconField from 'primevue/iconfield';
 import IconWrapper from '@/components/common/IconWrapper.vue';
-import InputIcon from 'primevue/inputicon';
 import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
+import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
+import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 
 
 const { t: $t } = useI18n();

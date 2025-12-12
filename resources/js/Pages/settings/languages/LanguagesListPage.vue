@@ -23,28 +23,14 @@
                 >
                     <!-- Table Header with Search -->
                     <template #header>
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex space-x-2">
-                                <Button
-                                    v-if="hasActiveFilters"
-                                    size="small"
-                                    severity="secondary"
-                                    icon="pi pi-filter-slash"
-                                    :label="$t('Clear filters')"
-                                    @click="clearFilters"
-                                />
-                                <IconField>
-                                    <InputIcon>
-                                        <i class="pi pi-search"></i>
-                                    </InputIcon>
-                                    <InputText
-                                        v-model="searchQuery"
-                                        :placeholder="$t('Search language')"
-                                        @input="onSearchInput"
-                                    />
-                                </IconField>
-                            </div>
-                        </div>
+                        <DataTableToolbar
+                            v-model:search-query="searchQuery"
+                            :search-placeholder="$t('Search language')"
+                            :clear-label="$t('Clear filters')"
+                            :has-active-filters="hasActiveFilters"
+                            @search-input="onSearchInput"
+                            @clear-filters="clearFilters"
+                        />
                     </template>
                     <!-- Empty Message -->
                     <template #empty>{{$t('No records found.')}}</template>
@@ -69,24 +55,14 @@
                     <!-- Actions Buttons -->
                      <Column v-if="can(['edit languages', 'delete languages'])" :header="$t('Actions')" style="min-width: 15%">
                         <template #body="{ data }">
-                            <div class="space-y-1">
-                                <Button
-                                    v-if="can('edit languages')"
-                                    @click="navigateToEdit(data.id)"
-                                    :label="$t('Edit')"
-                                    icon="pi pi-pencil"
-                                    size="small"
-                                    class="mr-2"
-                                />
-                                <Button
-                                    v-if="can('delete languages')"
-                                    @click="showDeleteDialog(data.id)"
-                                    :label="$t('Delete')"
-                                    icon="pi pi-trash"
-                                    size="small"
-                                    class="p-button-danger"
-                                />
-                            </div>
+                            <RowActionButtons
+                                :can-edit="can('edit languages')"
+                                :can-delete="can('delete languages')"
+                                :edit-label="$t('Edit')"
+                                :delete-label="$t('Delete')"
+                                @edit="navigateToEdit(data.id)"
+                                @delete="showDeleteDialog(data.id)"
+                            />
                         </template>
                     </Column>
                 </DataTable>
@@ -104,10 +80,8 @@ import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
+import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
+import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
@@ -128,7 +102,8 @@ function onPageChange(event) {
 }
 
 /* Search debounce and handler */
-let searchDebounceTimer;
+let searchDebounceTimer = null;
+let filterDebounceTimer = null;
 let skipFilterWatcher = false;
 
 const onSearchInput = () => {
@@ -166,7 +141,7 @@ watch(filters, () => {
     clearTimeout(filterDebounceTimer);
     filterDebounceTimer = setTimeout(() => {
         currentPage.value = 1;
-        fetchUsers(currentPage.value, perPage.value);
+        fetchLanguages(currentPage.value, perPage.value);
     }, 300);
 }, { deep: true });
 
