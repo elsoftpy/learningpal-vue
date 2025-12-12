@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Selectable\RoleListController;
 use App\Http\Controllers\Selectable\StatusListController;
+use App\Http\Controllers\Settings\Languages\LanguageController;
 use App\Http\Controllers\Settings\Users\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -54,6 +55,12 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
         Route::post('profile/{user}/destroy', [UserProfileController::class, 'destroy'])
             ->name('profile.destroy')
             ->middleware('can:delete users');
+    });
+
+    Route::prefix('languages')->name('languages.')->middleware('auth')->group(function () {
+        Route::get('/', [LanguageController::class, 'index'])
+            ->name('index')
+            ->middleware('can:view languages');
     });
 });
 

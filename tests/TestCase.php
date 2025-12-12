@@ -16,6 +16,6 @@ abstract class TestCase extends BaseTestCase
 
         $this->seed();
 
-        $this->seed(PermissionSeeder::class);
+        // $this->seed(PermissionSeeder::class);
     }
 }

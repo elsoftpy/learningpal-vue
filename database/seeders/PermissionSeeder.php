@@ -39,6 +39,17 @@ class PermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
+        $languagesPermissions = [
+            'view languages',
+            'create languages',
+            'edit languages',
+            'delete languages',
+        ];
+
+        foreach ($languagesPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
         $academicSettingsPermissions = [
             'view language levels',
             'create language levels',

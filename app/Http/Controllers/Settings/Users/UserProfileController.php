@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserProfileRequest;
 use App\Models\User;
 use App\Services\Settings\Users\UserService;
+use App\Services\Traits\FilterResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 class UserProfileController extends Controller
 {
+    use FilterResolverTrait;
+    
     public function index(Request $request)
     {
         $page = (int) $request->page;
@@ -131,17 +134,4 @@ class UserProfileController extends Controller
         );
     }
 
-    private function resolveFilters($filters): array
-    {
-        if (is_array($filters)) {
-            return $filters;
-        }
-
-        if (is_string($filters)) {
-            $decoded = json_decode($filters, true);
-            return is_array($decoded) ? $decoded : [];
-        }
-
-        return [];
-    }
 }
