@@ -41,4 +41,13 @@ class LanguageController extends Controller
             ],
         );
     }
+
+    public function destroy(Language $language)
+    {
+        $language->delete();
+
+        return ResponseService::success(
+            message: 'Language deleted successfully.',
+        );
+    }
 }

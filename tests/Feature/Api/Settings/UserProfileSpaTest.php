@@ -127,8 +127,6 @@ class UserProfileSpaTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $user->assignRole('student');
-
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
 
@@ -207,8 +205,6 @@ class UserProfileSpaTest extends TestCase
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
         ]);
-
-        $user->assignRole('student');
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
@@ -312,8 +308,6 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        $user1->assignRole('student');
-
         $user2 = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
         ]);
@@ -381,8 +375,6 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        $student->assignRole('student');
-
         $user2 = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
         ]);
@@ -393,6 +385,10 @@ class UserProfileSpaTest extends TestCase
         $response = $this->postJson(route('settings.users.profile.destroy', ['user' => $user2->id]));
 
         $response->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user2->id,
+        ]);
     }
     
 }

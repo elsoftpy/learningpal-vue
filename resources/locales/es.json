@@ -112,5 +112,7 @@
   "Success": "Éxito",
   "User saved successfully.": "Usuario guardado con éxito",
   "Users List": "Lista de usuarios",
-  "Add User": "Agregar usuario"
+  "Add User": "Agregar usuario",
+  "Are you sure you want to delete this language?": "¿Estás seguro de que deseas eliminar este idioma?",
+  "Search language": "Buscar idioma"
 }

@@ -61,6 +61,10 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
         Route::get('/', [LanguageController::class, 'index'])
             ->name('index')
             ->middleware('can:view languages');
+
+        Route::post('/{language}/destroy', [LanguageController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:delete languages');
     });
 });
 
