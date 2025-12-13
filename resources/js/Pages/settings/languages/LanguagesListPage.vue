@@ -61,18 +61,18 @@
                                 :can-delete="can('delete languages')"
                                 :edit-label="$t('Edit')"
                                 :delete-label="$t('Delete')"
-                                @edit="navigateToEdit(data.id)"
-                                @delete="showDeleteDialog(data.id)"
+                                @edit="actions.handleEdit(data.id)"
+                                @delete="actions.handleDelete(data.id)"
                             />
                         </template>
                     </Column>
                 </DataTable>
                 <!-- Delete Confirmation Dialog -->
                 <DeleteDialog
-                    v-model:visible="deleteDialogVisible"
+                    v-model:visible="actions.deleteDialogVisible.value"
                     :message="$t('Are you sure you want to delete this language?')"
-                    :onDelete="deleteLanguage"
-                    :loading="table.isLoading.value"
+                    :onDelete="actions.confirmDelete"
+                    :loading="actions.isDeleting.value"
                 />
             </TableLoadingState>
         </template>
@@ -82,20 +82,22 @@
 import { ref, onMounted } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
+import { useRowActions} from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
-import axios from 'axios';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
+import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
+import { action } from '@primeuix/themes/aura/image';
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
 const toast = useToast();
+
 const table = usePaginatedTable({
     endpoint: '/settings/languages',
     initialPerPage: 5,
@@ -119,43 +121,19 @@ const table = usePaginatedTable({
     },
 });
 
+const actions = useRowActions({
+    editRouteName: 'settings.languages.edit',
+    deleteEndpoint: '/settings/languages/:id/destroy',
+    onDeleteSuccess: () => {
+        table.refresh();
+    },
+    messages: {
+        deleteSuccess: $t('Language deleted successfully.'),
+        deleteError: $t('An error occurred while deleting the language.'),
+    }
+});
+
 onMounted(() => {
     table.fetchData();
 });
-
-/* Delete Language */
-const deleteDialogVisible = ref(false);
-const languageIdToDelete = ref(null);
-
-function showDeleteDialog(languageId) {
-    languageIdToDelete.value = languageId;
-    deleteDialogVisible.value = true;
-}
-
-async function deleteLanguage() {
-    try {
-        await axios.post(`/settings/languages/${languageIdToDelete.value}/destroy`);
-        deleteDialogVisible.value = false;
-        languageIdToDelete.value = null;
-
-        table.fetchData();
-        
-        toast.add({ 
-            severity: 'success', 
-            summary: $t('Success'), 
-            detail: $t('Language deleted successfully.'),
-            life: 3000 
-        });
-    } catch (error) {
-        toast.add({ 
-            severity: 'error', 
-            summary: $t('Error'), 
-            detail: $t('An error occurred while deleting the user.'),
-            life: 3000 
-        });
-
-        deleteDialogVisible.value = false;
-        languageIdToDelete.value = null;
-    }
-}
 </script>

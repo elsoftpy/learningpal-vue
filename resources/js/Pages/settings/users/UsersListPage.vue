@@ -123,8 +123,8 @@
                                 :can-delete="can('delete users')"
                                 :edit-label="$t('Edit')"
                                 :delete-label="$t('Delete')"
-                                @edit="navigateToEdit(data.id)"
-                                @delete="showDeleteDialog(data.id)"
+                                @edit="actions.handleEdit(data.id)"
+                                @delete="actions.handleDelete(data.id)"
                             />
                         </template>
                     </Column>
@@ -189,10 +189,10 @@
 
                 <!-- Delete Confirmation Dialog -->
                 <DeleteDialog
-                    v-model:visible="deleteDialogVisible"
+                    v-model:visible="actions.deleteDialogVisible.value"
                     :message="$t('Are you sure you want to delete this user?')"
-                    :onDelete="deleteUser"
-                    :loading="table.isLoading.value"
+                    :onDelete="actions.confirmDelete"
+                    :loading="actions.isDeleting.value"
                 />
             </TableLoadingState>
         </template>
@@ -202,11 +202,12 @@
 import { ref, onMounted } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
+import { useRowActions } from '@/composables/useRowActions.js';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
-import axios from 'axios';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
+import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Tag from 'primevue/tag';
@@ -214,14 +215,15 @@ import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import IconWrapper from '@/components/common/IconWrapper.vue';
-import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
+
 const { t: $t } = useI18n();
 const { can } = usePermissions();
 const toast = useToast();
 const router = useRouter();
+
 const table = usePaginatedTable({
     endpoint: '/settings/users',
     initialPerPage: 5,
@@ -244,6 +246,18 @@ const table = usePaginatedTable({
             life: 3000 
         });
     },
+});
+
+const actions = useRowActions({
+    editRouteName: 'settings.users.data.edit',
+    deleteEndpoint: '/settings/users/profile/:id/destroy',
+    onDeleteSuccess: () => {
+        table.refresh();
+    },
+    messages: {
+        successMessage: $t('User deleted successfully.'),
+        errorMessage: $t('An error occurred while deleting the user.'),
+    }
 });
 
 onMounted(() => {
@@ -271,48 +285,6 @@ function showReceipt(url) {
 
 function isImageUrl(url) {
     return(url.match(/\.(jpeg|jpg|gif|png|svg)$/) != null);
-}
-
-/* Delete user functionality */
-const deleteDialogVisible = ref(false);
-const userIdToDelete = ref(null);
-
-
-function showDeleteDialog(userId) {
-    userIdToDelete.value = userId;
-    deleteDialogVisible.value = true;
-}
-
-/* Actions */
-function navigateToEdit(userId) {
-   router.push({name: 'settings.users.data.edit', params: { userId: userId }});
-}
-
-async function deleteUser() {
-    try {
-        await axios.post(`/settings/users/profile/${userIdToDelete.value}/destroy`);
-        deleteDialogVisible.value = false;
-        userIdToDelete.value = null;
-
-        table.fetchData();
-        
-        toast.add({ 
-            severity: 'success', 
-            summary: $t('Success'), 
-            detail: $t('User deleted successfully.'),
-            life: 3000 
-        });
-    } catch (error) {
-        toast.add({ 
-            severity: 'error', 
-            summary: $t('Error'), 
-            detail: $t('An error occurred while deleting the user.'),
-            life: 3000 
-        });
-
-        deleteDialogVisible.value = false;
-        userIdToDelete.value = null;
-    }
 }
 </script>
 
