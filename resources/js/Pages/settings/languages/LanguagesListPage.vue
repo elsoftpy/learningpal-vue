@@ -42,7 +42,7 @@
                     </Column>
                     <!-- Name -->
                     <Column 
-                        field="full_name"
+                        field="name"
                         :header="$t('Name')" 
                         :showFilterMenu="false"
                         style="min-width:15%"
@@ -54,7 +54,7 @@
                         </template>
                     </Column>
                     <!-- Actions Buttons -->
-                     <Column v-if="can(['edit languages', 'delete languages'])" :header="$t('Actions')" style="min-width: 15%">
+                     <Column v-if="canViewActionsColumn" :header="$t('Actions')" style="min-width: 15%">
                         <template #body="{ data }">
                             <RowActionButtons
                                 :can-edit="can('edit languages')"
@@ -79,7 +79,7 @@
     </PageContainer>    
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions} from '@/composables/useRowActions.js';
@@ -92,11 +92,14 @@ import Column from 'primevue/column';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
-import { action } from '@primeuix/themes/aura/image';
+
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
 const toast = useToast();
+const canViewActionsColumn = computed(() => 
+    can(['edit languages', 'delete languages'])
+);
 
 const table = usePaginatedTable({
     endpoint: '/settings/languages',

@@ -36,20 +36,21 @@
                             @clear-filters="table.clearFilters"
                         >
                             <template #actions>
-                                <Button
-                                    v-if="can('create users')"
-                                    :label="$t('Add User')"
-                                    icon="pi pi-plus"
-                                    size="small"
-                                    @click="router.push({ name: 'settings.users.create' })"
-                                />
+                                <Can permission="create users">
+                                    <Button
+                                        :label="$t('Add User')"
+                                        icon="pi pi-plus"
+                                        size="small"
+                                        @click="router.push({ name: 'settings.users.create' })"
+                                    />
+                                </Can>
                             </template>
                         </DataTableToolbar>
                     </template>
                     <!-- Empty Message -->
                     <template #empty>{{$t('No records found.')}}</template>
                     <!-- Expander -->
-                    <Column v-if="can('view profile data')" expander style="width: 1%" />
+                    <Column v-if="canViewProfileData" expander style="width: 1%" />
                     <!-- Avatar -->
                     <Column :header="$t('ID')" style="width: 1%">
                         <template #body="{ data }">     
@@ -116,7 +117,7 @@
                         </template>
                     </Column>   
                     <!-- Actions Buttons-->
-                    <Column v-if="can(['edit users', 'delete users'])" :header="$t('Actions')" style="min-width: 15%">
+                    <Column v-if="canViewActionsColumn" :header="$t('Actions')" style="min-width: 15%">
                         <template #body="{ data }">
                             <RowActionButtons
                                 :can-edit="can('edit users')"
@@ -128,8 +129,8 @@
                             />
                         </template>
                     </Column>
-
-                    <template v-if="can('view profile data')" #expansion="{ data }">
+                    <!-- Profile Data -->
+                    <template v-if="canViewProfileData" #expansion="{ data }">
                         <Transition name="table-expand" appear>
                             <div class="expand-panel bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
                                 <div class="overflow-x-auto">
@@ -199,7 +200,7 @@
     </PageContainer>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions } from '@/composables/useRowActions.js';
@@ -208,6 +209,7 @@ import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
+import Can from '@/components/auth/Can.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Tag from 'primevue/tag';
@@ -223,6 +225,8 @@ const { t: $t } = useI18n();
 const { can } = usePermissions();
 const toast = useToast();
 const router = useRouter();
+const canViewProfileData = computed(() => can('view profile data'));
+const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
 
 const table = usePaginatedTable({
     endpoint: '/settings/users',
