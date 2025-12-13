@@ -3,18 +3,18 @@
         <template #body>
             <div class="flex flex-col w-full">
                 <!-- Loading Skeleton -->
-                 <SkeletonBuilder v-if="loading" :per-page="perPage" count="3" />
+                 <SkeletonBuilder v-if="table.isLoading.value" :per-page="table.perPage.value" count="3" />
                  <!-- Language DataTable -->
                   <DataTable
                     v-else 
-                    :value="languages"
+                    :value="table.data.value"
                     :lazy="true"
                     paginator
-                    :rows="perPage"
-                    :total-records="totalRecords"
-                    :first="(currentPage - 1) * perPage"
-                    @page="onPageChange"
-                    v-model:filters="filters"
+                    :rows="table.perPage.value"
+                    :total-records="table.totalRecords.value"
+                    :first="table.first.value"
+                    @page="table.onPageChange"
+                    v-model:filters="table.filters.value"
                     filterDisplay="row"
                     datakey="id"
                     :globalFilterFields="['name']"
@@ -24,12 +24,12 @@
                     <!-- Table Header with Search -->
                     <template #header>
                         <DataTableToolbar
-                            v-model:search-query="searchQuery"
+                            v-model:search-query="table.searchQuery.value"
                             :search-placeholder="$t('Search language')"
                             :clear-label="$t('Clear filters')"
-                            :has-active-filters="hasActiveFilters"
-                            @search-input="onSearchInput"
-                            @clear-filters="clearFilters"
+                            :has-active-filters="table.hasActiveFilters.value"
+                            @search-input="table.onSearchInput"
+                            @clear-filters="table.clearFilters"
                         />
                     </template>
                     <!-- Empty Message -->
@@ -71,101 +71,56 @@
                     v-model:visible="deleteDialogVisible"
                     :message="$t('Are you sure you want to delete this language?')"
                     :onDelete="deleteLanguage"
-                    :loading="loading"
+                    :loading="table.isLoading.value"
                 />
             </div>
         </template>
     </PageContainer>    
 </template>
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useToast } from 'primevue/usetoast';
+import { ref, onMounted } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
-import { FilterMatchMode } from '@primevue/core/api';
+import { usePaginatedTable } from '@/composables/usePaginatedTable';
+import { useToast } from 'primevue/usetoast';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
-import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
-const languages = ref([]);
-const totalRecords = ref(0);
-const perPage = ref(5);
-const currentPage = ref(1);
-const loading = ref(true);
-const searchQuery = ref('');
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-});
 const toast = useToast();
-
-function onPageChange(event) {
-    currentPage.value = event.page + 1;
-    perPage.value = event.rows;
-    fetchLanguages(currentPage.value, perPage.value);
-}
-
-/* Search debounce and handler */
-let searchDebounceTimer = null;
-let filterDebounceTimer = null;
-let skipFilterWatcher = false;
-
-const onSearchInput = () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
-        currentPage.value = 1;
-        fetchLanguages(currentPage.value, perPage.value);
-    }, 300);
-};
-
-const hasActiveFilters = computed(() => {
-    if (searchQuery.value.trim().length > 0) {
-        return true;
-    }
-
-    return Object.values(filters.value).some(filter => {
-        if (!filter) {
-            return false;
-        }
-
-        if (typeof filter.value === 'string') {
-            return filter.value.trim().length > 0;
-        }
-
-        return filter.value !== null && filter.value !== undefined;
-    });
+const table = usePaginatedTable({
+    endpoint: '/settings/languages',
+    initialPerPage: 5,
+    filterConfig: {
+        name: { 
+            defaultValue: null, 
+            matchMode: 'contains' 
+        },
+    },
+    mapResponse: (response) => ({
+        data: response.data.data.languages,
+        total: response.data.data.total,
+    }),
+    onError: (error) => {
+        toast.add({ 
+            severity: 'error', 
+            summary: $t('Error'), 
+            detail: error.message,
+            life: 3000 
+        });
+    },
 });
 
-// Watch for column filter changes
-watch(filters, () => {
-    if (skipFilterWatcher) {
-        skipFilterWatcher = false;
-        return;
-    }
-    clearTimeout(filterDebounceTimer);
-    filterDebounceTimer = setTimeout(() => {
-        currentPage.value = 1;
-        fetchLanguages(currentPage.value, perPage.value);
-    }, 300);
-}, { deep: true });
-
-function clearFilters() {
-    searchQuery.value = '';
-    skipFilterWatcher = true;
-    Object.values(filters.value).forEach(filter => {
-        if (filter) {
-            filter.value = null;
-        }
-    });
-    currentPage.value = 1;
-    fetchLanguages(currentPage.value, perPage.value);
-}
+onMounted(() => {
+    table.fetchData();
+});
 
 /* Delete Language */
 const deleteDialogVisible = ref(false);
@@ -182,7 +137,7 @@ async function deleteLanguage() {
         deleteDialogVisible.value = false;
         languageIdToDelete.value = null;
 
-        fetchLanguages(currentPage.value, perPage.value);
+        table.fetchData();
         
         toast.add({ 
             severity: 'success', 
@@ -202,38 +157,4 @@ async function deleteLanguage() {
         languageIdToDelete.value = null;
     }
 }
-
-/* Fetching */
-async function fetchLanguages(page, perPage) {
-    languages.value = [];
-    loading.value = true;
-
-    
-    try {
-        const searchValue = searchQuery.value?.trim(); 
-
-        const params = {
-            page: page,
-            per_page: perPage,
-        };
-
-        if (searchValue) {
-            params.search = searchValue;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
-
-        console.log('params:', params);
-        const response = await axios.get('/settings/languages', { params, });
-
-        languages.value = response.data.data.languages;
-        totalRecords.value = response.data.data.total;
-    } finally {
-        loading.value = false;
-    }
-}
-
-onMounted(() => {
-    fetchLanguages(currentPage.value, perPage.value);
-});
 </script>

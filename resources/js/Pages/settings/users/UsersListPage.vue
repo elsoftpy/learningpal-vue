@@ -3,20 +3,20 @@
         <template #body>
             <div class="flex flex-col w-full">
                 <!-- Loading Skeleton -->
-                <SkeletonBuilder v-if="loading" :perPage="perPage" count="5" />
+                <SkeletonBuilder v-if="table.isLoading.value" :perPage="table.perPage.value" count="5" />
                 <!-- Users DataTable -->
                 <DataTable
                     v-else
-                    :value="users"
+                    :value="table.data.value"
                     :lazy="true"
                     paginator
-                    :rows="perPage"
-                    :totalRecords="totalRecords"
-                    :first="(currentPage - 1) * perPage"
-                    v-model:expandedRows="expandedRows"
+                    :rows="table.perPage.value"
+                    :totalRecords="table.totalRecords.value"
+                    :first="table.first.value"
+                    v-model:expandedRows="table.expandedRows.value"
                     expansionMode="single"
-                    @page="onPageChange"
-                    v-model:filters="filters"
+                    @page="table.onPageChange"
+                    v-model:filters="table.filters.value"
                     filterDisplay="row"
                     dataKey="id"
                     :globalFilterFields="['first_name', 'last_name', 'email']"
@@ -26,12 +26,12 @@
                     <!-- Table Header with Search -->
                     <template #header>
                         <DataTableToolbar
-                            v-model:search-query="searchQuery"
+                            v-model:search-query="table.searchQuery.value"
                             :search-placeholder="$t('Search user')"
                             :clear-label="$t('Clear filters')"
-                            :has-active-filters="hasActiveFilters"
-                            @search-input="onSearchInput"
-                            @clear-filters="clearFilters"
+                            :has-active-filters="table.hasActiveFilters.value"
+                            @search-input="table.onSearchInput"
+                            @clear-filters="table.clearFilters"
                         >
                             <template #actions>
                                 <Button
@@ -191,7 +191,7 @@
                     v-model:visible="deleteDialogVisible"
                     :message="$t('Are you sure you want to delete this user?')"
                     :onDelete="deleteUser"
-                    :loading="loading"
+                    :loading="table.isLoading.value"
                 />
             </div>
 
@@ -199,9 +199,9 @@
     </PageContainer>
 </template>
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
-import { FilterMatchMode } from '@primevue/core/api';
+import { ref, onMounted } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
+import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
@@ -219,142 +219,36 @@ import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
-
 const { t: $t } = useI18n();
 const { can } = usePermissions();
-const users = ref([]);
-const totalRecords = ref(0);
-const perPage = ref(5);
-const currentPage = ref(1);
-const loading = ref(true);
-const expandedRows = ref([]);
-const searchQuery = ref('');
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    full_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-});
 const toast = useToast();
 const router = useRouter();
-
-/* Filter and Search Debounce */
-let searchDebounceTimer = null;
-let filterDebounceTimer = null;
-let skipFilterWatcher = false;
-
-const buildActiveFilters = () => {
-    return Object.entries(filters.value).reduce((acc, [key, filter]) => {
-        if (!filter || filter.value === null || filter.value === undefined) {
-            return acc;
-        }
-
-        if (typeof filter.value === 'string') {
-            const trimmed = filter.value.trim();
-            if (trimmed.length === 0) {
-                return acc;
-            }
-            acc[key] = trimmed;
-            return acc;
-        }
-
-        acc[key] = filter.value;
-        return acc;
-    }, {});
-};
-
-const hasActiveFilters = computed(() => {
-    if (searchQuery.value.trim().length > 0) {
-        return true;
-    }
-
-    return Object.values(filters.value).some(filter => {
-        if (!filter) {
-            return false;
-        }
-
-        if (typeof filter.value === 'string') {
-            return filter.value.trim().length > 0;
-        }
-
-        return filter.value !== null && filter.value !== undefined;
-    });
+const table = usePaginatedTable({
+    endpoint: '/settings/users',
+    initialPerPage: 5,
+    searchFields: ['first_name', 'last_name', 'email'],
+    filterConfig: {
+        full_name: { 
+            defaultValue: null, 
+            matchMode: 'contains' 
+        },
+    },
+    mapResponse: (response) => ({
+        data: response.data.data.users,
+        total: response.data.data.total,
+    }),
+    onError: (error) => {
+        toast.add({ 
+            severity: 'error', 
+            summary: $t('Error'), 
+            detail: error.message,
+            life: 3000 
+        });
+    },
 });
 
-// Watch for column filter changes
-watch(filters, () => {
-    if (skipFilterWatcher) {
-        skipFilterWatcher = false;
-        return;
-    }
-    clearTimeout(filterDebounceTimer);
-    filterDebounceTimer = setTimeout(() => {
-        currentPage.value = 1;
-        fetchUsers(currentPage.value, perPage.value);
-    }, 300);
-}, { deep: true });
-
-
-const onSearchInput = () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
-        currentPage.value = 1;
-        fetchUsers(currentPage.value, perPage.value);
-    }, 300);
-};
-
-function clearFilters() {
-    searchQuery.value = '';
-    skipFilterWatcher = true;
-    Object.values(filters.value).forEach(filter => {
-        if (filter) {
-            filter.value = null;
-        }
-    });
-    currentPage.value = 1;
-    fetchUsers(currentPage.value, perPage.value);
-}
-
-/* Pagination change */
-function onPageChange(event) {
-    currentPage.value = event.page + 1;
-    perPage.value = event.rows;
-    fetchUsers(currentPage.value, perPage.value);
-}
-
-/* Fetch users */
-async function fetchUsers(page, perPage) {
-    users.value = [];
-    loading.value = true;
-    const searchValue = searchQuery.value?.trim();
-    const activeFilters = buildActiveFilters();
-    
-    try {
-        await new Promise(resolve => setTimeout(resolve, 200)); // to ease loading transition
-        const params = {
-            page: page,
-            per_page: perPage,
-        };
-
-        if (searchValue) {
-            params.search = searchValue;
-        }
-
-        if (Object.keys(activeFilters).length > 0) {
-            params.filters = JSON.stringify(activeFilters);
-        }
-
-        const res = await axios.get('/settings/users', {
-            params,
-        });
-        users.value = res.data.data.users;
-        totalRecords.value = res.data.data.total;
-        expandedRows.value = [];
-    } finally {
-        loading.value = false;
-    }
-}
-
 onMounted(() => {
-    fetchUsers(currentPage.value, perPage.value);
+    table.fetchData();
 });
 
 /* Status colors */
@@ -401,7 +295,7 @@ async function deleteUser() {
         deleteDialogVisible.value = false;
         userIdToDelete.value = null;
 
-        fetchUsers(currentPage.value, perPage.value);
+        table.fetchData();
         
         toast.add({ 
             severity: 'success', 

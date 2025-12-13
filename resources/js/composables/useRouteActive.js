@@ -43,14 +43,11 @@ export function useRouteActive(propsRoute, explicitBaseRoute = null) {
         return parts.join('.');
     });
 
-    console.log('current route name:', route.name);
     const isActive = computed(() => {
         const current = route.name?.toString() || ''
         return current.startsWith(inferredBaseRoute.value);
     });
 
-    console.log('inferredBaseRoute:', inferredBaseRoute.value);
-    console.log('isActive:', isActive.value);
     return {
         inferredBaseRoute,
         isActive,
