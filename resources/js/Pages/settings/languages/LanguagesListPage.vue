@@ -1,12 +1,13 @@
 <template>
     <PageContainer>
         <template #body>
-            <div class="flex flex-col w-full">
-                <!-- Loading Skeleton -->
-                 <SkeletonBuilder v-if="table.isLoading.value" :per-page="table.perPage.value" count="3" />
-                 <!-- Language DataTable -->
-                  <DataTable
-                    v-else 
+            <TableLoadingState 
+                :is-loading="table.isLoading.value" 
+                :rows="table.perPage.value"
+                :skeleton-count="3"
+            >
+                <!-- Language DataTable -->
+                <DataTable
                     :value="table.data.value"
                     :lazy="true"
                     paginator
@@ -73,7 +74,7 @@
                     :onDelete="deleteLanguage"
                     :loading="table.isLoading.value"
                 />
-            </div>
+            </TableLoadingState>
         </template>
     </PageContainer>    
 </template>
@@ -87,7 +88,7 @@ import axios from 'axios';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
+import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';

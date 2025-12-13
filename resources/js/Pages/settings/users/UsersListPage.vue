@@ -1,12 +1,14 @@
 <template>
     <PageContainer>
         <template #body>
-            <div class="flex flex-col w-full">
-                <!-- Loading Skeleton -->
-                <SkeletonBuilder v-if="table.isLoading.value" :perPage="table.perPage.value" count="5" />
+            <!-- Loading Skeleton -->
+            <TableLoadingState 
+                :is-loading="table.isLoading.value" 
+                :rows="table.perPage.value"
+                :skeleton-count="3"
+            >
                 <!-- Users DataTable -->
                 <DataTable
-                    v-else
                     :value="table.data.value"
                     :lazy="true"
                     paginator
@@ -154,7 +156,6 @@
                         </Transition>
                     </template>
                 </DataTable>
-
                 <!-- Modal for Payment Receipt -->
                 <Dialog 
                     v-model:visible="receiptModal" 
@@ -193,8 +194,7 @@
                     :onDelete="deleteUser"
                     :loading="table.isLoading.value"
                 />
-            </div>
-
+            </TableLoadingState>
         </template>
     </PageContainer>
 </template>
@@ -214,11 +214,10 @@ import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import IconWrapper from '@/components/common/IconWrapper.vue';
-import SkeletonBuilder from '@/components/common/SkeletonBuilder.vue';
+import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
-
 const { t: $t } = useI18n();
 const { can } = usePermissions();
 const toast = useToast();

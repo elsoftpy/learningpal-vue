@@ -32,8 +32,8 @@ export const usePaginatedTable = (options = {}) => {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...Object.entries(filterConfig).reduce((acc, [key, config]) => {
             acc[key] = { 
-                value: config.defaultValue || null,
-                matchMode: config.matchMode || FilterMatchMode.CONTAINS,
+                value: config.defaultValue ?? null,
+                matchMode: config.matchMode ?? FilterMatchMode.CONTAINS,
             };
             return acc;
         }, {}),
@@ -68,7 +68,7 @@ export const usePaginatedTable = (options = {}) => {
             return true;
         }
 
-        return Object.entries(filters.value).some(filter => {
+        return Object.values(filters.value).some(filter => {
             if (!filter) {
                 return false;
             }
