@@ -31,7 +31,15 @@
                             :has-active-filters="table.hasActiveFilters.value"
                             @search-input="table.onSearchInput"
                             @clear-filters="table.clearFilters"
-                        />
+                        >
+                            <template #actions>
+                                <CreateButton
+                                    permission="create languages"
+                                    :label="$t('Add Language')"
+                                    route-name="settings.languages.create"
+                                />
+                            </template>
+                        </DataTableToolbar>
                     </template>
                     <!-- Empty Message -->
                     <template #empty>{{$t('No records found.')}}</template>
@@ -88,6 +96,7 @@ import { useI18n } from 'vue-i18n';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import DataTable from 'primevue/datatable';
+import CreateButton from '@/components/datatable/CreateButton.vue';
 import Column from 'primevue/column';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';

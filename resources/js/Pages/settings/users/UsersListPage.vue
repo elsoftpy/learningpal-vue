@@ -36,14 +36,11 @@
                             @clear-filters="table.clearFilters"
                         >
                             <template #actions>
-                                <Can permission="create users">
-                                    <Button
-                                        :label="$t('Add User')"
-                                        icon="pi pi-plus"
-                                        size="small"
-                                        @click="router.push({ name: 'settings.users.create' })"
-                                    />
-                                </Can>
+                                <CreateButton
+                                    permission="create users"
+                                    :label="$t('Add User')"
+                                    route-name="settings.users.create"
+                                />
                             </template>
                         </DataTableToolbar>
                     </template>
@@ -209,15 +206,15 @@ import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
-import Can from '@/components/auth/Can.vue';
 import DataTable from 'primevue/datatable';
+import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
+import CreateButton from '@/components/datatable/CreateButton.vue';
 import Column from 'primevue/column';
 import Tag from 'primevue/tag';
 import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import IconWrapper from '@/components/common/IconWrapper.vue';
-import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
