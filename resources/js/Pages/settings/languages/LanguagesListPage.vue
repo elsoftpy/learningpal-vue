@@ -27,6 +27,7 @@ import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions} from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
+import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
@@ -66,16 +67,16 @@ const renderActionsBody = ({ data }) =>
     });
 
 const columns = computed(() => [
-    {
+    textColumn({
         key: 'id',
         header: $t('ID'),
-        body: ({ data }) => data?.id ?? '',
-    },
-    {
+        style: 'width: 6rem',
+    }),
+    textColumn({
         key: 'name',
         header: $t('Name'),
-        body: ({ data }) => data?.name ?? '',
-    },
+        style: 'min-width: 15%',
+    }),
     {
         key: 'actions',
         header: $t('Actions'),

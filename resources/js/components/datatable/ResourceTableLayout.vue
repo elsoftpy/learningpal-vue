@@ -20,7 +20,7 @@
                     expansionMode="single"
                     :dataKey="dataKey"
                     v-model:filters="table.filters.value"
-                    filterDisplay="row"
+                    :filterDisplay="filterDisplay"
                     :globalFilterFields="globalFilterFields"
                     :size="size" 
                     :tableStyle="tableStyle"
@@ -128,6 +128,10 @@ const props = defineProps({
     createLabel: {
         type: String,
         default: '',
+    },
+    filterDisplay: {
+        type: String,
+        default: null, // 'row', 'menu', false
     },
 });
 </script>

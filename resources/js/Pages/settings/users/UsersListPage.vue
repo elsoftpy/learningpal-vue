@@ -7,6 +7,7 @@
         create-permission="create users"
         create-route-name="settings.users.create"
         :create-label="$t('Add User')"
+        filter-display="row"
         :global-filter-fields="['first_name', 'last_name', 'email']"
     >
         <template v-if="canViewProfileData" #expansion="{ data }">
@@ -81,6 +82,7 @@ import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions } from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
+import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import Tag from 'primevue/tag';
 import InputText from 'primevue/inputtext';
@@ -211,12 +213,11 @@ const columns = computed(() => [
         style: 'width: 1%',
         visible: () => canViewProfileData.value,
     },
-    {
+    textColumn({
         key: 'id',
         header: $t('ID'),
         style: 'width: 1%',
-        body: ({ data }) => data?.id ?? '',
-    },
+    }),
     {
         key: 'full_name',
         header: $t('Name'),
