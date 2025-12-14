@@ -114,5 +114,11 @@
   "Users List": "Lista de usuarios",
   "Add User": "Agregar usuario",
   "Are you sure you want to delete this language?": "¿Estás seguro de que deseas eliminar este idioma?",
-  "Search language": "Buscar idioma"
+  "Search language": "Buscar idioma",
+  "Language deleted successfully.": "Idioma eliminado con éxito.",
+  "Languages List": "Lista de idiomas",
+  "Add Language": "Agregar idioma",
+  "Edit Language": "Editar idioma",
+  "Language": "Idioma",
+  "Personal ID": "Cédula"
 }

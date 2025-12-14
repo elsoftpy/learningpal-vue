@@ -24,14 +24,14 @@
                     <!-- ID Number -->
                     <div class="flex flex-col w-full md:w-1/4">
                         <label for="personal_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ $t('ID Number') }}
+                            {{ $t('Personal ID') }}
                             <span class="text-red-500">*</span>
                         </label>
                         <InputText
                             id="personal_id"
                             name="personal_id"
                             :disabled="!creating"
-                            :placeholder="$t('ID Number')"
+                            :placeholder="$t('Personal ID')"
                         />
                     </div>
                     <!-- First & Last Name -->
