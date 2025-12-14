@@ -1,3 +1,4 @@
+import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'primevue/usetoast';
 import { usePaginatedTable } from '@/composables/usePaginatedTable.js';
@@ -12,6 +13,7 @@ export function useSettingsTable(options = {}) {
         filterConfig = {},
         initialPerPage = DEFAULT_PER_PAGE,
         onError,
+        autoFetch = true,
         ...rest
     } = options;
 
@@ -36,7 +38,7 @@ export function useSettingsTable(options = {}) {
         });
     };
 
-    return usePaginatedTable({
+    const table = usePaginatedTable({
         endpoint,
         mapResponse,
         searchFields,
@@ -45,4 +47,12 @@ export function useSettingsTable(options = {}) {
         onError: typeof onError === 'function' ? onError : defaultOnError,
         ...rest,
     });
+
+    if (autoFetch) {
+        onMounted(() => {
+            table.fetchData();
+        });
+    }
+
+    return table;
 }

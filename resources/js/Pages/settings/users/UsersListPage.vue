@@ -9,6 +9,7 @@
         :create-label="$t('Add User')"
         filter-display="row"
         :global-filter-fields="['first_name', 'last_name', 'email']"
+        :delete-dialog="deleteDialogConfig"
     >
         <template v-if="canViewProfileData" #expansion="{ data }">
             <Transition name="table-expand" appear>
@@ -67,34 +68,21 @@
             />
         </a>
     </Dialog>
-    <!-- Delete Confirmation Dialog -->
-    <DeleteDialog
-        v-model:visible="actions.deleteDialogVisible.value"
-        :message="$t('Are you sure you want to delete this user?')"
-        :onDelete="actions.confirmDelete"
-        :loading="actions.isDeleting.value"
-    />
 </template>
 <script setup>
-import { ref, onMounted, computed, h } from 'vue';
+import { ref, computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
-import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
-import { textColumn } from '@/components/datatable/columnFactories.js';
+import { textColumn, textWithAvatarColumn, tagsArrayColumn, statusTagColumn, paymentColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
-import Tag from 'primevue/tag';
-import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
 import IconWrapper from '@/components/common/IconWrapper.vue';
-import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
-const toast = useToast();
 const canViewProfileData = computed(() => can('view profile data'));
 const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
 
@@ -126,66 +114,12 @@ const actions = useRowActions({
     }
 });
 
-const renderFullNameFilter = ({ filterModel, filterCallback }) => {
-    const handleUpdate = (value) => {
-        if (filterModel) {
-            filterModel.value = value;
-        }
-        if (typeof filterCallback === 'function') {
-            filterCallback();
-        }
-    };
-
-    return h(InputText, {
-        modelValue: filterModel?.value ?? '',
-        'onUpdate:modelValue': handleUpdate,
-        type: 'text',
-        placeholder: $t('Search by name'),
-        class: 'w-full',
-    });
-};
-
-const renderFullNameBody = ({ data }) =>
-    h('div', { class: 'flex items-center space-x-2' }, [
-        h('img', { src: data.avatar_url, alt: data.full_name, class: 'w-10 h-10 rounded-full object-cover' }),
-        h('span', null, data.full_name),
-    ]);
-
-const renderRolesBody = ({ data }) => {
-    const roles = Array.isArray(data.display_roles) ? data.display_roles : [];
-
-    if (!roles.length) {
-        return h('span', { class: 'text-gray-400 text-sm' }, $t('None'));
-    }
-
-    return h('div', null,
-        roles.map((role) =>
-            h(Tag, {
-                key: role,
-                value: role,
-                severity: 'info',
-                class: 'mr-2 mb-1',
-            })
-        )
-    );
-};
-
-const renderStatusBody = ({ data }) =>
-    h(Tag, {
-        value: data.display_status,
-        severity: getStatusSeverity(data.status),
-    });
-
-const renderPaymentBody = ({ data }) =>
-    data.payment_receipt
-        ? h(Button, {
-            type: 'button',
-            label: $t('View'),
-            icon: 'pi pi-eye',
-            size: 'small',
-            onClick: () => showReceipt(data.payment_receipt),
-        })
-        : h('span', { class: 'text-gray-400 text-sm' }, $t('None'));
+const deleteDialogConfig = computed(() => ({
+    visible: actions.deleteDialogVisible,
+    message: $t('Are you sure you want to delete this user?'),
+    onDelete: actions.confirmDelete,
+    loading: actions.isDeleting,
+}));
 
 const columns = computed(() => [
     { 
@@ -199,32 +133,31 @@ const columns = computed(() => [
         header: $t('ID'),
         style: 'width: 1%',
     }),
-    {
-        key: 'full_name',
+    textWithAvatarColumn({
+        key: "full_name",
         header: $t('Name'),
-        showFilterMenu: false,
+        fieldName: 'full_name',
+        placeholder: $t('Search by name'),
         style: 'min-width:15%',
-        filter: renderFullNameFilter,
-        body: renderFullNameBody,
-    },
-    {
+    }),
+    tagsArrayColumn({
         key: 'roles',
         header: $t('Roles'),
+        itemsField: 'display_roles',
         style: 'min-width: 15%',
-        body: renderRolesBody,
-    },
-    {
-        key: 'status',
+        emptyLabel: $t('None'),
+    }),
+    statusTagColumn({
         header: $t('Status'),
         style: 'min-width: 10%',
-        body: renderStatusBody,
-    },
-    {
-        key: 'payment',
+    }),
+    paymentColumn({
         header: $t('Payment'),
         style: 'min-width: 5%',
-        body: renderPaymentBody,
-    },
+        viewLabel: $t('View'),
+        emptyLabel: $t('None'),
+        onViewReceipt: (row) => showReceipt(row.payment_receipt),
+    }),
     {
         key: 'actions',
         header: $t('Actions'),
@@ -241,20 +174,6 @@ const columns = computed(() => [
         },
     },
 ]);
-
-onMounted(() => {
-    table.fetchData();
-});
-
-/* Status colors */
-const getStatusSeverity = (status) => {
-    switch (status) {
-        case 'active': return 'success';
-        case 'disabled': return 'danger';
-        case 'pending': return 'warn';
-        default: return 'info';
-    }
-};
 
 /* Payment receipt modal */
 const receiptModal = ref(false);

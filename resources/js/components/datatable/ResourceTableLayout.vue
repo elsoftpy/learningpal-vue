@@ -57,18 +57,28 @@
                 </BasicDataTable>
                 <!-- After table slot-->
                 <slot />
+
+                <!-- Shared delete dialog -->
+                <DeleteDialog
+                    v-if="hasDeleteDialog"
+                    v-model:visible="deleteDialogVisible"
+                    :message="props.deleteDialog.message"
+                    :onDelete="props.deleteDialog.onDelete"
+                    :loading="deleteDialogLoading"
+                />
             </TableLoadingState>
         </template>
     </PageContainer>
 </template>
 <script setup>
-import { computed } from 'vue';
+import { computed, unref, isRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
 import BasicDataTable from '@/components/datatable/BasicDataTable.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import CreateButton from '@/components/datatable/CreateButton.vue';
+import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 const { t: $t } = useI18n();
 
@@ -133,5 +143,30 @@ const props = defineProps({
         type: String,
         default: null, // 'row', 'menu', false
     },
+    deleteDialog: {
+        type: Object,
+        default: null,
+    },
+});
+
+const hasDeleteDialog = computed(() => Boolean(props.deleteDialog));
+
+const deleteDialogVisible = computed({
+    get() {
+        if (!props.deleteDialog) return false;
+        return unref(props.deleteDialog.visible) ?? false;
+    },
+    set(value) {
+        if (!props.deleteDialog) return;
+        const target = props.deleteDialog.visible;
+        if (isRef(target)) {
+            target.value = value;
+        }
+    },
+});
+
+const deleteDialogLoading = computed(() => {
+    if (!props.deleteDialog) return false;
+    return unref(props.deleteDialog.loading) ?? false;
 });
 </script>

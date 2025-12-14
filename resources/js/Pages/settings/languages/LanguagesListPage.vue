@@ -9,32 +9,23 @@
         create-route-name="settings.languages.create"
         :create-label="$t('Add Language')"
         :global-filter-fields="['name']"
+        :delete-dialog="deleteDialogConfig"
     >
     </ResourceTableLayout>
-    <!-- Delete Confirmation Dialog -->
-    <DeleteDialog
-        v-model:visible="actions.deleteDialogVisible.value"
-        :message="$t('Are you sure you want to delete this language?')"
-        :onDelete="actions.confirmDelete"
-        :loading="actions.isDeleting.value"
-    />
 
 </template>
 <script setup>
-import { onMounted, computed } from 'vue';
+import { computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions} from '@/composables/useRowActions.js';
-import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
-import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
-const toast = useToast();
 const canViewActionsColumn = computed(() => 
     can(['edit languages', 'delete languages'])
 );
@@ -81,12 +72,16 @@ const actions = useRowActions({
         table.refresh();
     },
     messages: {
-        deleteSuccess: $t('Language deleted successfully.'),
-        deleteError: $t('An error occurred while deleting the language.'),
+        successMessage: $t('Language deleted successfully.'),
+        errorMessage: $t('An error occurred while deleting the language.'),
     }
 });
 
-onMounted(() => {
-    table.fetchData();
-});
+const deleteDialogConfig = computed(() => ({
+    visible: actions.deleteDialogVisible,
+    message: $t('Are you sure you want to delete this language?'),
+    onDelete: actions.confirmDelete,
+    loading: actions.isDeleting,
+}));
+
 </script>
