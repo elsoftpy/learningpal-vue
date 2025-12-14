@@ -10,7 +10,7 @@
                 size="small"
                 severity="secondary"
                 icon="pi pi-filter-slash"
-                :label="clearLabel"
+                :label="clearFilterLabel"
                 @click="$emit('clear-filters')"
             />
             <IconField>
@@ -36,7 +36,7 @@ import InputText from 'primevue/inputtext';
 const props = defineProps({
     searchQuery: { type: String, default: '' },
     searchPlaceholder: { type: String, default: '' },
-    clearLabel: { type: String, default: 'Clear filters' },
+    clearFilterLabel: { type: String, default: null },
     hasActiveFilters: { type: Boolean, default: false },
 });
 

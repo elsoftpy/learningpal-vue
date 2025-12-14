@@ -1,121 +1,78 @@
 <template>
-    <PageContainer>
-        <template #body>
-            <!-- Loading Skeleton -->
-            <TableLoadingState 
-                :is-loading="table.isLoading.value" 
-                :rows="table.perPage.value"
-                :skeleton-count="3"
-            >
-                <!-- Users DataTable -->
-                <BasicDataTable
-                    :value="table.data.value"
-                    :columns="columns"
-                    :lazy="true"
-                    paginator
-                    :rows="table.perPage.value"
-                    :totalRecords="table.totalRecords.value"
-                    :first="table.first.value"
-                    v-model:expandedRows="table.expandedRows.value"
-                    expansionMode="single"
-                    @page="table.onPageChange"
-                    v-model:filters="table.filters.value"
-                    filterDisplay="row"
-                    dataKey="id"
-                    :globalFilterFields="['first_name', 'last_name', 'email']"
-                    size="small" 
-                    tableStyle="min-width: 50rem"
-                >
-                    <!-- Table Header with Search -->
-                    <template #header>
-                        <DataTableToolbar
-                            v-model:search-query="table.searchQuery.value"
-                            :search-placeholder="$t('Search user')"
-                            :clear-label="$t('Clear filters')"
-                            :has-active-filters="table.hasActiveFilters.value"
-                            @search-input="table.onSearchInput"
-                            @clear-filters="table.clearFilters"
-                        >
-                            <template #actions>
-                                <CreateButton
-                                    permission="create users"
-                                    :label="$t('Add User')"
-                                    route-name="settings.users.create"
-                                />
-                            </template>
-                        </DataTableToolbar>
-                    </template>
-                    <!-- Empty Message -->
-
-                    <!-- Profile Data -->
-                    <template v-if="canViewProfileData" #expansion="{ data }">
-                        <Transition name="table-expand" appear>
-                            <div class="expand-panel bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm">
-                                    <thead>
-                                        <tr class="text-left text-xs uppercase tracking-wide text-slate-500">
-                                            <th class="pb-2 pr-4">{{ $t('Personal ID') }}</th>
-                                            <th class="pb-2 pr-4">{{ $t('Email') }}</th>
-                                            <th class="pb-2 pr-4">{{ $t('Phone') }}</th>
-                                            <th class="pb-2">{{ $t('Address') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="border-t border-slate-200 dark:border-slate-700">
-                                            <td class="py-2 pr-4 font-medium">{{ data.personal_id || '—' }}</td>
-                                            <td class="py-2 pr-4">{{ data.email || '—' }}</td>
-                                            <td class="py-2 pr-4">{{ data.phone || '—' }}</td>
-                                            <td class="py-2">{{ data.address || '—' }}</td>
-                                        </tr>
-                                    </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </Transition>
-                    </template>
-                </BasicDataTable>
-                <!-- Modal for Payment Receipt -->
-                <Dialog 
-                    v-model:visible="receiptModal" 
-                    modal
-                    :closable="false"
-                >
-                    <template #header >
-                        <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-blue-500">
-                            <span class="text-xl font-semibold">{{ $t('Payment Receipt') }}</span>
-                            <Button
-                                icon="pi pi-times"
-                                rounded
-                                size="small"
-                                severity="primary"
-                                variant="outlined"
-                                class="text-white! border-2! hover:text-gray-800!"
-                                @click="receiptModal = false"
-                            />
-                        </div>
-                    </template>
-                    <a :href="receiptUrl" target="_blank" rel="noopener noreferrer">
-                        <img v-if="isImageUrl(receiptUrl)" :src="receiptUrl" class="w-full rounded">
-                        <IconWrapper
-                            v-else
-                            name="file-pdf"
-                            class="text-red-600 text-center mx-auto my-8"
-                            size="256"
-                        />
-                    </a>
-                </Dialog>
-
-                <!-- Delete Confirmation Dialog -->
-                <DeleteDialog
-                    v-model:visible="actions.deleteDialogVisible.value"
-                    :message="$t('Are you sure you want to delete this user?')"
-                    :onDelete="actions.confirmDelete"
-                    :loading="actions.isDeleting.value"
-                />
-            </TableLoadingState>
+    <!-- Users DataTable -->
+    <ResourceTableLayout
+        :table="table"
+        :columns="columns"
+        :search-placeholder="$t('Search user')"
+        create-permission="create users"
+        create-route-name="settings.users.create"
+        :create-label="$t('Add User')"
+        :global-filter-fields="['first_name', 'last_name', 'email']"
+    >
+        <template v-if="canViewProfileData" #expansion="{ data }">
+            <Transition name="table-expand" appear>
+                <div class="expand-panel bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-xs uppercase tracking-wide text-slate-500">
+                                <th class="pb-2 pr-4">{{ $t('Personal ID') }}</th>
+                                <th class="pb-2 pr-4">{{ $t('Email') }}</th>
+                                <th class="pb-2 pr-4">{{ $t('Phone') }}</th>
+                                <th class="pb-2">{{ $t('Address') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-t border-slate-200 dark:border-slate-700">
+                                <td class="py-2 pr-4 font-medium">{{ data.personal_id || '—' }}</td>
+                                <td class="py-2 pr-4">{{ data.email || '—' }}</td>
+                                <td class="py-2 pr-4">{{ data.phone || '—' }}</td>
+                                <td class="py-2">{{ data.address || '—' }}</td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </Transition>
         </template>
-    </PageContainer>
+    </ResourceTableLayout>
+    <!-- Modal for Payment Receipt -->
+    <Dialog 
+        v-model:visible="receiptModal" 
+        modal
+        :closable="false"
+    >
+        <template #header >
+            <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-blue-500">
+                <span class="text-xl font-semibold">{{ $t('Payment Receipt') }}</span>
+                <Button
+                    icon="pi pi-times"
+                    rounded
+                    size="small"
+                    severity="primary"
+                    variant="outlined"
+                    class="text-white! border-2! hover:text-gray-800!"
+                    @click="receiptModal = false"
+                />
+            </div>
+        </template>
+        <a :href="receiptUrl" target="_blank" rel="noopener noreferrer">
+            <img v-if="isImageUrl(receiptUrl)" :src="receiptUrl" class="w-full rounded">
+            <IconWrapper
+                v-else
+                name="file-pdf"
+                class="text-red-600 text-center mx-auto my-8"
+                size="256"
+            />
+        </a>
+    </Dialog>
+    <!-- Delete Confirmation Dialog -->
+    <DeleteDialog
+        v-model:visible="actions.deleteDialogVisible.value"
+        :message="$t('Are you sure you want to delete this user?')"
+        :onDelete="actions.confirmDelete"
+        :loading="actions.isDeleting.value"
+    />
 </template>
 <script setup>
 import { ref, onMounted, computed, h } from 'vue';
@@ -124,11 +81,7 @@ import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions } from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
-import PageContainer from '@/components/layout/pages/PageContainer.vue';
-import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
-import BasicDataTable from '@/components/datatable/BasicDataTable.vue';
-import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
-import CreateButton from '@/components/datatable/CreateButton.vue';
+import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import Tag from 'primevue/tag';
 import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';

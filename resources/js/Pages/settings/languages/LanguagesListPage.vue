@@ -1,71 +1,24 @@
 <template>
-    <PageContainer>
-        <template #body>
-            <TableLoadingState 
-                :is-loading="table.isLoading.value" 
-                :rows="table.perPage.value"
-                :skeleton-count="3"
-            >
-                <!-- Language DataTable -->
-                <BasicDataTable
-                    :value="table.data.value"
-                    :columns="columns"
-                    :lazy="true"
-                    paginator
-                    :rows="table.perPage.value"
-                    :total-records="table.totalRecords.value"
-                    :first="table.first.value"
-                    @page="table.onPageChange"
-                    v-model:filters="table.filters.value"
-                    filterDisplay="row"
-                    datakey="id"
-                    :globalFilterFields="['name']"
-                    size="small"
-                    table-style="min-width: 50rem"
-                >
-                    <!-- Table Header with Search -->
-                    <template #header>
-                        <DataTableToolbar
-                            v-model:search-query="table.searchQuery.value"
-                            :search-placeholder="$t('Search language')"
-                            :clear-label="$t('Clear filters')"
-                            :has-active-filters="table.hasActiveFilters.value"
-                            @search-input="table.onSearchInput"
-                            @clear-filters="table.clearFilters"
-                        >
-                            <template #actions>
-                                <CreateButton
-                                    permission="create languages"
-                                    :label="$t('Add Language')"
-                                    route-name="settings.languages.create"
-                                />
-                            </template>
-                        </DataTableToolbar>
-                    </template>
-                    <!-- Actions Buttons -->
-                     <Column v-if="canViewActionsColumn" :header="$t('Actions')" style="min-width: 15%">
-                        <template #body="{ data }">
-                            <RowActionButtons
-                                :can-edit="can('edit languages')"
-                                :can-delete="can('delete languages')"
-                                :edit-label="$t('Edit')"
-                                :delete-label="$t('Delete')"
-                                @edit="actions.handleEdit(data.id)"
-                                @delete="actions.handleDelete(data.id)"
-                            />
-                        </template>
-                    </Column>
-                </BasicDataTable>
-                <!-- Delete Confirmation Dialog -->
-                <DeleteDialog
-                    v-model:visible="actions.deleteDialogVisible.value"
-                    :message="$t('Are you sure you want to delete this language?')"
-                    :onDelete="actions.confirmDelete"
-                    :loading="actions.isDeleting.value"
-                />
-            </TableLoadingState>
-        </template>
-    </PageContainer>    
+    <!-- Language DataTable -->
+    <ResourceTableLayout
+        :table="table"
+        :columns="columns"
+        :search-placeholder="$t('Search language')"
+        :clear-filter-label="$t('Clear filters')"
+        create-permission="create languages"
+        create-route-name="settings.languages.create"
+        :create-label="$t('Add Language')"
+        :global-filter-fields="['name']"
+    >
+    </ResourceTableLayout>
+    <!-- Delete Confirmation Dialog -->
+    <DeleteDialog
+        v-model:visible="actions.deleteDialogVisible.value"
+        :message="$t('Are you sure you want to delete this language?')"
+        :onDelete="actions.confirmDelete"
+        :loading="actions.isDeleting.value"
+    />
+
 </template>
 <script setup>
 import { onMounted, computed, h } from 'vue';
@@ -74,15 +27,9 @@ import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions} from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
-import PageContainer from '@/components/layout/pages/PageContainer.vue';
-import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
-import BasicDataTable from '@/components/datatable/BasicDataTable.vue';
-import CreateButton from '@/components/datatable/CreateButton.vue';
-import Column from 'primevue/column';
-import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
+import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
-
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
