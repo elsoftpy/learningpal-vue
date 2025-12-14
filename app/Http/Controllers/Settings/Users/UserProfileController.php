@@ -47,6 +47,15 @@ class UserProfileController extends Controller
             }
         }
 
+        if (array_key_exists('birth_date', $filters)) {
+            $birthDateFilter = trim((string) $filters['birth_date']);
+            if ($birthDateFilter !== '') {
+                $users->whereHas('profile', function ($q) use ($birthDateFilter) {
+                    $q->whereDate('birth_date', $birthDateFilter);
+                });
+            }
+        }
+
         $paginated = $users->paginate($perPage, ['*'], 'page', $page);
         
         $users = $paginated->getCollection()->map(function (User $user) {

@@ -9,7 +9,7 @@
         create-route-name="settings.languages.create"
         :create-label="$t('Add Language')"
         :global-filter-fields="['name']"
-        :delete-dialog="deleteDialogConfig"
+        :delete-dialog="actions.deleteDialogConfig"
     >
     </ResourceTableLayout>
 
@@ -74,14 +74,8 @@ const actions = useRowActions({
     messages: {
         successMessage: $t('Language deleted successfully.'),
         errorMessage: $t('An error occurred while deleting the language.'),
+        confirmMessage: $t('Are you sure you want to delete this language?'),
     }
 });
-
-const deleteDialogConfig = computed(() => ({
-    visible: actions.deleteDialogVisible,
-    message: $t('Are you sure you want to delete this language?'),
-    onDelete: actions.confirmDelete,
-    loading: actions.isDeleting,
-}));
 
 </script>

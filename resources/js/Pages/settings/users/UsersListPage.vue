@@ -9,7 +9,7 @@
         :create-label="$t('Add User')"
         filter-display="row"
         :global-filter-fields="['first_name', 'last_name', 'email']"
-        :delete-dialog="deleteDialogConfig"
+        :delete-dialog="actions.deleteDialogConfig"
     >
         <template v-if="canViewProfileData" #expansion="{ data }">
             <Transition name="table-expand" appear>
@@ -45,11 +45,11 @@ import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
 import { useI18n } from 'vue-i18n';
-import { textColumn, textWithAvatarColumn, tagsArrayColumn, statusTagColumn, resourceViewerColumn } from '@/components/datatable/columnFactories.js';
+import { textColumn, textWithAvatarColumn, tagsArrayColumn, statusTagColumn, resourceViewerColumn, dateColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 
-const { t: $t } = useI18n();
+const { t: $t, locale } = useI18n();
 const { can } = usePermissions();
 const canViewProfileData = computed(() => can('view profile data'));
 const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
@@ -62,6 +62,10 @@ const table = useSettingsTable({
         full_name: {
             defaultValue: null,
             matchMode: 'contains',
+        },
+        birth_date: {
+            defaultValue: null,
+            matchMode: 'equals',
         },
     },
     mapResponse: (response) => ({
@@ -79,15 +83,9 @@ const actions = useRowActions({
     messages: {
         successMessage: $t('User deleted successfully.'),
         errorMessage: $t('An error occurred while deleting the user.'),
+        confirmMessage: $t('Are you sure you want to delete this user?'),
     }
 });
-
-const deleteDialogConfig = computed(() => ({
-    visible: actions.deleteDialogVisible,
-    message: $t('Are you sure you want to delete this user?'),
-    onDelete: actions.confirmDelete,
-    loading: actions.isDeleting,
-}));
 
 const columns = computed(() => [
     { 
@@ -114,6 +112,15 @@ const columns = computed(() => [
         itemsField: 'display_roles',
         style: 'min-width: 15%',
         emptyLabel: $t('None'),
+    }),
+    dateColumn({
+        key: 'birth_date',
+        header: $t('Birth Date'),
+        style: 'min-width: 15%',
+        locale: locale.value,
+        formatOptions: { day: '2-digit', month: '2-digit', year: 'numeric' },
+        filterable: true,
+        filterPlaceholder: $t('Select date'),
     }),
     statusTagColumn({
         header: $t('Status'),

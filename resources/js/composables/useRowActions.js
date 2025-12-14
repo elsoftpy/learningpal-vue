@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
@@ -12,6 +12,7 @@ export function useRowActions(options = {}) {
         deleteMethod = 'post',
         buildDeleteUrl,
         messages = {},
+        confirmMessage,
     } = options;
 
     const { t } = useI18n();
@@ -112,6 +113,13 @@ export function useRowActions(options = {}) {
         itemIdToDelete.value = null;
     }
 
+    const deleteDialogConfig = computed(() => ({
+        visible: deleteDialogVisible,
+        message: confirmMessage || messages.confirmMessage || t('Are you sure you want to delete this item?'),
+        onDelete: confirmDelete,
+        loading: isDeleting,
+    }));
+
     return {
         handleEdit,
         handleDelete,
@@ -120,5 +128,6 @@ export function useRowActions(options = {}) {
         deleteDialogVisible,
         itemIdToDelete,
         isDeleting,
+        deleteDialogConfig,
     };
 }
