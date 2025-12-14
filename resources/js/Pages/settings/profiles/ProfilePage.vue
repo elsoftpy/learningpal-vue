@@ -183,6 +183,7 @@
                         <DateInput
                             id="birth_date"
                             name="birth_date"
+                            v-model="birthDateFieldModel"
                             :label="$t('Birth Date')"
                             :placeholder="$t('Birth Date')"
                             @update:unmasked="form.birth_date_unmasked = $event"
@@ -263,6 +264,18 @@ const emit = defineEmits(['update:avatar'])
 const selectedFile = ref(null)
 
 const avatar = computed(() => props.avatarUrl || defaultAvatar)
+
+const birthDateFieldModel = computed({
+    get: () => props.form?.birth_date?.value ?? '',
+    set: (value) => {
+        if (props.form?.birth_date) {
+            props.form.birth_date.value = value;
+            if (typeof props.form.birth_date.validate === 'function') {
+                props.form.birth_date.validate();
+            }
+        }
+    },
+});
 
 const onAvatarSelect = (file) => {
     if (!file ) {
