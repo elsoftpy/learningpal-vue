@@ -101,7 +101,7 @@ function columnProps(col) {
     return {
         key: col.key,
         header: col.header,
-        field: col.field,
+        field: col.field ?? col.key,
         style: col.style,
         expander: col.expander ?? col.isExpander,
         showFilterMenu: col.showFilterMenu,

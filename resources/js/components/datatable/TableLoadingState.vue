@@ -1,14 +1,19 @@
 <template>
-    <div class="flex flex-col w-full">
+    <div class="flex flex-col w-full gap-4" :aria-busy="isLoading">
         <!-- Loading Skeleton -->
         <SkeletonBuilder 
             v-if="isLoading" 
             :perPage="rows" 
             :count="skeletonCount" 
         />
-        
-        <!-- Actual Table Content -->
-        <slot v-else />
+
+        <!-- Actual Table Content stays mounted for focus retention -->
+        <div
+            class="w-full"
+            :class="isLoading ? 'hidden' : 'block'"
+        >
+            <slot />
+        </div>
     </div>
 </template>
 
