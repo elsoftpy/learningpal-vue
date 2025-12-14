@@ -6,7 +6,7 @@ export const useFormSubmitter = (formFields = {}) => {
   const { errors, setErrors, clearErrors } = useFormErrors(formFields)
   const { handleApiError } = useApiErrorHandler()
 
-  const loading = ref(false)
+  const isLoading = ref(false)
   const success = ref(false)
 
   const submit = async (action, data, options = {}) => {
@@ -18,7 +18,7 @@ export const useFormSubmitter = (formFields = {}) => {
     } = options
 
     clearErrors()
-    loading.value = true
+    isLoading.value = true
     success.value = false
 
     try {
@@ -45,7 +45,7 @@ export const useFormSubmitter = (formFields = {}) => {
       await onError(errorInfo)
       return { success: false, error: errorInfo }
     } finally {
-      loading.value = false
+      isLoading.value = false
     }
   }
 
@@ -67,7 +67,7 @@ export const useFormSubmitter = (formFields = {}) => {
 
   return {
     errors,
-    loading,
+    isLoading,
     success,
     submit,
     clearErrors,

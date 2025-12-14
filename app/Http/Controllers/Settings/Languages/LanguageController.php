@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Settings\Languages;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LanguageRequest;
 use App\Models\Language;
+use App\Services\Settings\Languages\LanguageService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
@@ -28,10 +30,7 @@ class LanguageController extends Controller
         $paginated = $languages->paginate($perPage, ['*'], 'page', $page);
 
         $languages = $paginated->getCollection()->map(function (Language $language) {
-            return [
-                'id' => $language->id,
-                'name' => $language->name,
-            ];
+            return (new LanguageService())->languageData($language);
         });
 
         return ResponseService::success(
@@ -39,6 +38,49 @@ class LanguageController extends Controller
                 'languages' => $languages,
                 'total' => $paginated->total(),
             ],
+        );
+    }
+
+    public function store(LanguageRequest $request, LanguageService $languageService)
+    {
+        $language = Language::create([
+            'name' => $request->name,
+        ]);
+
+        $languageData = $languageService->languageData($language);
+
+        return ResponseService::success(
+            data: [
+                'language' => $languageData,
+            ],
+            message: 'Language created successfully.',
+        );
+    }
+
+    public function languageData(Language $language, LanguageService $languageService)
+    {
+        $languageData = $languageService->languageData($language);
+
+        return ResponseService::success(
+            data: [
+                'language' => $languageData,
+            ],
+        );
+    }
+
+    public function update(LanguageRequest $request, Language $language, LanguageService $languageService)
+    {
+        $language->update([
+            'name' => $request->name,
+        ]);
+
+        $languageData = $languageService->languageData($language);
+
+        return ResponseService::success(
+            data: [
+                'language' => $languageData,
+            ],
+            message: 'Language updated successfully.',
         );
     }
 

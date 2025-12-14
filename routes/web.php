@@ -62,6 +62,18 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
             ->name('index')
             ->middleware('can:view languages');
 
+        Route::post('/', [LanguageController::class, 'store'])
+            ->name('store')
+            ->middleware('can:create languages');
+
+        Route::post('/{language}/data', [LanguageController::class, 'languageData'])
+            ->name('data')
+            ->middleware('can:view languages');
+
+        Route::post('/{language}/edit', [LanguageController::class, 'update'])
+            ->name('edit')
+            ->middleware('can:edit languages');
+
         Route::post('/{language}/destroy', [LanguageController::class, 'destroy'])
             ->name('destroy')
             ->middleware('can:delete languages');

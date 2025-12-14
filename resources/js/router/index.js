@@ -53,18 +53,6 @@ const routes = [
   },
   /* Settings Module */
   {
-    path: '/settings/users/create',
-    name: 'settings.users.create',
-    component: () => import('../Pages/settings/users/UserProfilePage.vue'),
-    meta: { 
-      requiresAuth: true,
-      module: 'settings', 
-      title: 'Create User',
-      headerIcon: 'plus',
-      crud: 'create',
-    },
-  },
-  {
     path: '/settings/users',
     name: 'settings.users.list',
     component: () => import('../Pages/settings/users/UsersListPage.vue'),
@@ -77,7 +65,19 @@ const routes = [
     },
   },
   {
-    path: '/settings/users/:userId/profile',
+    path: '/settings/users/create',
+    name: 'settings.users.create',
+    component: () => import('../Pages/settings/users/UserProfilePage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'settings', 
+      title: 'Create User',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/settings/users/:id/profile',
     name: 'settings.users.profile',
     component: () => import('../Pages/settings/users/UserProfilePage.vue'),
     meta: { 
@@ -89,7 +89,7 @@ const routes = [
     },
   },
   {
-    path: '/settings/users/:userId/data',
+    path: '/settings/users/:id/data',
     name: 'settings.users.data.edit',
     component: () => import('../Pages/settings/users/UserProfilePage.vue'),
     meta: { 
@@ -110,6 +110,30 @@ const routes = [
       title: 'Languages',
       headerIcon: 'list',
       crud: 'read',
+    },
+  },
+  {
+    path: '/settings/languages/create',
+    name: 'settings.languages.create',
+    component: () => import('../Pages/settings/languages/LanguageFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'settings', 
+      title: 'Create Language',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/settings/languages/:id/data',
+    name: 'settings.languages.edit',
+    component: () => import('../Pages/settings/languages/LanguageFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'settings', 
+      title: 'Edit Language',
+      headerIcon: 'pencil',
+      crud: 'edit',
     },
   },
   /* Academic Module */

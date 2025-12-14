@@ -96,7 +96,7 @@
       <div class="mt-4">
         <Button
           type="submit"
-          :loading="loading"
+          :loading="isLoading"
           :label="$t('Log in')"
           class="w-full"
           rounded
@@ -168,7 +168,7 @@ const form = reactive({
   remember: false
 })
 
-const { errors, loading, setErrors, clearErrors } = useFormSubmitter({
+const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
   name: '',
   password: '',
   general: '',
@@ -177,12 +177,12 @@ const { errors, loading, setErrors, clearErrors } = useFormSubmitter({
 
 const handleLogin = async ({valid, values}) => {
   clearErrors()
-  loading.value = true
+  isLoading.value = true
 
   try {
 
     if (!valid) {
-      loading.value = false
+      isLoading.value = false
       return
     }
 
@@ -200,7 +200,7 @@ const handleLogin = async ({valid, values}) => {
 
     errors.general = apiError?.message || $t('An unexpected error occurred. Please try again.')
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 </script>

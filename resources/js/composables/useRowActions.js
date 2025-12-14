@@ -33,7 +33,7 @@ export function useRowActions(options = {}) {
             return;
         }
 
-        router.push({ name: editRouteName, params: { 'userId': id } });
+        router.push({ name: editRouteName, params: { 'id': id } });
     }
 
     function handleDelete(id) {

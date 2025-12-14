@@ -60,7 +60,7 @@ class UserProfileController extends Controller
         
         $users = $paginated->getCollection()->map(function (User $user) {
 
-            return app(UserService::class)->userData($user);
+            return (new UserService())->userData($user);
         });
 
         return ResponseService::success(

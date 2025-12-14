@@ -169,13 +169,7 @@
                 </div>
                 <!-- Submit button-->
                 <div class="flex justify-end mt-4">
-                    <Button
-                        type="submit"
-                        :loading="loading"
-                        :label="$t('Save Changes')"
-                        icon="pi pi-save"
-                        severity="success"
-                    />
+                    <SubmitButton :isLoading="isLoading"/>
                 </div>
 
                 <Dialog
@@ -224,6 +218,7 @@ import Message from 'primevue/message';
 import Dialog from 'primevue/dialog';
 import FileUpload from '@/components/form/FileUpload.vue';
 import axios from 'axios';
+import SubmitButton from '../../../components/form/SubmitButton.vue';
 
 const { locale, t: $t } = useI18n();
 const { can } = usePermissions();
@@ -248,7 +243,7 @@ let rolesDebounceTimer = null;
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
 
-const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.userId;
+const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
 
 const emit = defineEmits(['update:paymentReceipt']);
 const selectedPaymentFile = ref(null);
@@ -330,7 +325,7 @@ const initialValues = computed(() => {
 });
 
 
-const { errors, loading, setErrors, clearErrors } = useFormSubmitter({
+const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     personal_id: '',
     first_name: '', 
     last_name: '',
@@ -429,7 +424,7 @@ const handleSubmit =  async (formState) => {
         return;
     }
 
-    loading.value = true;
+    isLoading.value = true;
 
     try {
         const formData = new FormData();
@@ -500,7 +495,7 @@ const handleSubmit =  async (formState) => {
             life: 5000 
         });
         
-    } finally { loading.value = false; } 
+    } finally { isLoading.value = false; } 
         
 };
 

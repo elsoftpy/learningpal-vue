@@ -1,4 +1,4 @@
-import { locales, z } from 'zod';
+import { z } from 'zod';
 
 export const createUserSchema = (t, locale) => {
   const dataRegex = locale === 'en' ? /^\d{2}-\d{2}-\d{4}$/ : /^\d{2}\/\d{2}\/\d{4}$/;
