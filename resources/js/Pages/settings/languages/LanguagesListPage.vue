@@ -23,7 +23,7 @@
 <script setup>
 import { onMounted, computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
-import { usePaginatedTable } from '@/composables/usePaginatedTable';
+import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions} from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
@@ -39,33 +39,23 @@ const canViewActionsColumn = computed(() =>
     can(['edit languages', 'delete languages'])
 );
 
-const table = usePaginatedTable({
+const table = useSettingsTable({
     endpoint: '/settings/languages',
-    initialPerPage: 5,
     mapResponse: (response) => ({
         data: response.data.data.languages,
         total: response.data.data.total,
     }),
-    onError: (error) => {
-        toast.add({ 
-            severity: 'error', 
-            summary: $t('Error'), 
-            detail: error.message,
-            life: 3000 
-        });
-    },
 });
 
 const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
-        style: 'width: 6rem',
+        style: 'width: 5%; min-width: 2%;',
     }),
     textColumn({
         key: 'name',
         header: $t('Name'),
-        style: 'min-width: 15%',
     }),
     {
         key: 'actions',
@@ -80,6 +70,7 @@ const columns = computed(() => [
             onEdit: (row) => actions.handleEdit(row.id),
             onDelete: (row) => actions.handleDelete(row.id),
         },
+        style: 'width: 10%; min-width: 10%;'
     }
 ]);
 

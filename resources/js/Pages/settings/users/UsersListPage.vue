@@ -78,7 +78,7 @@
 <script setup>
 import { ref, onMounted, computed, h } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
-import { usePaginatedTable } from '@/composables/usePaginatedTable';
+import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
@@ -99,28 +99,19 @@ const canViewProfileData = computed(() => can('view profile data'));
 const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
 
 
-const table = usePaginatedTable({
+const table = useSettingsTable({
     endpoint: '/settings/users',
-    initialPerPage: 5,
     searchFields: ['first_name', 'last_name', 'email'],
     filterConfig: {
-        full_name: { 
-            defaultValue: null, 
-            matchMode: 'contains' 
+        full_name: {
+            defaultValue: null,
+            matchMode: 'contains',
         },
     },
     mapResponse: (response) => ({
         data: response.data.data.users,
         total: response.data.data.total,
     }),
-    onError: (error) => {
-        toast.add({ 
-            severity: 'error', 
-            summary: $t('Error'), 
-            detail: error.message,
-            life: 3000 
-        });
-    },
 });
 
 const actions = useRowActions({
