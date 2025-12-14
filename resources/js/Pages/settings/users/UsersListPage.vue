@@ -8,8 +8,9 @@
                 :skeleton-count="3"
             >
                 <!-- Users DataTable -->
-                <DataTable
+                <BasicDataTable
                     :value="table.data.value"
+                    :columns="columns"
                     :lazy="true"
                     paginator
                     :rows="table.perPage.value"
@@ -45,87 +46,7 @@
                         </DataTableToolbar>
                     </template>
                     <!-- Empty Message -->
-                    <template #empty>{{$t('No records found.')}}</template>
-                    <!-- Expander -->
-                    <Column v-if="canViewProfileData" expander style="width: 1%" />
-                    <!-- Avatar -->
-                    <Column :header="$t('ID')" style="width: 1%">
-                        <template #body="{ data }">     
-                            {{ data.id }}
-                        </template>
-                    </Column>
-                    <!-- Name -->
-                    <Column 
-                        field="full_name"
-                        :header="$t('Name')" 
-                        :showFilterMenu="false"
-                        style="min-width:15%"
-                    >
-                        <template #filter="{ filterModel, filterCallback }">
-                            <InputText 
-                                v-model="filterModel.value" 
-                                type="text" 
-                                @input="filterCallback()" 
-                                :placeholder="$t('Search by name')" 
-                                class="w-full"
-                            />
-                        </template>
 
-                        <template #body="{ data }">
-                            <div class="flex items-center space-x-2">
-                                <img :src="data.avatar_url" class="w-10 h-10 rounded-full object-cover" />
-                                <span>{{ data.full_name }}</span>
-                            </div>
-                        </template>
-
-                    </Column>
-                    <!-- Roles -->
-                    <Column :header="$t('Roles')" style="min-width: 15%">
-                        <template #body="{ data }">
-                            <Tag
-                                v-for="role in data.display_roles"
-                                :key="role"
-                                :value="role"
-                                severity="info"
-                                class="mr-2 mb-1"
-                            />
-                        </template>
-                    </Column>
-                    <!-- Status -->
-                    <Column :header="$t('Status')" style="min-width: 10%">
-                        <template #body="{ data }">
-                            <Tag 
-                                :value="data.display_status" 
-                                :severity="getStatusSeverity(data.status)" 
-                            />
-                        </template>
-                    </Column>
-                    <!-- Payment -->
-                    <Column :header="$t('Payment')" style="min-width: 5%">
-                        <template #body="{ data }">
-                            <Button
-                                v-if="data.payment_receipt"
-                                :label="$t('View')"
-                                icon="pi pi-eye"
-                                size="small"
-                                @click="showReceipt(data.payment_receipt)"
-                            />
-                            <span v-else class="text-gray-400 text-sm">{{ $t('None') }}</span>
-                        </template>
-                    </Column>   
-                    <!-- Actions Buttons-->
-                    <Column v-if="canViewActionsColumn" :header="$t('Actions')" style="min-width: 15%">
-                        <template #body="{ data }">
-                            <RowActionButtons
-                                :can-edit="can('edit users')"
-                                :can-delete="can('delete users')"
-                                :edit-label="$t('Edit')"
-                                :delete-label="$t('Delete')"
-                                @edit="actions.handleEdit(data.id)"
-                                @delete="actions.handleDelete(data.id)"
-                            />
-                        </template>
-                    </Column>
                     <!-- Profile Data -->
                     <template v-if="canViewProfileData" #expansion="{ data }">
                         <Transition name="table-expand" appear>
@@ -153,7 +74,7 @@
                             </div>
                         </Transition>
                     </template>
-                </DataTable>
+                </BasicDataTable>
                 <!-- Modal for Payment Receipt -->
                 <Dialog 
                     v-model:visible="receiptModal" 
@@ -197,19 +118,17 @@
     </PageContainer>
 </template>
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, h } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions } from '@/composables/useRowActions.js';
-import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
-import DataTable from 'primevue/datatable';
+import BasicDataTable from '@/components/datatable/BasicDataTable.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import CreateButton from '@/components/datatable/CreateButton.vue';
-import Column from 'primevue/column';
 import Tag from 'primevue/tag';
 import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
@@ -221,9 +140,9 @@ import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 const { t: $t } = useI18n();
 const { can } = usePermissions();
 const toast = useToast();
-const router = useRouter();
 const canViewProfileData = computed(() => can('view profile data'));
 const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
+
 
 const table = usePaginatedTable({
     endpoint: '/settings/users',
@@ -260,6 +179,125 @@ const actions = useRowActions({
         errorMessage: $t('An error occurred while deleting the user.'),
     }
 });
+
+const renderFullNameFilter = ({ filterModel, filterCallback }) => {
+    const handleUpdate = (value) => {
+        if (filterModel) {
+            filterModel.value = value;
+        }
+        if (typeof filterCallback === 'function') {
+            filterCallback();
+        }
+    };
+
+    return h(InputText, {
+        modelValue: filterModel?.value ?? '',
+        'onUpdate:modelValue': handleUpdate,
+        type: 'text',
+        placeholder: $t('Search by name'),
+        class: 'w-full',
+    });
+};
+
+const renderFullNameBody = ({ data }) =>
+    h('div', { class: 'flex items-center space-x-2' }, [
+        h('img', { src: data.avatar_url, alt: data.full_name, class: 'w-10 h-10 rounded-full object-cover' }),
+        h('span', null, data.full_name),
+    ]);
+
+const renderRolesBody = ({ data }) => {
+    const roles = Array.isArray(data.display_roles) ? data.display_roles : [];
+
+    if (!roles.length) {
+        return h('span', { class: 'text-gray-400 text-sm' }, $t('None'));
+    }
+
+    return h('div', null,
+        roles.map((role) =>
+            h(Tag, {
+                key: role,
+                value: role,
+                severity: 'info',
+                class: 'mr-2 mb-1',
+            })
+        )
+    );
+};
+
+const renderStatusBody = ({ data }) =>
+    h(Tag, {
+        value: data.display_status,
+        severity: getStatusSeverity(data.status),
+    });
+
+const renderPaymentBody = ({ data }) =>
+    data.payment_receipt
+        ? h(Button, {
+            type: 'button',
+            label: $t('View'),
+            icon: 'pi pi-eye',
+            size: 'small',
+            onClick: () => showReceipt(data.payment_receipt),
+        })
+        : h('span', { class: 'text-gray-400 text-sm' }, $t('None'));
+
+const renderActionsBody = ({ data }) =>
+    h(RowActionButtons, {
+        'can-edit': can('edit users'),
+        'can-delete': can('delete users'),
+        'edit-label': $t('Edit'),
+        'delete-label': $t('Delete'),
+        onEdit: () => actions.handleEdit(data.id),
+        onDelete: () => actions.handleDelete(data.id),
+    });
+
+const columns = computed(() => [
+    { 
+        key: 'expander',
+        isExpander: true,
+        style: 'width: 1%',
+        visible: () => canViewProfileData.value,
+    },
+    {
+        key: 'id',
+        header: $t('ID'),
+        style: 'width: 1%',
+        body: ({ data }) => data?.id ?? '',
+    },
+    {
+        key: 'full_name',
+        header: $t('Name'),
+        showFilterMenu: false,
+        style: 'min-width:15%',
+        filter: renderFullNameFilter,
+        body: renderFullNameBody,
+    },
+    {
+        key: 'roles',
+        header: $t('Roles'),
+        style: 'min-width: 15%',
+        body: renderRolesBody,
+    },
+    {
+        key: 'status',
+        header: $t('Status'),
+        style: 'min-width: 10%',
+        body: renderStatusBody,
+    },
+    {
+        key: 'payment',
+        header: $t('Payment'),
+        style: 'min-width: 5%',
+        body: renderPaymentBody,
+    },
+    {
+        key: 'actions',
+        header: $t('Actions'),
+        style: 'min-width: 15%',
+        visible: () => canViewActionsColumn.value,
+        body: renderActionsBody,
+    },
+]);
 
 onMounted(() => {
     table.fetchData();

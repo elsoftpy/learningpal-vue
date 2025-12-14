@@ -28,16 +28,18 @@ export const usePaginatedTable = (options = {}) => {
     const searchQuery = ref('');
     const expandedRows = ref([]);
 
-    const filters = ref({
+    const createFilters = () => ({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...Object.entries(filterConfig).reduce((acc, [key, config]) => {
-            acc[key] = { 
+            acc[key] = {
                 value: config.defaultValue ?? null,
                 matchMode: config.matchMode ?? FilterMatchMode.CONTAINS,
             };
             return acc;
         }, {}),
     });
+
+    const filters = ref(createFilters());
 
     let searchDebouceTimer = null;
     let filterDebounceTimer = null;
@@ -144,11 +146,7 @@ export const usePaginatedTable = (options = {}) => {
     function clearFilters() {
         searchQuery.value = '';
         skipFilterWatcher = true;
-        Object.keys(filters.value).forEach(filter => {
-            if (filter) {
-                filter.value = null;
-            }
-        });
+        filters.value = createFilters();
         currentPage.value = 1;
         fetchData();
     }

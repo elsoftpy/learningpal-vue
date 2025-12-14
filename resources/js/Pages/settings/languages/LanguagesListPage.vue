@@ -7,8 +7,9 @@
                 :skeleton-count="3"
             >
                 <!-- Language DataTable -->
-                <DataTable
+                <BasicDataTable
                     :value="table.data.value"
+                    :columns="columns"
                     :lazy="true"
                     paginator
                     :rows="table.perPage.value"
@@ -41,26 +42,6 @@
                             </template>
                         </DataTableToolbar>
                     </template>
-                    <!-- Empty Message -->
-                    <template #empty>{{$t('No records found.')}}</template>
-                    <Column :header="$t('ID')" style="width: 1%">
-                        <template #body="{ data }">     
-                            {{ data.id }}
-                        </template>
-                    </Column>
-                    <!-- Name -->
-                    <Column 
-                        field="name"
-                        :header="$t('Name')" 
-                        :showFilterMenu="false"
-                        style="min-width:15%"
-                    >
-                        <template #body="{ data }">
-                            <div class="flex items-center space-x-2">
-                                <span>{{ data.name }}</span>
-                            </div>
-                        </template>
-                    </Column>
                     <!-- Actions Buttons -->
                      <Column v-if="canViewActionsColumn" :header="$t('Actions')" style="min-width: 15%">
                         <template #body="{ data }">
@@ -74,7 +55,7 @@
                             />
                         </template>
                     </Column>
-                </DataTable>
+                </BasicDataTable>
                 <!-- Delete Confirmation Dialog -->
                 <DeleteDialog
                     v-model:visible="actions.deleteDialogVisible.value"
@@ -87,7 +68,7 @@
     </PageContainer>    
 </template>
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, h } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions} from '@/composables/useRowActions.js';
@@ -95,7 +76,7 @@ import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import TableLoadingState from '@/components/datatable/TableLoadingState.vue';
-import DataTable from 'primevue/datatable';
+import BasicDataTable from '@/components/datatable/BasicDataTable.vue';
 import CreateButton from '@/components/datatable/CreateButton.vue';
 import Column from 'primevue/column';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
@@ -113,12 +94,6 @@ const canViewActionsColumn = computed(() =>
 const table = usePaginatedTable({
     endpoint: '/settings/languages',
     initialPerPage: 5,
-    filterConfig: {
-        name: { 
-            defaultValue: null, 
-            matchMode: 'contains' 
-        },
-    },
     mapResponse: (response) => ({
         data: response.data.data.languages,
         total: response.data.data.total,
@@ -132,6 +107,35 @@ const table = usePaginatedTable({
         });
     },
 });
+
+const renderActionsBody = ({ data }) =>
+    h(RowActionButtons, {
+        'can-edit': can('edit languages'),
+        'can-delete': can('delete languages'),
+        'edit-label': $t('Edit'),
+        'delete-label': $t('Delete'),
+        onEdit: () => actions.handleEdit(data.id),
+        onDelete: () => actions.handleDelete(data.id),
+    });
+
+const columns = computed(() => [
+    {
+        key: 'id',
+        header: $t('ID'),
+        body: ({ data }) => data?.id ?? '',
+    },
+    {
+        key: 'name',
+        header: $t('Name'),
+        body: ({ data }) => data?.name ?? '',
+    },
+    {
+        key: 'actions',
+        header: $t('Actions'),
+        visible: () => canViewActionsColumn.value,
+        body: renderActionsBody,
+    }
+]);
 
 const actions = useRowActions({
     editRouteName: 'settings.languages.edit',
