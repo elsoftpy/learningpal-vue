@@ -1,7 +1,7 @@
 import { h } from 'vue';
 import InputText from 'primevue/inputtext';
 import Tag from 'primevue/tag';
-import Button from 'primevue/button';
+import ResourceViewerCell from '@/components/datatable/ResourceViewerCell.vue';
 
 /**
  * Helper factories to keep DataTable column configs declarative.
@@ -120,14 +120,15 @@ export function statusTagColumn(options = {}) {
     };
 }
 
-export function paymentColumn(options = {}) {
+export function resourceViewerColumn(options = {}) {
     const {
-        key = 'payment',
+        key = 'resource',
         header,
-        receiptField = 'payment_receipt',
-        onViewReceipt,
+        resourceField = 'resource',
         viewLabel = 'View',
         emptyLabel = 'None',
+        buttonIcon = 'pi pi-eye',
+        modalTitle,
         style,
     } = options;
 
@@ -135,20 +136,13 @@ export function paymentColumn(options = {}) {
         key,
         header,
         style,
-        body: ({ data }) => {
-            const receipt = data?.[receiptField];
-
-            if (!receipt) {
-                return h('span', { class: 'text-gray-400 text-sm' }, emptyLabel);
-            }
-
-            return h(Button, {
-                type: 'button',
-                label: viewLabel,
-                icon: 'pi pi-eye',
-                size: 'small',
-                onClick: () => typeof onViewReceipt === 'function' && onViewReceipt(data),
-            });
+        bodyComponent: ResourceViewerCell,
+        bodyProps: {
+            resourceField,
+            viewLabel,
+            emptyLabel,
+            buttonIcon,
+            modalTitle,
         },
     };
 }

@@ -38,47 +38,15 @@
             </Transition>
         </template>
     </ResourceTableLayout>
-    <!-- Modal for Payment Receipt -->
-    <Dialog 
-        v-model:visible="receiptModal" 
-        modal
-        :closable="false"
-    >
-        <template #header >
-            <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-blue-500">
-                <span class="text-xl font-semibold">{{ $t('Payment Receipt') }}</span>
-                <Button
-                    icon="pi pi-times"
-                    rounded
-                    size="small"
-                    severity="primary"
-                    variant="outlined"
-                    class="text-white! border-2! hover:text-gray-800!"
-                    @click="receiptModal = false"
-                />
-            </div>
-        </template>
-        <a :href="receiptUrl" target="_blank" rel="noopener noreferrer">
-            <img v-if="isImageUrl(receiptUrl)" :src="receiptUrl" class="w-full rounded">
-            <IconWrapper
-                v-else
-                name="file-pdf"
-                class="text-red-600 text-center mx-auto my-8"
-                size="256"
-            />
-        </a>
-    </Dialog>
 </template>
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
 import { useI18n } from 'vue-i18n';
-import { textColumn, textWithAvatarColumn, tagsArrayColumn, statusTagColumn, paymentColumn } from '@/components/datatable/columnFactories.js';
+import { textColumn, textWithAvatarColumn, tagsArrayColumn, statusTagColumn, resourceViewerColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
-import Dialog from 'primevue/dialog';
-import IconWrapper from '@/components/common/IconWrapper.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 
 const { t: $t } = useI18n();
@@ -151,12 +119,13 @@ const columns = computed(() => [
         header: $t('Status'),
         style: 'min-width: 10%',
     }),
-    paymentColumn({
+    resourceViewerColumn({
         header: $t('Payment'),
         style: 'min-width: 5%',
         viewLabel: $t('View'),
         emptyLabel: $t('None'),
-        onViewReceipt: (row) => showReceipt(row.payment_receipt),
+        modalTitle: $t('Payment Receipt'),
+        resourceField: 'payment_receipt',
     }),
     {
         key: 'actions',
@@ -175,18 +144,6 @@ const columns = computed(() => [
     },
 ]);
 
-/* Payment receipt modal */
-const receiptModal = ref(false);
-const receiptUrl = ref(null);
-
-function showReceipt(url) {
-    receiptUrl.value = url;
-    receiptModal.value = true;
-}
-
-function isImageUrl(url) {
-    return(url.match(/\.(jpeg|jpg|gif|png|svg)$/) != null);
-}
 </script>
 
 <style scoped>

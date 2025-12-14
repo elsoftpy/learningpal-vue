@@ -5,7 +5,7 @@
     :weight="weight"
     :aria-label="ariaLabel || props.name"
     role="img"
-    class="inline-block align-middle text-current"
+    class="align-middle text-current"
     v-bind="$attrs"
   />
 </template>
