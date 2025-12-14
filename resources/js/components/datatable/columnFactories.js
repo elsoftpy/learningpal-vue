@@ -22,6 +22,10 @@ export function textColumn(options = {}) {
         formatter,
         emptyValue = '',
         body,
+        filterable = false,
+        filterPlaceholder = '',
+        filterComponent,
+        filterProps,
         ...rest
     } = options;
 
@@ -33,7 +37,7 @@ export function textColumn(options = {}) {
         return value ?? emptyValue;
     };
 
-    return {
+    const column = {
         key,
         header,
         field,
@@ -43,6 +47,16 @@ export function textColumn(options = {}) {
         ...rest,
         body: body || defaultBody,
     };
+
+    if (filterable) {
+        column.showFilterMenu = false;
+        column.filter = filterComponent || createTextFilterRenderer({ placeholder: filterPlaceholder });
+        if (filterProps) {
+            column.filterProps = filterProps;
+        }
+    }
+
+    return column;
 }
 
 export function textWithAvatarColumn(options = {}) {
@@ -53,16 +67,28 @@ export function textWithAvatarColumn(options = {}) {
         fieldName = 'full_name',
         avatarField = 'avatar_url',
         style,
+        filterable = true,
+        filterPlaceholder = placeholder,
+        filterComponent,
+        filterProps,
     } = options;
 
-    return {
+    const column = {
         key,
         header,
         style,
-        showFilterMenu: false,
-        filter: createTextFilterRenderer({ placeholder }),
         body: createAvatarNameRenderer({ fieldName, avatarField }),
     };
+
+    if (filterable) {
+        column.showFilterMenu = false;
+        column.filter = filterComponent || createTextFilterRenderer({ placeholder: filterPlaceholder });
+        if (filterProps) {
+            column.filterProps = filterProps;
+        }
+    }
+
+    return column;
 }
 
 export function tagsArrayColumn(options = {}) {
