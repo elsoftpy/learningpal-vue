@@ -94,7 +94,7 @@ class UserProfileRequest extends FormRequest
 
     public function prepareForValidation()
     {
-        if ($this->has('birth_date')) {
+        if ($this->has('birth_date') && $this->birth_date) {
             $birthDate = match(app()->getLocale()) {
                 'es', 'pt' => Carbon::createFromFormat('d/m/Y', $this->input('birth_date')),
                 'en' => Carbon::createFromFormat('m/d/Y', $this->input('birth_date')),
