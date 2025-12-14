@@ -114,6 +114,7 @@
   "Users List": "Lista de usuarios",
   "Add User": "Agregar usuario",
   "Are you sure you want to delete this language?": "¿Estás seguro de que deseas eliminar este idioma?",
+  "An error occurred while deleting the language.": "Ocurrió un error al eliminar el idioma.",
   "Search language": "Buscar idioma",
   "Language deleted successfully.": "Idioma eliminado con éxito.",
   "Languages List": "Lista de idiomas",
