@@ -89,8 +89,8 @@ import InputText from 'primevue/inputtext';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import IconWrapper from '@/components/common/IconWrapper.vue';
-import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
+import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
@@ -196,16 +196,6 @@ const renderPaymentBody = ({ data }) =>
         })
         : h('span', { class: 'text-gray-400 text-sm' }, $t('None'));
 
-const renderActionsBody = ({ data }) =>
-    h(RowActionButtons, {
-        'can-edit': can('edit users'),
-        'can-delete': can('delete users'),
-        'edit-label': $t('Edit'),
-        'delete-label': $t('Delete'),
-        onEdit: () => actions.handleEdit(data.id),
-        onDelete: () => actions.handleDelete(data.id),
-    });
-
 const columns = computed(() => [
     { 
         key: 'expander',
@@ -249,7 +239,15 @@ const columns = computed(() => [
         header: $t('Actions'),
         style: 'min-width: 15%',
         visible: () => canViewActionsColumn.value,
-        body: renderActionsBody,
+        bodyComponent: RowActionsColumn,
+        bodyProps: {
+            editPermission: 'edit users',
+            deletePermission: 'delete users',
+            editLabel: $t('Edit'),
+            deleteLabel: $t('Delete'),
+            onEdit: (row) => actions.handleEdit(row.id),
+            onDelete: (row) => actions.handleDelete(row.id),
+        },
     },
 ]);
 

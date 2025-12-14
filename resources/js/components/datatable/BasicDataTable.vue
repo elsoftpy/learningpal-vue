@@ -17,11 +17,11 @@
         >
             <!-- Body Slot -->
             <template v-if="col.bodyComponent" #body="slotProps">
-                <component :is="col.bodyComponent" v-bind="slotProps" />
+                <component :is="col.bodyComponent" v-bind="resolveScopedProps(slotProps, col.bodyProps)" />
             </template>
             <!-- Filter -->
             <template v-if="col.filterComponent" #filter="slotProps">
-                <component :is="col.filterComponent" v-bind="slotProps" />
+                <component :is="col.filterComponent" v-bind="resolveScopedProps(slotProps, col.filterProps)" />
             </template>
         </Column>
         <!-- Expansion -->
@@ -92,6 +92,8 @@ const normalizedColumns = computed(() =>
             ...col,
             bodyComponent: wrapSlotRenderer(col.bodyComponent || col.body),
             filterComponent: wrapSlotRenderer(col.filterComponent || col.filter),
+            bodyProps: col.bodyProps,
+            filterProps: col.filterProps,
         }))
 );
 
@@ -103,6 +105,25 @@ function columnProps(col) {
         style: col.style,
         expander: col.expander ?? col.isExpander,
         showFilterMenu: col.showFilterMenu,
+    };
+}
+
+function resolveScopedProps(slotProps, scopedProps) {
+    if (!scopedProps) {
+        return slotProps;
+    }
+
+    const resolved = typeof scopedProps === 'function'
+        ? scopedProps(slotProps)
+        : scopedProps;
+
+    if (!resolved) {
+        return slotProps;
+    }
+
+    return {
+        ...slotProps,
+        ...resolved,
     };
 }
 </script>

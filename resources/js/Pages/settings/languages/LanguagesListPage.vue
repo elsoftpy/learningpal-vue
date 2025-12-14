@@ -21,7 +21,7 @@
 
 </template>
 <script setup>
-import { onMounted, computed, h } from 'vue';
+import { onMounted, computed } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
 import { usePaginatedTable } from '@/composables/usePaginatedTable';
 import { useRowActions} from '@/composables/useRowActions.js';
@@ -29,7 +29,7 @@ import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
-import RowActionButtons from '@/components/datatable/RowActionButtons.vue';
+import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 const { t : $t } = useI18n();
@@ -56,16 +56,6 @@ const table = usePaginatedTable({
     },
 });
 
-const renderActionsBody = ({ data }) =>
-    h(RowActionButtons, {
-        'can-edit': can('edit languages'),
-        'can-delete': can('delete languages'),
-        'edit-label': $t('Edit'),
-        'delete-label': $t('Delete'),
-        onEdit: () => actions.handleEdit(data.id),
-        onDelete: () => actions.handleDelete(data.id),
-    });
-
 const columns = computed(() => [
     textColumn({
         key: 'id',
@@ -81,7 +71,15 @@ const columns = computed(() => [
         key: 'actions',
         header: $t('Actions'),
         visible: () => canViewActionsColumn.value,
-        body: renderActionsBody,
+        bodyComponent: RowActionsColumn,
+        bodyProps: {
+            editPermission: 'edit languages',
+            deletePermission: 'delete languages',
+            editLabel: $t('Edit'),
+            deleteLabel: $t('Delete'),
+            onEdit: (row) => actions.handleEdit(row.id),
+            onDelete: (row) => actions.handleDelete(row.id),
+        },
     }
 ]);
 
