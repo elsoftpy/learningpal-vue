@@ -28,6 +28,7 @@ class Profile extends Model implements HasMedia
         'phone',
         'address',
         'gender',
+        'birth_date',
     ];
 
     public function user(): HasOne
