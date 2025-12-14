@@ -10,7 +10,7 @@
         <!-- Actual Table Content stays mounted for focus retention -->
         <div
             class="w-full"
-            :class="isLoading ? 'hidden' : 'block'"
+            :class="isLoading ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'"
         >
             <slot />
         </div>
