@@ -65,8 +65,8 @@
                 <DeleteDialog
                     v-if="hasDeleteDialog"
                     v-model:visible="deleteDialogVisible"
-                    :message="props.deleteDialog.message"
-                    :onDelete="props.deleteDialog.onDelete"
+                    :message="resolvedDeleteDialog.message"
+                    :onDelete="resolvedDeleteDialog.onDelete"
                     :loading="deleteDialogLoading"
                 />
             </TableLoadingState>
@@ -157,16 +157,20 @@ const props = defineProps({
     },
 });
 
-const hasDeleteDialog = computed(() => Boolean(props.deleteDialog));
+const resolvedDeleteDialog = computed(() => unref(props.deleteDialog));
+
+const hasDeleteDialog = computed(() => Boolean(resolvedDeleteDialog.value));
 
 const deleteDialogVisible = computed({
     get() {
-        if (!props.deleteDialog) return false;
-        return unref(props.deleteDialog.visible) ?? false;
+        const dialog = resolvedDeleteDialog.value;
+        if (!dialog) return false;
+        return unref(dialog.visible) ?? false;
     },
     set(value) {
-        if (!props.deleteDialog) return;
-        const target = props.deleteDialog.visible;
+        const dialog = resolvedDeleteDialog.value;
+        if (!dialog) return;
+        const target = dialog.visible;
         if (isRef(target)) {
             target.value = value;
         }
@@ -174,8 +178,9 @@ const deleteDialogVisible = computed({
 });
 
 const deleteDialogLoading = computed(() => {
-    if (!props.deleteDialog) return false;
-    return unref(props.deleteDialog.loading) ?? false;
+    const dialog = resolvedDeleteDialog.value;
+    if (!dialog) return false;
+    return unref(dialog.loading) ?? false;
 });
 
 const resolvedRowExpansion = computed(() => {
