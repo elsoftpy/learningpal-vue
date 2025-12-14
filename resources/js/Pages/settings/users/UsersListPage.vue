@@ -10,33 +10,8 @@
         filter-display="row"
         :global-filter-fields="['first_name', 'last_name', 'email']"
         :delete-dialog="actions.deleteDialogConfig"
+        :row-expansion="profileExpansion"
     >
-        <template v-if="canViewProfileData" #expansion="{ data }">
-            <Transition name="table-expand" appear>
-                <div class="expand-panel bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-xs uppercase tracking-wide text-slate-500">
-                                <th class="pb-2 pr-4">{{ $t('Personal ID') }}</th>
-                                <th class="pb-2 pr-4">{{ $t('Email') }}</th>
-                                <th class="pb-2 pr-4">{{ $t('Phone') }}</th>
-                                <th class="pb-2">{{ $t('Address') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="border-t border-slate-200 dark:border-slate-700">
-                                <td class="py-2 pr-4 font-medium">{{ data.personal_id || '—' }}</td>
-                                <td class="py-2 pr-4">{{ data.email || '—' }}</td>
-                                <td class="py-2 pr-4">{{ data.phone || '—' }}</td>
-                                <td class="py-2">{{ data.address || '—' }}</td>
-                            </tr>
-                        </tbody>
-                        </table>
-                    </div>
-                </div>
-            </Transition>
-        </template>
     </ResourceTableLayout>
 </template>
 <script setup>
@@ -53,6 +28,36 @@ const { t: $t, locale } = useI18n();
 const { can } = usePermissions();
 const canViewProfileData = computed(() => can('view profile data'));
 const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
+
+const profileExpansion = computed(() => {
+    if (!canViewProfileData.value) {
+        return null;
+    }
+
+    return {
+        fields: [
+            { label: $t('Personal ID'), field: 'personal_id', cellClass: 'py-2 pr-4 font-medium' },
+            { label: $t('Email'), field: 'email' },
+            { label: $t('Phone'), field: 'phone' },
+            { label: $t('Address'), field: 'address', cellClass: 'py-2' },
+            { label: $t('Birth Date'), field: 'birth_date', cellClass: 'py-2', formatter: ({ data }) => {
+                if (!data.birth_date) {
+                    return '';
+                }
+                const [year, month, day] = data.birth_date.split('-').map(Number);
+                
+                if (!year || !month || !day) {
+                    return data.birth_date;
+                }
+
+                const date = new Date(year, month - 1, day);
+
+                return date.toLocaleDateString(locale.value);
+            } },
+        ],
+        emptyValue: '—',
+    };
+});
 
 
 const table = useSettingsTable({
@@ -113,15 +118,6 @@ const columns = computed(() => [
         style: 'min-width: 15%',
         emptyLabel: $t('None'),
     }),
-    dateColumn({
-        key: 'birth_date',
-        header: $t('Birth Date'),
-        style: 'min-width: 15%',
-        locale: locale.value,
-        formatOptions: { day: '2-digit', month: '2-digit', year: 'numeric' },
-        filterable: true,
-        filterPlaceholder: $t('Select date'),
-    }),
     statusTagColumn({
         header: $t('Status'),
         style: 'min-width: 10%',
@@ -152,26 +148,3 @@ const columns = computed(() => [
 ]);
 
 </script>
-
-<style scoped>
-.expand-panel {
-    overflow: hidden;
-}
-
-.table-expand-enter-active,
-.table-expand-leave-active {
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-}
-
-.table-expand-enter-from,
-.table-expand-leave-to {
-    max-height: 0;
-    opacity: 0;
-}
-
-.table-expand-enter-to,
-.table-expand-leave-from {
-    max-height: 480px;
-    opacity: 1;
-}
-</style>

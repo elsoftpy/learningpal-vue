@@ -54,6 +54,9 @@
                     <template v-if="$slots.expansion" #expansion="slotProps">
                         <slot name="expansion" v-bind="slotProps" />
                     </template>
+                    <template v-else-if="resolvedRowExpansion" #expansion="slotProps">
+                        <RowExpansionPanel :data="slotProps.data" :config="resolvedRowExpansion" />
+                    </template>
                 </BasicDataTable>
                 <!-- After table slot-->
                 <slot />
@@ -79,6 +82,7 @@ import BasicDataTable from '@/components/datatable/BasicDataTable.vue';
 import DataTableToolbar from '@/components/datatable/DataTableToolbar.vue';
 import CreateButton from '@/components/datatable/CreateButton.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
+import RowExpansionPanel from '@/components/datatable/RowExpansionPanel.vue';
 
 const { t: $t } = useI18n();
 
@@ -147,6 +151,10 @@ const props = defineProps({
         type: Object,
         default: null,
     },
+    rowExpansion: {
+        type: Object,
+        default: null,
+    },
 });
 
 const hasDeleteDialog = computed(() => Boolean(props.deleteDialog));
@@ -168,5 +176,30 @@ const deleteDialogVisible = computed({
 const deleteDialogLoading = computed(() => {
     if (!props.deleteDialog) return false;
     return unref(props.deleteDialog.loading) ?? false;
+});
+
+const resolvedRowExpansion = computed(() => {
+    if (!props.rowExpansion) {
+        return null;
+    }
+
+    const visible = props.rowExpansion.visible;
+    const isVisible = typeof visible === 'function' ? visible() : visible !== false;
+    if (!isVisible) {
+        return null;
+    }
+
+    const fields = typeof props.rowExpansion.fields === 'function'
+        ? props.rowExpansion.fields()
+        : props.rowExpansion.fields;
+
+    if (!Array.isArray(fields) || !fields.length) {
+        return null;
+    }
+
+    return {
+        ...props.rowExpansion,
+        fields,
+    };
 });
 </script>
