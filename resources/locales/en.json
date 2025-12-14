@@ -121,5 +121,7 @@
   "Add Language": "Add Language",
   "Edit Language": "Edit Language",
   "Language": "Language",
-  "Personal ID": "Personal ID"
+  "Personal ID": "Personal ID",
+  "Language Name is required.": "Language Name is required.",
+  "Language Name": "Language Name"
 }

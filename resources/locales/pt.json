@@ -121,5 +121,7 @@
   "Add Language": "Adicionar idioma",
   "Edit Language": "Editar idioma",
   "Language": "Idioma",
-  "Personal ID": "Identificação pessoal"
+  "Personal ID": "Identificação pessoal",
+  "Language Name is required.": "O nome do idioma é obrigatório.",
+  "Language Name": "Nome do idioma"
 }

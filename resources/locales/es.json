@@ -121,5 +121,7 @@
   "Add Language": "Agregar idioma",
   "Edit Language": "Editar idioma",
   "Language": "Idioma",
-  "Personal ID": "Cédula"
+  "Personal ID": "Cédula",
+  "Language Name is required.": "El nombre del idioma es obligatorio.",
+  "Language Name": "Nombre del idioma"
 }
