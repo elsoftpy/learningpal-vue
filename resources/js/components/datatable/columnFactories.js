@@ -147,6 +147,34 @@ export function statusTagColumn(options = {}) {
     };
 }
 
+export function linkColumn(options = {}) {
+    const {
+        key,
+        header,
+        field = key,
+        style,
+        valueFormatter,
+    } = options;
+
+    return {
+        key,
+        header,
+        style,
+        body: ({ data }) => 
+            h('a', {
+                href: data?.[field],
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                class: 'text-blue-600 hover:underline',
+            }, 
+            typeof valueFormatter === 'function'
+                ? valueFormatter(data?.[field])
+                : data?.[field]
+            )
+    };
+
+}
+
 export function dateColumn(options = {}) {
     if (!options.key) {
         throw new Error('dateColumn requires a key');

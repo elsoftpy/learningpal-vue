@@ -24,6 +24,7 @@ import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue'
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 import { statusTagColumn } from '@/components/datatable/columnFactories';
 import { text } from '@primeuix/themes/aura/inlinemessage';
+import { linkColumn } from '../../../../components/datatable/columnFactories';
 
 const { t : $t } = useI18n();
 const { can } = usePermissions();
@@ -57,7 +58,7 @@ const columns = computed(() => [
         key: 'language_level',
         header: $t('Language Level'),
     }),
-    textColumn({
+    linkColumn({
         key: 'chat_room_link',
         header: $t('Chat Room Link'),
     }),
