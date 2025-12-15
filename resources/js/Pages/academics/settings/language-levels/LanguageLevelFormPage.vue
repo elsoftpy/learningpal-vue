@@ -10,7 +10,7 @@
         <PageContainer>
             <template #body>
                 <div class="flex flex-col w-full space-y-4">
-                    <div class="flex w-full space-x-2">
+                    <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
                         <!-- Language Level Description -->
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

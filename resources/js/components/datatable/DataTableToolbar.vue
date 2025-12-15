@@ -1,9 +1,9 @@
 <template>
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between space-y-1 md:space-y-0">
         <div class="flex flex-1">
             <slot name="actions"></slot>
         </div>
-        <div class="flex items-center space-x-2">
+        <div class="flex w-full md:w-auto items-center space-x-2">
             <slot name="before-filter"></slot>
             <Button
                 v-if="hasActiveFilters"
@@ -13,13 +13,14 @@
                 :label="clearFilterLabel"
                 @click="$emit('clear-filters')"
             />
-            <IconField>
+            <IconField class="w-full md:w-auto">
                 <InputIcon>
                     <i class="pi pi-search"></i>
                 </InputIcon>
                 <InputText
                     :value="searchQuery"
                     :placeholder="searchPlaceholder"
+                    class="w-full md:w-auto"
                     @input="handleInput"
                 />
             </IconField>
