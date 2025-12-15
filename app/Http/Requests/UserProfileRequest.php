@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\StatusEnum;
 use App\Http\Requests\Traits\ProfileValidationTrait;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -95,11 +96,15 @@ class UserProfileRequest extends FormRequest
     public function prepareForValidation()
     {
         if ($this->has('birth_date') && $this->birth_date) {
-            $birthDate = match(app()->getLocale()) {
-                'es', 'pt' => Carbon::createFromFormat('d/m/Y', $this->input('birth_date')),
-                'en' => Carbon::createFromFormat('m/d/Y', $this->input('birth_date')),
-                default => Carbon::createFromFormat('Y-m-d', $this->input('birth_date')),
-            };
+            try {
+                $birthDate = match(app()->getLocale()) {
+                    'es', 'pt' => Carbon::createFromFormat('d/m/Y', $this->input('birth_date'))->format('Y-m-d'),
+                    'en' => Carbon::createFromFormat('m-d-Y', $this->input('birth_date'))->format('Y-m-d'),
+                    default => $this->input('birth_date'),
+                };
+            } catch (Exception $e) {
+                $birthDate = null;
+            }
         }
 
         $this->merge([

@@ -3,6 +3,7 @@
 namespace App\Services\Traits;
 
 use App\Models\User;
+use Carbon\Carbon;
 
 trait UserProfileTrait
 {
@@ -40,7 +41,14 @@ trait UserProfileTrait
             'phone' => $profile->phone ?? null,
             'address' => $profile->address ?? null,
             'gender' => $profile->gender ?? null,
-            'birth_date' => $profile->birth_date ?? null,
+            'birth_date' => $profile->birth_date 
+                ? Carbon::parse($profile->birth_date)
+                    ->format(match(app()->getLocale()) {
+                        'es', 'pt' => 'd/m/Y',
+                        'en' => 'm-d-Y',
+                        default => 'Y-m-d',
+                    }) 
+                : null,
             'full_name' => $profile->full_name ?? null,
             'email' => $user->email,
             'status' => $user->status,
