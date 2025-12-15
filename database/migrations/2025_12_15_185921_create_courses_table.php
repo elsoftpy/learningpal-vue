@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('language_levels', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('language_id')->constrained();
-            $table->string('description');
-            $table->string('level')->nullable();
-            $table->string('status')->default('active')->comment('Level status: active, disabled');
+            $table->foreignId('language_level_id')->constrained();
+            $table->string('name');
+            $table->string('chat_room_link')->nullable();
+            $table->string('status')->default('active')->comment('Course status: active, disabled');
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('language_levels');
+        Schema::dropIfExists('courses');
     }
 };

@@ -52,6 +52,12 @@
                                     baseRoute="academics.settings.language-levels"
                                     :title="$t('Language Levels')"
                                 />
+                                <PlainMenuItem
+                                    v-if="can('view courses')"
+                                    :route="{ name: 'academics.settings.courses.list' }"
+                                    baseRoute="academics.settings.courses"
+                                    :title="$t('Courses')"
+                                />
                             </template>
                         </SubmoduleMenuItem>
                         <!-- Academic Classes Menu-->

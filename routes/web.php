@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Selectable\LanguageListController;
@@ -87,25 +88,32 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
 
 Route::prefix('academics')->name('academics.')->middleware('auth')->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('/language-levels', [LanguageLevelController::class, 'index'])
-            ->name('language_levels')
-            ->middleware('can:view language levels');
+        Route::prefix('language-levels')->name('language-levels.')->group(function () {
+            Route::get('/', [LanguageLevelController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view language levels');
 
-        Route::post('/language-levels', [LanguageLevelController::class, 'store'])
-            ->name('language_levels.store')
-            ->middleware('can:create language levels');
+            Route::post('/', [LanguageLevelController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create language levels');
 
-        Route::post('/language-levels/{languageLevel}/data', [LanguageLevelController::class, 'languageLevelData'])
-            ->name('language_levels.data')
-            ->middleware('can:view language levels');
+            Route::post('/{languageLevel}/data', [LanguageLevelController::class, 'languageLevelData'])
+                ->name('data')
+                ->middleware('can:view language levels');
 
-        Route::post('/language-levels/{languageLevel}/edit', [LanguageLevelController::class, 'update'])
-            ->name('language_levels.edit')
-            ->middleware('can:edit language levels');
-            
-        Route::post('/language-levels/{languageLevel}/destroy', [LanguageLevelController::class, 'destroy'])
-            ->name('language_levels.destroy')
-            ->middleware('can:delete language levels');
+            Route::post('/{languageLevel}/edit', [LanguageLevelController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit language levels');
+
+            Route::post('/{languageLevel}/destroy', [LanguageLevelController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete language levels');
+        });
+        Route::prefix('courses')->name('courses.')->group(function () {
+            Route::get('/', [CourseController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view courses');
+        });
     });
 });
 

@@ -140,7 +140,7 @@ const routes = [
   {
     path: '/academics/settings/language-levels',
     name: 'academics.settings.language-levels.list',
-    component: () => import('../Pages/academics/settings/language-levels/LanguageLevelsList.vue'),
+    component: () => import('../Pages/academics/settings/language-levels/LanguageLevelsListPage.vue'),
     meta: { 
       requiresAuth: true,
       module: 'academics', 
@@ -174,6 +174,19 @@ const routes = [
       title: 'Edit Language Level',
       headerIcon: 'pencil',
       crud: 'edit',
+    },
+  },
+  {
+    path: '/academics/settings/courses',
+    name: 'academics.settings.courses.list',
+    component: () => import('../Pages/academics/settings/courses/CoursesListPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'settings', 
+      title: 'Courses',
+      headerIcon: 'list',
+      crud: 'read',
     },
   },
   {

@@ -55,13 +55,36 @@ class PermissionSeeder extends Seeder
             'create language levels',
             'edit language levels',
             'delete language levels',
+            'view courses',
+            'create courses',
+            'edit courses',
+            'delete courses',
+            'view teachers',
+            'create teachers',
+            'edit teachers',
+            'delete teachers',
+            'view students',
+            'create students',
+            'edit students',
+            'delete students',
+        ];
+
+        foreach ($academicSettingsPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        $academicLessonsPermissions = [
             'view class schedules',
             'create class schedules',
             'edit class schedules',
             'delete class schedules',
+            'view classes',
+            'create classes',
+            'edit classes',
+            'delete classes',
         ];
 
-        foreach ($academicSettingsPermissions as $permission) {
+        foreach ($academicLessonsPermissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 

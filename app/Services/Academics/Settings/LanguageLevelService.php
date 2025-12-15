@@ -13,7 +13,7 @@ class LanguageLevelService
             'description' => $languageLevel->description,
             'level' => $languageLevel->level,
             'status' => $languageLevel->status,
-            'display_status' => ucfirst($languageLevel->status),
+            'display_status' => ucfirst(__($languageLevel->status)),
             'language_name' => $languageLevel->language->name ?? null,
         ];
     }
