@@ -3,8 +3,7 @@ import { z } from 'zod';
 export const createCourseSchema = (t) => {
     return z.object({
         name: z.string()
-            .min(2, { message: t('Name must be at least 2 characters long.') })
-            .max(100, { message: t('Name must be at most 100 characters long.') }),
+            .min(1, { message: t('Course Name is required.') }),
         language_id: z.number()
             .min(1, { message: t('Language is required.') }),
         language_level_id: z.number()
