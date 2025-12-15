@@ -123,5 +123,18 @@
   "Language": "Idioma",
   "Personal ID": "Identificação pessoal",
   "Language Name is required.": "O nome do idioma é obrigatório.",
-  "Language Name": "Nome do idioma"
+  "Language Name": "Nome do idioma",
+  "Language Level": "Nível de idioma",
+  "Level": "Nível",
+  "Select a Language": "Selecione um idioma",
+  "Language Level Name is required.": "O nome do nível de idioma é obrigatório.",
+  "Language Level saved successfully.": "ível de idioma salvo com sucesso",
+  "Language Levels List": "Lista de níveis de idioma",
+  "Add Language Level": "Adicionar nível de idioma",
+  "Edit Language Level": "Editar nível de idioma",
+  "Academics": "Acadêmico",
+  "Language Level is required.": "O nível de idioma é obrigatório.",
+  "Language is required.": "O idioma é obrigatório.",
+  "Status is required.": "O status é obrigatório.",
+  "Create Language Level": "Criar nível de idioma"
 }

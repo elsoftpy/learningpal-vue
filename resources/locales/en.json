@@ -123,5 +123,18 @@
   "Language": "Language",
   "Personal ID": "Personal ID",
   "Language Name is required.": "Language Name is required.",
-  "Language Name": "Language Name"
+  "Language Name": "Language Name",
+  "Language Level": "Language Level",
+  "Level": "Level",
+  "Select a Language": "Select a Language",
+  "Language Level Name is required.": "Language Level Name is required.",
+  "Language Level saved successfully.": "Language Level saved successfully.",
+  "Language Levels List": "Language Levels List",
+  "Add Language Level": "Add Language Level",
+  "Edit Language Level": "Edit Language Level",
+  "Academics": "Academics",
+  "Language Level is required.": "Language Level is required.",
+  "Language is required.": "Language is required.",
+  "Status is required.": "Status is required.",
+  "Create Language Level": "Create Language Level"
 }

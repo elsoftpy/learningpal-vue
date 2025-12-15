@@ -123,5 +123,18 @@
   "Language": "Idioma",
   "Personal ID": "Cédula",
   "Language Name is required.": "El nombre del idioma es obligatorio.",
-  "Language Name": "Nombre del idioma"
+  "Language Name": "Nombre del idioma",
+  "Language Level": "Nivel de idioma",
+  "Level": "Nivel",
+  "Select a Language": "Selecciona un idioma",
+  "Language Level Name is required.": "El nombre del nivel de idioma es obligatorio.",
+  "Language Level saved successfully.": "Nivel de idioma guardado con éxito",
+  "Language Levels List": "Lista de niveles de idioma",
+  "Add Language Level": "Agregar nivel de idioma",
+  "Edit Language Level": "Editar nivel de idioma",
+  "Academics": "Académico",
+  "Language Level is required.": "El nivel de idioma es obligatorio.",
+  "Language is required.": "El idioma es obligatorio.",
+  "Status is required.": "El estado es obligatorio.",
+  "Create Language Level": "Crear nivel de idioma"
 }
