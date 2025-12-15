@@ -77,7 +77,7 @@ const columns = computed(() => [
 
 const actions = useRowActions({
     editRouteName: 'academics.settings.language-levels.edit',
-    deleteEndpoint: '/academics/language-levels/:id/destroy',
+    deleteEndpoint: '/academics/settings/language-levels/:id/destroy',
     onDeleteSuccess: () => {
         table.refresh();
     },

@@ -86,6 +86,22 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
         Route::get('/language-levels', [LanguageLevelController::class, 'index'])
             ->name('language_levels')
             ->middleware('can:view language levels');
+
+        Route::post('/language-levels', [LanguageLevelController::class, 'store'])
+            ->name('language_levels.store')
+            ->middleware('can:create language levels');
+
+        Route::post('/language-levels/{languageLevel}/data', [LanguageLevelController::class, 'languageLevelData'])
+            ->name('language_levels.data')
+            ->middleware('can:view language levels');
+
+        Route::post('/language-levels/{languageLevel}/edit', [LanguageLevelController::class, 'update'])
+            ->name('language_levels.edit')
+            ->middleware('can:edit language levels');
+            
+        Route::post('/language-levels/{languageLevel}/destroy', [LanguageLevelController::class, 'destroy'])
+            ->name('language_levels.destroy')
+            ->middleware('can:delete language levels');
     });
 });
 

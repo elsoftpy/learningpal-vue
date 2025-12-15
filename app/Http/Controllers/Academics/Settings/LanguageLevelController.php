@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Academics\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LanguageLevelRequest;
 use App\Models\LanguageLevel;
 use App\Services\Academics\Settings\LanguageLevelService;
 use App\Services\Traits\FilterResolverTrait;
@@ -48,6 +49,54 @@ class LanguageLevelController extends Controller
                 'language_levels' => $languageLevels,
                 'total' => $paginated->total(),
             ],
+        );
+    }
+
+    public function languageLevelData(LanguageLevel $languageLevel, LanguageLevelService $languageLevelService)
+    {
+        $languageLevelData = $languageLevelService->languageLevelData($languageLevel);
+
+        return ResponseService::success(
+            data: [
+                'language_level' => $languageLevelData,
+            ],
+        );
+    }
+
+    public function store(LanguageLevelRequest $request, LanguageLevelService $languageLevelService)
+    {
+        $languageLevel = LanguageLevel::create($request->validated());
+
+        $languageLevelData = $languageLevelService->languageLevelData($languageLevel);
+
+        return ResponseService::success(
+            data: [
+                'language_level' => $languageLevelData,
+            ],
+            message: 'Language level created successfully.',
+        );
+    }
+
+    public function update(LanguageLevelRequest $request, LanguageLevel $languageLevel, LanguageLevelService $languageLevelService)
+    {
+        $languageLevel->update($request->validated());
+
+        $languageLevelData = $languageLevelService->languageLevelData($languageLevel);
+
+        return ResponseService::success(
+            data: [
+                'language_level' => $languageLevelData,
+            ],
+            message: 'Language level updated successfully.',
+        );
+    }
+
+    public function destroy(LanguageLevel $languageLevel)
+    {
+        $languageLevel->delete();
+
+        return ResponseService::success(
+            message: 'Language level deleted successfully.',
         );
     }
 }
