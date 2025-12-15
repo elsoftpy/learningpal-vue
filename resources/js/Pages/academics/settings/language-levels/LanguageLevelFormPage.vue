@@ -83,6 +83,7 @@
                                 option-label="name"
                                 option-value="id"
                                 :placeholder="$t('Select a Language')"
+                                filter
                                 class="w-full"
                             />
                             <!-- Client-side error  -->
