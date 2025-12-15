@@ -151,6 +151,32 @@ const routes = [
     },
   },
   {
+    path: '/academics/settings/language-levels/create',
+    name: 'academics.settings.language-levels.create',
+    component: () => import('../Pages/academics/settings/language-levels/LanguageLevelFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'settings', 
+      title: 'Create Language Level',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/settings/language-levels/:id/data',
+    name: 'academics.settings.language-levels.edit',
+    component: () => import('../Pages/academics/settings/language-levels/LanguageLevelFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'settings', 
+      title: 'Edit Language Level',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
     path: '/academics/classes/class-schedules',
     name: 'academics.classes.class-schedules.list',
     component: () => import('../Pages/academics/classes/class-schedules/ClassSchedulesList.vue'),

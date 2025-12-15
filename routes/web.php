@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Selectable\LanguageListController;
 use App\Http\Controllers\Selectable\RoleListController;
 use App\Http\Controllers\Selectable\StatusListController;
 use App\Http\Controllers\Settings\Languages\LanguageController;
@@ -32,8 +33,11 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
     Route::post('/status', StatusListController::class)
         ->name('status');
     
-    Route::post('/roles/', RoleListController::class)
+    Route::post('/roles', RoleListController::class)
         ->name('roles');
+
+    Route::post('/languages', LanguageListController::class)
+        ->name('languages');
 });
 
 Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {
