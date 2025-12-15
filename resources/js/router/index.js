@@ -190,6 +190,32 @@ const routes = [
     },
   },
   {
+    path: '/academics/settings/courses/create',
+    name: 'academics.settings.courses.create',
+    component: () => import('../Pages/academics/settings/courses/CourseFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'settings', 
+      title: 'Create Course',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/settings/courses/:id/data',
+    name: 'academics.settings.courses.edit',
+    component: () => import('../Pages/academics/settings/courses/CourseFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'settings', 
+      title: 'Edit Course',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
     path: '/academics/classes/class-schedules',
     name: 'academics.classes.class-schedules.list',
     component: () => import('../Pages/academics/classes/class-schedules/ClassSchedulesList.vue'),

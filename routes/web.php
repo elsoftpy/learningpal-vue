@@ -3,6 +3,7 @@
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Selectable\LanguageLanguageLevelListController;
 use App\Http\Controllers\Selectable\LanguageListController;
 use App\Http\Controllers\Selectable\RoleListController;
 use App\Http\Controllers\Selectable\StatusListController;
@@ -39,6 +40,9 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
 
     Route::post('/languages', LanguageListController::class)
         ->name('languages');
+
+    Route::post('/language-levels', LanguageLanguageLevelListController::class)
+        ->name('language-levels');
 });
 
 Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {
@@ -113,6 +117,22 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
             Route::get('/', [CourseController::class, 'index'])
                 ->name('index')
                 ->middleware('can:view courses');
+
+            Route::post('/', [CourseController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create courses');
+
+            Route::post('/{course}/data', [CourseController::class, 'courseData'])
+                ->name('data')
+                ->middleware('can:view courses');
+
+            Route::post('/{course}/edit', [CourseController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit courses');
+
+            Route::post('/{course}/destroy', [CourseController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete courses');
         });
     });
 });

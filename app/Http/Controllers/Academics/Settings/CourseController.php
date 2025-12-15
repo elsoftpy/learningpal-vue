@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Academics\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CourseRequest;
 use App\Models\Course;
 use App\Services\Academics\Settings\CourseService;
 use App\Services\Traits\FilterResolverTrait;
@@ -50,6 +51,55 @@ class CourseController extends Controller
                 'courses' => $courses,
                 'total' => $paginated->total(),
             ],
+        );
+    }
+
+    public function courseData(Course $course, CourseService $courseService)
+    {
+        $courseData = $courseService->courseData($course);
+
+        return ResponseService::success(
+            data: [
+                'course' => $courseData,
+            ],
+        );
+    }
+
+    public function store(CourseRequest $request, CourseService $courseService)
+    {
+        
+        $course = Course::create($request->validated());
+
+        $courseData = $courseService->courseData($course);
+
+        return ResponseService::success(
+            message: 'Course created successfully.',
+            data: [
+                'course' => $courseData,
+            ],
+        );
+    }
+
+    public function update(CourseRequest $request, Course $course, CourseService $courseService)
+    {
+        $course->update($request->validated());
+
+        $courseData = $courseService->courseData($course);
+
+        return ResponseService::success(
+            message: 'Course updated successfully.',
+            data: [
+                'course' => $courseData,
+            ],
+        );
+    }
+
+    public function destroy(Course $course)
+    {
+        $course->delete();
+
+        return ResponseService::success(
+            message: 'Course deleted successfully.',
         );
     }
 }
