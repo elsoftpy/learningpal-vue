@@ -22,7 +22,7 @@
             class="absolute right-0 mt-2 w-48 py-1 bg-blue-200 dark:bg-blue-700 rounded shadow-lg z-50"
         >
             <router-link
-                :to="{ name: 'settings.users.profile', params: { userId: auth.user.id } }"
+                :to="{ name: 'settings.users.profile', params: { id: auth.user.id } }"
                 class="block px-4 py-2 text-sm text-slate-900 dark:text-white hover:bg-blue-300 dark:hover:bg-blue-600"
             >
                 <div class="flex space-x-2 items-center">
