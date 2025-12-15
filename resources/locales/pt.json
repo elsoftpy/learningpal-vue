@@ -136,5 +136,10 @@
   "Language Level is required.": "O nível de idioma é obrigatório.",
   "Language is required.": "O idioma é obrigatório.",
   "Status is required.": "O status é obrigatório.",
-  "Create Language Level": "Criar nível de idioma"
+  "Create Language Level": "Criar nível de idioma",
+  "Language level deleted successfully.": "Nível de idioma excluído com sucesso.",
+  "An error occurred while deleting the language level.": "Ocorreu um erro ao excluir o nível de idioma.",
+  "Are you sure you want to delete this language level?": "Tem certeza de que deseja excluir este nível de idioma?",
+  "Search language levels...": "Pesquisar níveis de idioma...",
+  "Description": "Descrição"
 }

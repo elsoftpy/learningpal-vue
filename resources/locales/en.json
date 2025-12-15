@@ -136,5 +136,10 @@
   "Language Level is required.": "Language Level is required.",
   "Language is required.": "Language is required.",
   "Status is required.": "Status is required.",
-  "Create Language Level": "Create Language Level"
+  "Create Language Level": "Create Language Level",
+  "Language level deleted successfully.": "Language level deleted successfully.",
+  "An error occurred while deleting the language level.": "An error occurred while deleting the language level.",
+  "Are you sure you want to delete this language level?": "Are you sure you want to delete this language level?",
+  "Search language levels...": "Search language levels...",
+  "Description": "Description"
 }
