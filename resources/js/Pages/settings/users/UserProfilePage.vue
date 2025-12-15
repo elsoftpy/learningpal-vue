@@ -202,6 +202,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createUserSchema } from '@/schemas/user';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
+import { useFormValues } from '@/composables/useFormValues';
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
 import { usePermissions } from '@/composables/usePermissions';
 import { Form } from '@primevue/forms';
@@ -223,6 +224,7 @@ import SubmitButton from '../../../components/form/SubmitButton.vue';
 const { locale, t: $t } = useI18n();
 const { can } = usePermissions();
 const { handleApiError } = useApiErrorHandler();
+const { extractFormData } = useFormValues();
 const userSchema = computed(() => createUserSchema($t, locale.value));
 const resolver = zodResolver(userSchema.value);
 const auth = useAuthStore();
@@ -407,15 +409,10 @@ const onPaymentReceiptClear = () => {
     emit('update:paymentReceipt', null)
 }
 
-const handleSubmit =  async (formState) => {
+const handleSubmit =  async (formData) => {
     errors.value = {};
 
-    const { valid } = formState;
-
-    const values = Object.keys(formState.states).reduce((acc, key) => {
-        acc[key] = formState.states[key].value;
-        return acc;
-    }, {});
+    const { valid, values } = extractFormData(formData);
     
     // Add type field to values to pass reusabeable validation rules
     values.type = 'person'; // user is always a person

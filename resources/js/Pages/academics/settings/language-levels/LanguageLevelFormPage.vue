@@ -107,19 +107,17 @@
                         </div>
                         <!-- Status -->
                         <div class="flex flex-col w-full md:w-1/2">
-                            <label for="is_active" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label for="active" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 {{ $t('Status') }} <span class="text-red-500">*</span>
                             </label>
-                            <Select
-                                id="status"
-                                name="status"
-                                :options="statusList"
-                                option-label="name"
-                                option-value="value"
-                                :placeholder="$t('Select Status')"
-                                :label="$t('Status')"
-                                class="w-full"
-                            />
+                            <ToggleSwitch
+                                id="active"
+                                name="active"
+                            >
+                                <template #handle="{ checked }">
+                                    <i :class="['text-xs! pi', { 'pi-check-circle': checked, 'pi-times-circle': !checked }]" />
+                                </template>
+                            </ToggleSwitch>
                             <!-- Client-side error  -->
                             <Message
                                 v-if="$form.status?.invalid"
@@ -151,13 +149,14 @@
     </Form>
 </template>
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createLanguageLevelSchema } from '@/schemas/languageLevel';
 import { useToast } from 'primevue/usetoast';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
+import { useFormValues } from '@/composables/useFormValues';
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import axios from 'axios';
@@ -165,10 +164,12 @@ import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Message from 'primevue/message';
+import ToggleSwitch from 'primevue/toggleswitch';
 import SubmitButton from '@/components/form/SubmitButton.vue';
 
 const { t : $t } = useI18n();
 const { handleApiError } = useApiErrorHandler();
+const { extractFormData } = useFormValues();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
@@ -176,7 +177,7 @@ const languageLevelSchema = computed(() => createLanguageLevelSchema($t));
 const resolver = zodResolver(languageLevelSchema.value);
 const languageLevelId = route.params.id || null;
 const formKey = ref(0);
-const crudAction = route.meta?.action || 'read';
+const crudAction = route.meta?.crud || 'read';
 const languageLevelData = ref(null); 
 const languages = ref([]);
 const statusList = ref([]);
@@ -187,15 +188,24 @@ const initialValues = computed(() => {
             level: '',
             language_id: null,
             status: 'active',
+            active: true,
         };
     }
 
+    let active = languageLevelData.value?.status === 'active' ? true : false;
     return {
         description: languageLevelData.value?.description || '',
         level: languageLevelData.value?.level || '',
         language_id: languageLevelData.value?.language_id || null,
         status: languageLevelData.value?.status || 'active',
+        active: active,
     };
+});
+
+watch(languageLevelData, (newData) => {
+    if (newData) {
+        formKey.value++; // Forces form to re-initialize
+    }
 });
 
 const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
@@ -203,6 +213,7 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     level: '',
     language_id: null,
     status: '',
+    active: true,
 });
 
 const fetchLanguageLevelData = async () => {
@@ -221,9 +232,20 @@ const fetchLanguageLevelData = async () => {
     }
 };
 
-const handleSubmit = async ({values}) => {
+const handleSubmit = async (formData) => {
+    const { valid, values } = extractFormData(formData);
+
+    if (!valid) {
+        return;
+    }
+
     isLoading.value = true;
 
+    console.log('crudAction', crudAction);
+    console.log('values', values);
+    values.status = values?.active ? 'active' : 'disabled';
+    delete values?.active;
+    console.log('values before submit', values);
     try {
         let response;
         let url = crudAction === 'create' 
@@ -238,7 +260,7 @@ const handleSubmit = async ({values}) => {
             life: 5000,
         });
 
-        router.push({ name: 'academics.settings.language-levels.index' });
+        router.push({ name: 'academics.settings.language-levels.list' });
     } catch (error) {
         const apiError = handleApiError(error);
         if (apiError.isValidationError) {
@@ -282,7 +304,9 @@ const fetchLanguages = async () => {
 const fetchStatusList = async () => {
     try {
         const response = await axios.post('/lists/status');
-        statusList.value = response.data || [];
+        
+        let availableOptions = response.data.filter(option => option.value === 'active' || option.value === 'disabled');
+        statusList.value = availableOptions || [];
     } catch (error) {
         console.error('Error fetching status list:', error);
         statusList.value = [];

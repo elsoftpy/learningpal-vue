@@ -50,13 +50,14 @@
     </Form>
 </template>
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createLanguageSchema } from '@/schemas/language';
 import { useToast } from 'primevue/usetoast';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
+import { useFormValues } from '@/composables/useFormValues';
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import axios from 'axios';
@@ -67,6 +68,7 @@ import SubmitButton from '@/components/form/SubmitButton.vue';
 
 const { t : $t } = useI18n();
 const { handleApiError } = useApiErrorHandler();
+const { extractFormData } = useFormValues();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
@@ -95,6 +97,12 @@ const initialValues = computed(() => {
     }
 });
 
+watch(languageData, (newData) => {
+    if (newData) {
+        formKey.value++; // Forces form to re-initialize
+    }
+});
+
 const fetchLanguageData = async () => {
     try {
         const response = await axios.post(`/settings/languages/${languageId}/data`);
@@ -111,7 +119,15 @@ const fetchLanguageData = async () => {
     }
 };
 
-const handleSubmit = async ({values}) => {
+const handleSubmit = async (formData) => {
+    
+    const { valid, values } = extractFormData(formData);
+    
+    if (!valid) {
+        isLoading.value = false;
+        return;
+    }
+    
     isLoading.value = true;
     
     try {
