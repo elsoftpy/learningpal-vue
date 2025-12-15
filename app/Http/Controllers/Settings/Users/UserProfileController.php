@@ -23,11 +23,11 @@ class UserProfileController extends Controller
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
 
-        $users = User::query()
+        $usersQuery = User::query()
             ->with('profile');
 
         if ($search) {
-            $users->where(function ($query) use ($search) {
+            $usersQuery->where(function ($query) use ($search) {
                 $query->whereHas('profile', function ($q) use ($search) {
                     $q->where('full_name', 'like', '%' . $search . '%')
                         ->orWhere('company_name', 'like', '%' . $search . '%');
@@ -39,7 +39,7 @@ class UserProfileController extends Controller
         if (array_key_exists('full_name', $filters)) {
             $nameFilter = trim((string) $filters['full_name']);
             if ($nameFilter !== '') {
-                $users->where(function ($query) use ($nameFilter) {
+                $usersQuery->where(function ($query) use ($nameFilter) {
                     $query->whereHas('profile', function ($q) use ($nameFilter) {
                             $q->where('full_name', 'like', '%' . $nameFilter . '%');
                         });
@@ -50,13 +50,13 @@ class UserProfileController extends Controller
         if (array_key_exists('birth_date', $filters)) {
             $birthDateFilter = trim((string) $filters['birth_date']);
             if ($birthDateFilter !== '') {
-                $users->whereHas('profile', function ($q) use ($birthDateFilter) {
+                $usersQuery->whereHas('profile', function ($q) use ($birthDateFilter) {
                     $q->whereDate('birth_date', $birthDateFilter);
                 });
             }
         }
 
-        $paginated = $users->paginate($perPage, ['*'], 'page', $page);
+        $paginated = $usersQuery->paginate($perPage, ['*'], 'page', $page);
         
         $users = $paginated->getCollection()->map(function (User $user) {
 

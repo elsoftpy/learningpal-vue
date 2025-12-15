@@ -136,14 +136,14 @@ const routes = [
       crud: 'edit',
     },
   },
-  /* Academic Module */
+  /* Academics Module */
   {
-    path: '/academic/settings/language-levels',
-    name: 'academic.settings.language-levels.list',
-    component: () => import('../Pages/academic/settings/language-levels/LanguageLevelsList.vue'),
+    path: '/academics/settings/language-levels',
+    name: 'academics.settings.language-levels.list',
+    component: () => import('../Pages/academics/settings/language-levels/LanguageLevelsList.vue'),
     meta: { 
       requiresAuth: true,
-      module: 'academic', 
+      module: 'academics', 
       submodule: 'settings', 
       title: 'Language Levels',
       headerIcon: 'list',
@@ -151,12 +151,12 @@ const routes = [
     },
   },
   {
-    path: '/academic/classes/class-schedules',
-    name: 'academic.classes.class-schedules.list',
-    component: () => import('../Pages/academic/classes/class-schedules/ClassSchedulesList.vue'),
+    path: '/academics/classes/class-schedules',
+    name: 'academics.classes.class-schedules.list',
+    component: () => import('../Pages/academics/classes/class-schedules/ClassSchedulesList.vue'),
     meta: { 
       requiresAuth: true,
-      module: 'academic', 
+      module: 'academics', 
       submodule: 'classes', 
       title: 'Class Schedules',
       headerIcon: 'list',

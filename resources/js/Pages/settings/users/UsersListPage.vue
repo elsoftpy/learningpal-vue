@@ -74,8 +74,8 @@ const table = useSettingsTable({
         },
     },
     mapResponse: (response) => ({
-        data: response.data.data.users,
-        total: response.data.data.total,
+        data: response.data?.data?.users || [],
+        total: response.data?.data?.total || 0,
     }),
 });
 

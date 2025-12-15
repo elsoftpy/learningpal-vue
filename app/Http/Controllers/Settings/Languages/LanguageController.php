@@ -21,13 +21,13 @@ class LanguageController extends Controller
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
 
-        $languages = Language::query();
+        $languagesQuery = Language::query();
 
         if ($search) {
-            $languages->where('name', 'like', '%' . $search . '%');
+            $languagesQuery->where('name', 'like', '%' . $search . '%');
         }
 
-        $paginated = $languages->paginate($perPage, ['*'], 'page', $page);
+        $paginated = $languagesQuery->paginate($perPage, ['*'], 'page', $page);
 
         $languages = $paginated->getCollection()->map(function (Language $language) {
             return (new LanguageService())->languageData($language);

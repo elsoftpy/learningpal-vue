@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Selectable\RoleListController;
 use App\Http\Controllers\Selectable\StatusListController;
@@ -77,6 +78,14 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
         Route::post('/{language}/destroy', [LanguageController::class, 'destroy'])
             ->name('destroy')
             ->middleware('can:delete languages');
+    });
+});
+
+Route::prefix('academics')->name('academics.')->middleware('auth')->group(function () {
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/language-levels', [LanguageLevelController::class, 'index'])
+            ->name('language_levels')
+            ->middleware('can:view language levels');
     });
 });
 

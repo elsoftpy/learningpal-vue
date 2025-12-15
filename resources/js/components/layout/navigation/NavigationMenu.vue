@@ -30,16 +30,16 @@
                 </ModuleMenuItem>
             </template>
         </template>
-        <!-- Academic Menu -->
+        <!-- Academics Menu -->
         <template v-if="can('show academic menu')">
             <ModuleMenuItem
-                module="academic"
-                :moduleName="$t('Academic')"
+                module="academics"
+                :moduleName="$t('Academics')"
                 icon="graduation-cap"
             >
                 <template #items>
                     <template v-if="can('show academic settings menu')">
-                        <!-- Academic Settings Menu-->
+                        <!-- Academics Settings Menu-->
                         <SubmoduleMenuItem
                             submodule="settings"
                             :submoduleName="$t('Settings')"
@@ -48,8 +48,8 @@
                             <template #items>
                                 <PlainMenuItem
                                     v-if="can('view language levels')"
-                                    :route="{ name: 'academic.settings.language-levels.list' }"
-                                    baseRoute="academic.settings.language-levels"
+                                    :route="{ name: 'academics.settings.language-levels.list' }"
+                                    baseRoute="academics.settings.language-levels"
                                     :title="$t('Language Levels')"
                                 />
                             </template>
@@ -63,8 +63,8 @@
                             <template #items>
                                 <PlainMenuItem
                                     v-if="can('view class schedules')"
-                                    :route="{ name: 'academic.classes.class-schedules.list' }"
-                                    baseRoute="academic.classes.class-schedules"
+                                    :route="{ name: 'academics.classes.class-schedules.list' }"
+                                    baseRoute="academics.classes.class-schedules"
                                     :title="$t('Class Schedules')"
                                 />
                             </template>
