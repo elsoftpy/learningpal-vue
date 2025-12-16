@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
+use App\Http\Controllers\Academics\Settings\TeacherController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Selectable\LanguageLanguageLevelListController;
 use App\Http\Controllers\Selectable\LanguageListController;
@@ -133,6 +134,27 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
             Route::post('/{course}/destroy', [CourseController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:delete courses');
+        });
+        Route::prefix('teachers')->name('teachers.')->group(function () {
+            Route::get('/', [TeacherController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view teachers');
+
+            Route::post('/', [TeacherController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create teachers');
+
+            Route::post('/{teacher}/data', [TeacherController::class, 'userData'])
+                ->name('data')
+                ->middleware('can:view teachers');
+
+            Route::post('/{teacher}/edit', [TeacherController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit teachers');
+
+            Route::post('/{teacher}/destroy', [TeacherController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete teachers');
         });
     });
 });

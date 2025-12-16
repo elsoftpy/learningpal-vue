@@ -36,6 +36,11 @@ class Profile extends Model implements HasMedia
         return $this->hasOne(User::class);
     }
 
+    public function teacher(): HasOne
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')
