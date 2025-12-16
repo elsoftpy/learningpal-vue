@@ -174,5 +174,13 @@
   "Search teacher": "Buscar profesor",
   "Create Teacher": "Crear profesor",
   "Select courses": "Seleccionar cursos",
-  "At least one course must be selected": "Debe seleccionar al menos un curso"
+  "At least one course must be selected": "Debe seleccionar al menos un curso",
+  "Student deleted successfully.": "Estudiante eliminado con éxito.",
+  "An error occurred while deleting the student.": "Ocurrió un error al eliminar el estudiante.",
+  "Are you sure you want to delete this student?": "¿Estás seguro de que deseas eliminar este estudiante?",
+  "Students List": "Lista de estudiantes",
+  "Add Student": "Agregar estudiante",
+  "Edit Student": "Editar estudiante",
+  "Search student": "Buscar estudiante",
+  "Create Student": "Crear estudiante"
 }

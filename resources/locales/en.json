@@ -174,5 +174,13 @@
   "Search teacher": "Search teacher",
   "Create Teacher": "Create Teacher",
   "Select courses": "Select courses",
-  "At least one course must be selected": "At least one course must be selected"
+  "At least one course must be selected": "At least one course must be selected",
+  "Student deleted successfully.": "Student deleted successfully.",
+  "An error occurred while deleting the student.": "An error occurred while deleting the student.",
+  "Are you sure you want to delete this student?": "Are you sure you want to delete this student?",
+  "Students List": "Students List",
+  "Add Student": "Add Student",
+  "Edit Student": "Edit Student",
+  "Search student": "Search student",
+  "Create Student": "Create Student"
 }
