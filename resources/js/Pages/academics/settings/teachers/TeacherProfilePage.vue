@@ -13,11 +13,10 @@
             :creating="creating" 
             :isPersonProfile="false"
             :errors="errors"
-            @update:avatar="onAvatarUpdate"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
-                    <div class="flex flex-col w-full md:w-2/6">
+                    <div class="flex flex-col w-full md:w-5/6">
                         <label for="courses" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Courses') }}
                             <span class="text-red-500">*</span>
@@ -26,8 +25,8 @@
                             id="courses"
                             name="courses"
                             :options="coursesOptions"
-                            option-label="label"
-                            option-value="name"
+                            option-label="name"
+                            option-value="id"
                             :placeholder="$t('Select courses')"
                             filter
                             :filter-placeholder="$t('Search courses')"
@@ -113,10 +112,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { createUserSchema } from '@/schemas/user';
+import { createTeacherSchema } from '@/schemas/teacher';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useFormValues } from '@/composables/useFormValues';
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
@@ -134,9 +132,8 @@ import SubmitButton from '@/components/form/SubmitButton.vue';
 const { locale, t: $t } = useI18n();
 const { handleApiError } = useApiErrorHandler();
 const { extractFormData } = useFormValues();
-const userSchema = computed(() => createUserSchema($t, locale.value));
-const resolver = zodResolver(userSchema.value);
-const auth = useAuthStore();
+const teacherSchema = computed(() => createTeacherSchema($t, locale.value));
+const resolver = zodResolver(teacherSchema.value);
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
@@ -171,12 +168,12 @@ const initialValues = computed(() => {
             email: '',
             birth_date: '',
             courses: [],
+            display_courses: [],
             status: '',
             isActive: true,
         };
     }
 
-    const courseNames = getRoleNames(teacherData.value?.roles || []);
     const data = teacherData.value || {};
     let isActive = teacherData.value?.status === 'active' ? true : false;
     return {
@@ -189,7 +186,7 @@ const initialValues = computed(() => {
         birth_date: data.birth_date || '',
         name: data.name || '',
         password: data.password || '',
-        courses: courseNames,
+        courses: data.courses || [],
         status: data.status || '',
         isActive: isActive || false,
     };
@@ -262,6 +259,8 @@ const handleSubmit =  async (formData) => {
     
     // Add type field to values to pass reusabeable validation rules
     values.type = 'person'; // user is always a person
+    values.status = values.isActive ? 'active' : 'disabled';
+    delete values.isActive;
 
     if (!valid) {
         return;
@@ -270,22 +269,11 @@ const handleSubmit =  async (formData) => {
     isLoading.value = true;
 
     try {
-        const formData = new FormData();
-
-        Object.keys(values).forEach(key => {
-            if (Array.isArray(values[key])) {
-                values[key].forEach((item, index) => {
-                    formData.append(`${key}[${index}]`, item);
-                });
-            } else {
-                formData.append(key, values[key]);
-            }
-        });
-
-        const { data } = await axios.post(
-            creating ? '/academics/settings/teachers' : `/academics/settings/teachers/${teacherId}/edit`,
-            formData,
-        );
+        let url = crudAction === 'create' 
+            ? '/academics/settings/teachers' 
+            : `/academics/settings/teachers/${teacherId}/edit`;
+            
+        const { data } = await axios.post(url, values);
 
         toast.add({ 
             severity: 'success', 
@@ -294,7 +282,7 @@ const handleSubmit =  async (formData) => {
             life: 3000 
         });
 
-        router.push({ name: 'settings.users.list' });
+        router.push({ name: 'academics.settings.teachers.list' });
 
     } catch (error) {
         const apiError = handleApiError(error)

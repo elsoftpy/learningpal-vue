@@ -20,4 +20,13 @@ class CourseService
             'display_status' => ucfirst(__($course->status)),
         ];
     }
+
+    public function getCourseDisplayName(Course $course): string
+    {
+        return $course->name.
+            ' - '.
+            $course->languageLevel?->level.
+            ' - '.
+            $course->language?->name;
+    }
 }

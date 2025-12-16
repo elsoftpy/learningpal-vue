@@ -3,10 +3,12 @@
 namespace App\Services\Academics\Settings;
 
 use App\Enums\ProfileTypeEnum;
+use App\Models\Course;
 use App\Models\Profile;
 use App\Models\Teacher;
 use App\Services\Traits\UserProfileTrait;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class TeacherService
 {
@@ -25,6 +27,8 @@ class TeacherService
 
         $profile = Profile::create($profileData);
         $teacher = $profile->teacher()->create($teacherData);
+
+        $teacher->courses()->sync($teacherData['courses'] ?? []);
 
         return $teacher;
     }
@@ -48,7 +52,10 @@ class TeacherService
     {
         $profile = $teacher->profile;
 
-        $courses = $teacher->courses->toArray();
+        $courses = $teacher->courses;
+
+        $coursesData = $courses->pluck('id');
+        $coursesDisplayNames = $this->getCoursesDisplayNames($courses);
 
         return [
             'id' => $teacher->id,
@@ -74,7 +81,15 @@ class TeacherService
             'email' => $profile->email,
             'status' => $teacher->status,
             'display_status' => ucfirst(__($teacher->status)),
-            'courses' => $courses,
+            'courses' => $coursesData,
+            'display_courses' => $coursesDisplayNames,
         ];
+    }
+
+    protected function getCoursesDisplayNames(Collection $courses): array
+    {
+        return $courses->map(function($course) {
+            return (new CourseService())->getCourseDisplayName($course);
+        })->toArray();
     }
 }

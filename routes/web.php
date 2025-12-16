@@ -4,6 +4,7 @@ use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Academics\Settings\TeacherController;
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Selectable\CourseListController;
 use App\Http\Controllers\Selectable\LanguageLanguageLevelListController;
 use App\Http\Controllers\Selectable\LanguageListController;
 use App\Http\Controllers\Selectable\RoleListController;
@@ -44,6 +45,9 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
 
     Route::post('/language-levels', LanguageLanguageLevelListController::class)
         ->name('language-levels');
+
+    Route::post('/courses', CourseListController::class)
+        ->name('courses');
 });
 
 Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {

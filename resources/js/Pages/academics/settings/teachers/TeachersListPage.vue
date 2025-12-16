@@ -20,7 +20,7 @@ import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
 import { useI18n } from 'vue-i18n';
-import { textColumn, textWithAvatarColumn, tagsArrayColumn, statusTagColumn, resourceViewerColumn, dateColumn } from '@/components/datatable/columnFactories.js';
+import { textColumn, tagsArrayColumn, statusTagColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 
@@ -61,7 +61,7 @@ const profileExpansion = computed(() => {
 
 
 const table = useSettingsTable({
-    endpoint: '/settings/teachers',
+    endpoint: '/academics/settings/teachers',
     searchFields: ['full_name', 'email'],
     filterConfig: {
         full_name: {
@@ -80,8 +80,8 @@ const table = useSettingsTable({
 });
 
 const actions = useRowActions({
-    editRouteName: 'settings.teachers.data.edit',
-    deleteEndpoint: '/settings/teachers/profile/:id/destroy',
+    editRouteName: 'academics.settings.teachers.edit',
+    deleteEndpoint: '/academics/settings/teachers/:id/destroy',
     onDeleteSuccess: () => {
         table.refresh();
     },

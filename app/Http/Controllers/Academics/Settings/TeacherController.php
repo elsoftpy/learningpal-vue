@@ -55,7 +55,7 @@ class TeacherController extends Controller
     public function store(TeacherRequest $request, TeacherService $teacherService)
     {
         $profileData = $request->except(['status']);
-        $teacherData = $request->only(['status']);
+        $teacherData = $request->only(['status', 'courses']);
 
         $teacher = null;
 
@@ -86,6 +86,7 @@ class TeacherController extends Controller
     {
         $profileData = $request->except(['status']);
         $teacherData = $request->only(['status']);
+        $teacher->courses()->sync($request->courses ?? []);
         
         DB::transaction(function () use ($teacher, $profileData, $teacherData, $teacherService) {
         
