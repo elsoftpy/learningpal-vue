@@ -31,6 +31,13 @@ class Profile extends Model implements HasMedia
         'birth_date',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+        ];
+    }
+
     public function user(): HasOne
     {
         return $this->hasOne(User::class);

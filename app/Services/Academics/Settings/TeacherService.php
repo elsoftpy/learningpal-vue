@@ -6,7 +6,6 @@ use App\Enums\ProfileTypeEnum;
 use App\Models\Profile;
 use App\Models\Teacher;
 use App\Services\Traits\UserProfileTrait;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class TeacherService
@@ -68,14 +67,11 @@ class TeacherService
             'phone' => $profile->phone ?? null,
             'address' => $profile->address ?? null,
             'gender' => $profile->gender ?? null,
-            'birth_date' => $profile->birth_date 
-                ? Carbon::parse($profile->birth_date)
-                    ->format(match(app()->getLocale()) {
+            'birth_date' => $profile->birth_date?->format(match(app()->getLocale()) {
                         'es', 'pt' => 'd/m/Y',
                         'en' => 'm-d-Y',
                         default => 'Y-m-d',
-                    }) 
-                : null,
+                    }) ?? null,
             'full_name' => $profile->full_name ?? null,
             'email' => $profile->email,
             'status' => $teacher->status,
