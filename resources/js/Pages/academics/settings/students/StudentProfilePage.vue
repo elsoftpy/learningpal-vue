@@ -9,7 +9,6 @@
     >
         <ProfilePage 
             :form="$form" 
-            :avatar-url="currentAvatarUrl"
             :creating="creating" 
             :isPersonProfile="false"
             :errors="errors"
