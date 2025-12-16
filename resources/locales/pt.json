@@ -164,5 +164,15 @@
   "Failed to load course data. Please try again.": "Falha ao carregar os dados do curso. Por favor, tente novamente.",
   "Select a Language Level": "Selecione um nível de idioma",
   "Search courses": "Pesquisar cursos",
-  "Level is required.": "O nível é obrigatório."
+  "Level is required.": "O nível é obrigatório.",
+  "Teacher deleted successfully.": "Professor excluído com sucesso.",
+  "An error occurred while deleting the teacher.": "Ocorreu um erro ao excluir o professor.",
+  "Are you sure you want to delete this teacher?": "Tem certeza de que deseja excluir este professor?",
+  "Teachers List": "Lista de professores",
+  "Add Teacher": "Adicionar professor",
+  "Edit Teacher": "Editar professor",
+  "Search teacher": "Pesquisar professor",
+  "Create Teacher": "Criar professor",
+  "Select courses": "Selecionar cursos",
+  "At least one course must be selected": "Pelo menos um curso deve ser selecionado"
 }

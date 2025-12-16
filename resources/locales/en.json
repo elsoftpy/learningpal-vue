@@ -164,5 +164,15 @@
   "Failed to load course data. Please try again.": "Failed to load course data. Please try again.",
   "Select a Language Level": "Select a Language Level",
   "Search courses": "Search courses",
-  "Level is required.": "Level is required."
+  "Level is required.": "Level is required.",
+  "Teacher deleted successfully.": "Teacher deleted successfully.",
+  "An error occurred while deleting the teacher.": "An error occurred while deleting the teacher.",
+  "Are you sure you want to delete this teacher?": "Are you sure you want to delete this teacher?",
+  "Teachers List": "Teachers List",
+  "Add Teacher": "Add Teacher",
+  "Edit Teacher": "Edit Teacher",
+  "Search teacher": "Search teacher",
+  "Create Teacher": "Create Teacher",
+  "Select courses": "Select courses",
+  "At least one course must be selected": "At least one course must be selected"
 }
