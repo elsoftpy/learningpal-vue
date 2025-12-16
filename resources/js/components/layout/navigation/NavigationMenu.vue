@@ -58,6 +58,12 @@
                                     baseRoute="academics.settings.courses"
                                     :title="$t('Courses')"
                                 />
+                                <PlainMenuItem
+                                    v-if="can('view teachers')"
+                                    :route="{ name: 'academics.settings.teachers.list' }"
+                                    baseRoute="academics.settings.teachers"
+                                    :title="$t('Teachers')"
+                                />
                             </template>
                         </SubmoduleMenuItem>
                         <!-- Academic Classes Menu-->

@@ -151,7 +151,9 @@
                 </div>
                 <!--  Email / Birthdate / Avatar -->
                 <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                    <div class="flex flex-col w-full md:w-1/3">
+                    <div class="flex flex-col w-full"
+                        :class="isPersonProfile ? 'md:w-1/3' : 'md:w-2/3'"
+                    >
                         <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Email') }}
                             <span class="text-red-500">*</span>
@@ -205,7 +207,7 @@
                             {{ errors?.birth_date }}
                         </Message>
                     </div>
-                    <div class="flex flex-col w-full md:w-1/3">
+                    <div v-if="isPersonProfile" class="flex flex-col w-full md:w-1/3">
                         <FileUpload
                             id="avatar-input"
                             :label="$t('Profile Picture')"
