@@ -4,16 +4,16 @@ namespace App\Services\Academics\Settings;
 
 use App\Enums\ProfileTypeEnum;
 use App\Models\Profile;
-use App\Models\Teacher;
+use App\Models\Student;
 use App\Services\Traits\UserProfileTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-class TeacherService
+class StudentService
 {
     use UserProfileTrait;
 
-    public function createTeacher(array $teacherData, array $profileData): Teacher
+    public function createStudent(array $studentData, array $profileData): Student
     {
         $fullName = $this->getFullName(
             type: ProfileTypeEnum::PERSON->value, // user cannot be a company
@@ -25,21 +25,21 @@ class TeacherService
         $profileData['full_name'] = $fullName;
 
         $profile = Profile::create($profileData);
-        $teacher = $profile->teacher()->create($teacherData);
+        $student = $profile->student()->create($studentData);
 
-        $teacher->courses()->sync($teacherData['courses'] ?? []);
+        $student->courses()->sync($studentData['courses'] ?? []);
 
-        return $teacher;
+        return $student;
     }
 
-    public function updateTeacherProfile($teacher, array $profileData): void
+    public function updateStudentProfile($student, array $profileData): void
     {
-        $profile = $teacher->profile;
+        $profile = $student->profile;
 
         $fullName = $this->getFullName(
             type: ProfileTypeEnum::PERSON->value, // user cannot be a company
-            firstName: $profileData['first_name'] ?? $teacher->profile->first_name,
-            lastName: $profileData['last_name'] ?? $teacher->profile->last_name,
+            firstName: $profileData['first_name'] ?? $student->profile->first_name,
+            lastName: $profileData['last_name'] ?? $student->profile->last_name,
             companyName: null,
         );
         $profileData['full_name'] = $fullName;
@@ -47,17 +47,16 @@ class TeacherService
         $profile->update($profileData);
     }
 
-    public function teacherData(Teacher $teacher)
+    public function studentData(Student $student)
     {
-        $profile = $teacher->profile;
+        $profile = $student->profile;
 
-        $courses = $teacher->courses;
-
+        $courses = $student->courses;   
         $coursesData = $courses->pluck('id');
         $coursesDisplayNames = $this->getCoursesDisplayNames($courses);
 
         return [
-            'id' => $teacher->id,
+            'id' => $student->id,
             'type' => $profile->type ?? null,
             'personal_id' => $profile->personal_id ?? null,
             'first_name' => $profile->first_name ?? null,
@@ -78,8 +77,8 @@ class TeacherService
                 : null,
             'full_name' => $profile->full_name ?? null,
             'email' => $profile->email,
-            'status' => $teacher->status,
-            'display_status' => ucfirst(__($teacher->status)),
+            'status' => $student->status,
+            'display_status' => ucfirst(__($student->status)),
             'courses' => $coursesData,
             'display_courses' => $coursesDisplayNames,
         ];
