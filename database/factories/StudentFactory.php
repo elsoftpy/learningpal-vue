@@ -6,9 +6,9 @@ use App\Models\Profile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Teacher>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Student>
  */
-class TeacherFactory extends Factory
+class StudentFactory extends Factory
 {
     /**
      * Define the model's default state.
