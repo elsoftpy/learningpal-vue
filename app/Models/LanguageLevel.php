@@ -15,9 +15,9 @@ class LanguageLevel extends Model
 
     protected $fillable = [
         'language_id',
-        'status',
         'description',
         'level',
+        'status',
     ];
 
     public function language(): BelongsTo
