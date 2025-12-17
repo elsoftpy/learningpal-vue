@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Academics\Settings\StudentController;
@@ -181,6 +182,43 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
             Route::post('/{student}/destroy', [StudentController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:delete students');
+        });
+    });
+    Route::prefix('lessons')->name('lessons.')->group(function () {
+        Route::prefix('class-schedules')->name('class-schedules.')->group(function () {
+            Route::get('/', [ClassScheduleController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view class schedules');
+
+            Route::post('/', [ClassScheduleController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create class schedules');
+
+            Route::post('/{classSchedule}/data', [ClassScheduleController::class, 'classScheduleData'])
+                ->name('data')
+                ->middleware('can:view class schedules');
+
+            Route::post('/{classSchedule}/edit', [ClassScheduleController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit class schedules');
+
+            Route::post('/{classSchedule}/destroy', [ClassScheduleController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete class schedules');
+
+            Route::prefix('details')->name('details.')->group(function () {
+                Route::post('/', [ClassScheduleController::class, 'storeDetail'])
+                    ->name('store')
+                    ->middleware('can:create class schedule details');
+
+                Route::post('/{detail}/edit', [ClassScheduleController::class, 'updateDetail'])
+                    ->name('edit')
+                    ->middleware('can:edit class schedule details');
+
+                Route::post('/{detail}/destroy', [ClassScheduleController::class, 'destroyDetail'])
+                    ->name('destroy')
+                    ->middleware('can:delete class schedule details');
+            });
         });
     });
 });
