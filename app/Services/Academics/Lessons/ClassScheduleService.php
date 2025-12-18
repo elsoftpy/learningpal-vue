@@ -4,6 +4,7 @@ namespace App\Services\Academics\Lessons;
 
 use App\Models\ClassSchedule;
 use App\Services\Academics\Settings\CourseService;
+use App\Services\Utilities\DateTimeService;
 
 class ClassScheduleService
 {
@@ -26,11 +27,7 @@ class ClassScheduleService
             'id' => $classSchedule->id,
             'name' => $classSchedule->name,
             'schedule_month' => $classSchedule->schedule_month,
-            'display_schedule_month' => $classSchedule->schedule_month?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'm/Y',
-                'en' => 'Y/m',
-                default => 'Y-m',
-            }) ?? null,
+            'display_schedule_month' => DateTimeService::formatDateMonthYear($classSchedule->schedule_month),
             'course_id' => $course->id,
             'course' => $courseName,
             'details' => $classSchedule->details()

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\StatusEnum;
 use App\Http\Requests\Traits\ProfileValidationTrait;
+use App\Services\Utilities\DateTimeService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,15 +44,7 @@ class TeacherRequest extends FormRequest
     public function prepareForValidation()
     {
         if ($this->has('birth_date') && $this->birth_date) {
-            try {
-                $birthDate = match(app()->getLocale()) {
-                    'es', 'pt' => Carbon::createFromFormat('d/m/Y', $this->input('birth_date'))->format('Y-m-d'),
-                    'en' => Carbon::createFromFormat('m-d-Y', $this->input('birth_date'))->format('Y-m-d'),
-                    default => $this->input('birth_date'),
-                };
-            } catch (Exception $e) {
-                $birthDate = null;
-            }
+            $birthDate = DateTimeService::dateFromLocalizedString($this->birth_date);
         }
 
         $this->merge([

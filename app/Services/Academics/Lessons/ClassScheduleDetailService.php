@@ -4,45 +4,24 @@ namespace App\Services\Academics\Lessons;
 
 use App\Models\ClassProgramDetail;
 use App\Models\ClassScheduleDetail;
+use App\Services\Academics\Settings\CourseService;
+use App\Services\Utilities\DateTimeService;
+use Carbon\Carbon;
 
 class ClassScheduleDetailService
 {
-    public function classScheduleDetailData(ClassScheduleDetail $detail)
+    public function classScheduleDetailData(ClassScheduleDetail $detail): array
     {
         return [
             'id' => $detail->id,
             'class_schedule_id' => $detail->class_schedule_id,
-            'session_date' => $detail->session_date?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'd/m/Y',
-                'en' => 'm-d-Y',
-                default => 'Y-m-d',
-            }) ?? null,
-            'start_time' => $detail->start_time?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'H:i',
-                'en' => 'h:i A',
-                default => 'H:i',
-            }) ?? null,
-            'end_time' => $detail->end_time?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'H:i',
-                'en' => 'h:i A',
-                default => 'H:i',
-            }) ?? null,
+            'session_date' => DateTimeService::formatDate($detail->session_date),
+            'start_time' => DateTimeService::formatTime($detail->start_time),
+            'end_time' => DateTimeService::formatTime($detail->end_time),
             'estimated_duration_minutes' => $detail->estimated_duration_minutes,
-            'rescheduled_date' => $detail->rescheduled_date?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'd/m/Y',
-                'en' => 'm-d-Y',
-                default => 'Y-m-d',
-            }) ?? null,
-            'rescheduled_start_time' => $detail->rescheduled_start_time?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'H:i',
-                'en' => 'h:i A',
-                default => 'H:i',
-            }) ?? null,
-            'rescheduled_end_time' => $detail->rescheduled_end_time?->format(match(app()->getLocale()) {
-                'es', 'pt' => 'H:i',
-                'en' => 'h:i A',
-                default => 'H:i',
-            }) ?? null,
+            'rescheduled_date' => DateTimeService::formatDate($detail->rescheduled_date),
+            'rescheduled_start_time' => DateTimeService::formatTime($detail->rescheduled_start_time),
+            'rescheduled_end_time' => DateTimeService::formatTime($detail->rescheduled_end_time),
             'rescheduled_estimated_duration_minutes' => $detail->rescheduled_estimated_duration_minutes,
             'reschedule_count' => $detail->reschedule_count,
             'topic' => $detail->topic,
@@ -52,4 +31,16 @@ class ClassScheduleDetailService
             'display_status' => ucfirst(__( $detail->status )),
         ];
     }
+
+    public function sessionData(ClassScheduleDetail $detail): array
+    {
+        return [
+            'id' => $detail->id,
+            'date' => $detail->session_date->toDateString(),
+            'start_time' => DateTimeService::formatTime($detail->start_time),
+            'end_time' => DateTimeService::formatTime($detail->end_time),
+            'display_course' => (new CourseService())->getCourseDisplayName($detail->classSchedule->course),
+            'chat_room_url' => $detail->classSchedule->chat_room_link,
+        ];
+    }   
 }
