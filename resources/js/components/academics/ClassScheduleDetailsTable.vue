@@ -60,7 +60,7 @@
                                         size="small"
                                         :label="$t('Edit')"
                                         icon="pi pi-pencil"
-                                        @click="window.open(session.resource_url, '_blank')"
+                                        @click="handleEdit(session)"
                                     />
                                     <Button 
                                         type="button"
@@ -104,6 +104,8 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(['edit-detail']);
+
 /* const sortedDetails = computed(() => {
     return [...props.details].sort((a, b) => {
         const orderA = a?.order ?? 0;
@@ -127,6 +129,10 @@ const statusSeverity = (status) => {
         default:
             return 'primary';
     }
+};
+
+const handleEdit = (session) => {
+    emit('edit-detail', session);
 };
 </script>
 

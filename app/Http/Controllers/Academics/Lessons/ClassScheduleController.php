@@ -51,4 +51,12 @@ class ClassScheduleController extends Controller
             ]
         );
     }
+
+    public function classScheduleData(ClassSchedule $classSchedule, ClassScheduleService $classScheduleService)
+    {
+        $classScheduleData = $classScheduleService->classScheduleData($classSchedule);
+        return ResponseService::success(
+            data: ['class_schedule' => $classScheduleData]
+        );
+    }
 }

@@ -6,8 +6,12 @@ use Carbon\Carbon;
 
 class DateTimeService
 {
-    public static function formatDate(Carbon $date): string|null
+    public static function formatDate(Carbon|null $date): string|null
     {
+        if (!$date) {
+            return null;
+        }
+
         return $date->format(match(app()->getLocale()) {
                 'es', 'pt' => 'd/m/Y',
                 'en' => 'm-d-Y',
@@ -15,8 +19,12 @@ class DateTimeService
             }) ?? null;
     }
 
-    public static function formatTime(Carbon $time): string|null
+    public static function formatTime(Carbon|null $time): string|null
     {
+        if (!$time) {
+            return null;
+        }
+
         return $time->format(match(app()->getLocale()) {
                 'es', 'pt' => 'H:i',
                 'en' => 'h:i A',
@@ -24,8 +32,12 @@ class DateTimeService
             }) ?? null;
     }
 
-    public static function formatDateMonthYear(Carbon $date): string|null
+    public static function formatDateMonthYear(Carbon|null $date): string|null
     {
+        if (!$date) {
+            return null;
+        }
+
         return $date->format(match(app()->getLocale()) {
                 'es', 'pt' => 'm/Y',
                 'en' => 'm/Y',
@@ -33,8 +45,12 @@ class DateTimeService
             }) ?? null;
     }
 
-    public static function dateFromLocalizedString(string $dateString): Carbon|null
+    public static function dateFromLocalizedString(string|null $dateString): Carbon|null
     {
+        if (!$dateString) {
+            return null;
+        }
+        
         return match(app()->getLocale()) {
             'es', 'pt' => Carbon::createFromFormat('d/m/Y', $dateString)->format('Y-m-d'),
             'en' => Carbon::createFromFormat('m-d-Y', $dateString)->format('Y-m-d'),

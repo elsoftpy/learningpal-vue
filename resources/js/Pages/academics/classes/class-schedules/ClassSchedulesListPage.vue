@@ -13,6 +13,7 @@
             <ClassScheduleDetailsTable
                 v-if="Array.isArray(data.details) && data.details.length"
                 :details="data.details"
+                @edit-detail="openDetailEditor(data.id, $event)"
             />
             <div
                 v-else
@@ -25,6 +26,7 @@
 </template>
 <script setup>
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
@@ -35,6 +37,7 @@ import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 import ClassScheduleDetailsTable from '@/components/academics/ClassScheduleDetailsTable.vue';
 
 const { t: $t } = useI18n();
+const router = useRouter();
 const { can } = usePermissions();
 const canViewDetailData = computed(() => can('view class schedule details'));
 const canViewActionsColumn = computed(() => can(['edit class schedules', 'delete class schedules']));
@@ -106,4 +109,18 @@ const columns = computed(() => [
         },
     },
 ]);
+
+const openDetailEditor = (scheduleId, detail) => {
+    if (!scheduleId || !detail?.id) {
+        return;
+    }
+
+    router.push({
+        name: 'academics.classes.class-schedules.details.edit',
+        params: {
+            scheduleId,
+            detailId: detail.id,
+        },
+    });
+};
 </script>

@@ -296,7 +296,7 @@ const routes = [
   {
     path: '/academics/classes/class-schedules',
     name: 'academics.classes.class-schedules.list',
-    component: () => import('../Pages/academics/classes/class-schedules/ClassSchedulesList.vue'),
+    component: () => import('../Pages/academics/classes/class-schedules/ClassSchedulesListPage.vue'),
     meta: { 
       requiresAuth: true,
       module: 'academics', 
@@ -304,6 +304,45 @@ const routes = [
       title: 'Class Schedules',
       headerIcon: 'list',
       crud: 'read',
+    },
+  },
+  {
+    path: '/academics/classes/class-schedules/create',
+    name: 'academics.classes.class-schedules.create',
+    component: () => import('../Pages/academics/classes/class-schedules/ClassScheduleFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'classes', 
+      title: 'Create Class Schedule',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/classes/class-schedules/:id/data',
+    name: 'academics.classes.class-schedules.edit',
+    component: () => import('../Pages/academics/classes/class-schedules/ClassScheduleFormPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'classes', 
+      title: 'Edit Class Schedule',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
+    path: '/academics/classes/class-schedules/:scheduleId/details/:detailId/data',
+    name: 'academics.classes.class-schedules.details.edit',
+    component: () => import('../Pages/academics/classes/class-schedules/ClassScheduleDetailFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Edit Class Schedule Detail',
+      headerIcon: 'pencil',
+      crud: 'edit',
     },
   },
   /* Fallback Route */
