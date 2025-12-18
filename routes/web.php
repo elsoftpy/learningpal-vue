@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Academics\Lessons\CalendarController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
@@ -50,6 +51,9 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
 
     Route::post('/courses', CourseListController::class)
         ->name('courses');
+
+    Route::post('/sessions', [CalendarController::class, 'calendarSessions'])
+        ->name('sessions');
 });
 
 Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {
