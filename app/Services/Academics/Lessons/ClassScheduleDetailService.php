@@ -39,8 +39,9 @@ class ClassScheduleDetailService
             'date' => $detail->session_date->toDateString(),
             'start_time' => DateTimeService::formatTime($detail->start_time),
             'end_time' => DateTimeService::formatTime($detail->end_time),
+            'course_id' => $detail->classSchedule->course->id,
             'display_course' => (new CourseService())->getCourseDisplayName($detail->classSchedule->course),
-            'chat_room_url' => $detail->classSchedule->chat_room_link,
+            'chat_room_url' => $detail->classSchedule->course->chat_room_link,
         ];
     }   
 }

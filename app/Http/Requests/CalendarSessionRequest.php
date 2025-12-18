@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Services\Utilities\DateTimeService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CalendarSessionRequest extends FormRequest
@@ -25,18 +26,18 @@ class CalendarSessionRequest extends FormRequest
         return [
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'viewe' => ['required', 'string', 'in:month,week,day'],
+            'view' => ['required', 'string', 'in:month,week,day'],
         ];
     }
 
     public function prepareForValidation()
     {
         if ($this->start_date) {
-            $startDate = DateTimeService::dateFromLocalizedString($this->start_date);
+            $startDate = Carbon::createFromFormat('Y-m-d', $this->start_date);
         }
 
         if ($this->end_date) {
-            $endDate = DateTimeService::dateFromLocalizedString($this->end_date);
+            $endDate = Carbon::createFromFormat('Y-m-d', $this->end_date);
         }
 
         $this->merge([
