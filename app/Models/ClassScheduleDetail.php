@@ -36,6 +36,9 @@ class ClassScheduleDetail extends Model
             'session_date' => 'date',
             'start_time' => 'datetime',
             'end_time' => 'datetime',
+            'rescheduled_date' => 'date',
+            'rescheduled_start_time' => 'datetime',
+            'rescheduled_end_time' => 'datetime',
         ];
     }
 

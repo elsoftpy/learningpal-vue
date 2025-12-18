@@ -7,6 +7,7 @@ enum ClassScheduleStatusEnum: string
     case SCHEDULED = 'scheduled';
     case COMPLETED = 'completed';
     case CANCELED = 'canceled';
+    case PENDING = 'pending';
     case RESCHEDULED = 'rescheduled';
 
     public static function values(): array
@@ -20,6 +21,7 @@ enum ClassScheduleStatusEnum: string
             self::SCHEDULED->value => __('Scheduled'),
             self::COMPLETED->value => __('Completed'),
             self::CANCELED->value => __('Canceled'),
+            self::PENDING->value => __('Pending Reschedule'),
             self::RESCHEDULED->value => __('Rescheduled'),
         };
     }

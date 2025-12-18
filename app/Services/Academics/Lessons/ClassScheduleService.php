@@ -33,9 +33,13 @@ class ClassScheduleService
             }) ?? null,
             'course_id' => $course->id,
             'course' => $courseName,
-            'details' => $classSchedule->details->map(function ($detail) {
-                return (new ClassScheduleDetailService())->classScheduleDetailData($detail);
-            }),
+            'details' => $classSchedule->details()
+                ->orderBy('session_date')
+                ->orderBy('start_time')
+                ->get()
+                ->map(function ($detail) {
+                    return (new ClassScheduleDetailService())->classScheduleDetailData($detail);
+                }),
         ];
     }
 }

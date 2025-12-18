@@ -25,7 +25,11 @@ class ClassScheduleDetailFactory extends Factory
             $classSchedule->schedule_month->month,
             $day
         );
-        $startTime = $this->faker->dateTimeBetween($sessionDate . ' 08:00:00', $sessionDate . ' 10:00:00');
+        $startHour = $this->faker->numberBetween(8, 10);
+        $startTime = Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $sessionDate->format('Y-m-d') . ' ' . sprintf('%02d:00:00', $startHour)
+        );
         $endTime = (clone $startTime)->modify('+1 hour');
         // calculate duration in minutes    
         $duration = ($endTime->getTimestamp() - $startTime->getTimestamp()) / 60;
