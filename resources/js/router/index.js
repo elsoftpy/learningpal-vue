@@ -361,11 +361,31 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore(); 
 
+  if (!authStore.ready && !authStore.loading) {
+    try {
+      await authStore.checkAuth();
+    } catch (error) {
+      console.error('Failed to resolve auth state before navigation:', error);
+    }
+  }
+
   
   const isAuthenticated = authStore.isAuthenticated;
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next({ name: 'login', query: { redirect: to.fullPath } });
+  }
+
+  const userId = authStore.user?.id;
+  const userStatus = authStore.user?.status;
+
+  if (isAuthenticated && userStatus === 'pending' && userId) {
+    const profileRoute = { name: 'settings.users.profile', params: { id: userId } };
+    const isOnOwnProfile = to.name === profileRoute.name && `${to.params.id ?? ''}` === `${userId}`;
+
+    if (!isOnOwnProfile) {
+      return next(profileRoute);
+    }
   }
 
   if (to.meta.guestOnly && isAuthenticated) {
