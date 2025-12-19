@@ -3,6 +3,7 @@
 namespace App\Services\Academics\Settings;
 
 use App\Models\Course;
+use Illuminate\Support\Collection;
 
 class CourseService
 {
@@ -28,5 +29,12 @@ class CourseService
             $course->languageLevel?->level.
             ' - '.
             $course->language?->name;
+    }
+
+    public function getCoursesDisplayNames(Collection $courses): array
+    {
+        return $courses->map(function($course) {
+            return $this->getCourseDisplayName($course);
+        })->toArray();
     }
 }

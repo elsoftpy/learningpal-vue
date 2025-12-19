@@ -4,6 +4,7 @@ namespace App\Http\Requests\Traits;
 
 use App\Enums\GenderEnum;
 use App\Enums\ProfileTypeEnum;
+use App\Models\Profile;
 use Illuminate\Validation\Rule;
 
 trait ProfileValidationTrait
@@ -100,5 +101,12 @@ trait ProfileValidationTrait
             'gender.in' => __('Selected gender is invalid.'),
             'gender.string' => __('Gender must be a valid string.'),
         ];
+    }
+
+    public function profileByIdNumber(string $idNumber): Profile|null
+    {
+        return Profile::where('personal_id', $idNumber)
+            ->orWhere('ruc', $idNumber)
+            ->first();
     }
 }

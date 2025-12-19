@@ -47,8 +47,10 @@ class StudentRequest extends FormRequest
             $birthDate = DateTimeService::dateFromLocalizedString($this->birth_date);
         }
 
+        $profile = $this->profileByIdNumber($this->personal_id ?? $this->ruc);
+
         $this->merge([
-            'profile' => $this->student?->profile,
+            'profile' => $this->student?->profile ?? $profile,
             'birth_date' => $birthDate ?? null,
         ]);
     }

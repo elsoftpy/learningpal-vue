@@ -82,6 +82,9 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
         Route::post('profile/{user}/destroy', [UserProfileController::class, 'destroy'])
             ->name('profile.destroy')
             ->middleware('can:delete users');
+
+        Route::post('profile/{idNumber}/profile-data', [UserProfileController::class, 'fetchByIdNumber'])
+            ->name('profile.fetchByIdNumber');
     });
 
     Route::prefix('languages')->name('languages.')->middleware('auth')->group(function () {

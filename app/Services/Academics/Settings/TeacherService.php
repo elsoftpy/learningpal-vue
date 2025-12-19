@@ -2,28 +2,20 @@
 
 namespace App\Services\Academics\Settings;
 
-use App\Enums\ProfileTypeEnum;
-use App\Models\Profile;
 use App\Models\Teacher;
-use App\Services\Traits\UserProfileTrait;
-use Illuminate\Support\Collection;
+use App\Services\Settings\Users\ProfileService;
 
 class TeacherService
 {
-    use UserProfileTrait;
 
     public function createTeacher(array $teacherData, array $profileData): Teacher
     {
-        $fullName = $this->getFullName(
-            type: ProfileTypeEnum::PERSON->value, // user cannot be a company
-            firstName: $profileData['first_name'] ?? null,
-            lastName: $profileData['last_name'] ?? null,
-            companyName: null,
-        );
-        
-        $profileData['full_name'] = $fullName;
+        $profileService = new ProfileService();
+        $profile = $profileService->findByEmail($profileData['email']);
+        if (!$profile) {
 
-        $profile = Profile::create($profileData);
+            $profile = $profileService->createProfile($profileData);
+        }
         $teacher = $profile->teacher()->create($teacherData);
 
         $teacher->courses()->sync($teacherData['courses'] ?? []);
@@ -35,15 +27,7 @@ class TeacherService
     {
         $profile = $teacher->profile;
 
-        $fullName = $this->getFullName(
-            type: ProfileTypeEnum::PERSON->value, // user cannot be a company
-            firstName: $profileData['first_name'] ?? $teacher->profile->first_name,
-            lastName: $profileData['last_name'] ?? $teacher->profile->last_name,
-            companyName: null,
-        );
-        $profileData['full_name'] = $fullName;
-
-        $profile->update($profileData);
+        (new ProfileService())->updateProfile($profile, $profileData);
     }
 
     public function teacherData(Teacher $teacher)
@@ -53,7 +37,7 @@ class TeacherService
         $courses = $teacher->courses;
 
         $coursesData = $courses->pluck('id');
-        $coursesDisplayNames = $this->getCoursesDisplayNames($courses);
+        $coursesDisplayNames = (new CourseService())->getCoursesDisplayNames($courses);
 
         return [
             'id' => $teacher->id,
@@ -79,12 +63,5 @@ class TeacherService
             'courses' => $coursesData,
             'display_courses' => $coursesDisplayNames,
         ];
-    }
-
-    protected function getCoursesDisplayNames(Collection $courses): array
-    {
-        return $courses->map(function($course) {
-            return (new CourseService())->getCourseDisplayName($course);
-        })->toArray();
     }
 }

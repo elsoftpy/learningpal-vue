@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Settings\Users;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserProfileRequest;
+use App\Models\Profile;
 use App\Models\User;
+use App\Services\Settings\Users\ProfileService;
 use App\Services\Settings\Users\UserService;
 use App\Services\Traits\FilterResolverTrait;
+use App\Services\Traits\UserProfileTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class UserProfileController extends Controller
 {
-    use FilterResolverTrait;
+    use FilterResolverTrait, UserProfileTrait;
     
     public function index(Request $request)
     {
@@ -60,7 +63,7 @@ class UserProfileController extends Controller
         
         $users = $paginated->getCollection()->map(function (User $user) {
 
-            return (new UserService())->userData($user);
+            return $this->userData($user);
         });
 
         return ResponseService::success(
@@ -87,19 +90,19 @@ class UserProfileController extends Controller
         return ResponseService::success(
             message: __('User saved successfully.'),
             data: [
-                'user' => $userService->userData($user),
+                'user' => $this->userData($user),
             ]
         );
     }
 
-    public function userData(User $user, UserService $userService)
+    /* public function userDataResponse(User $user)
     {
         return ResponseService::success(
             data: [
-                'user' => $userService->userData($user),
+                'user' => $this->userData($user),
             ]
         );
-    }
+    } */
 
     public function update(UserProfileRequest $request, User $user, UserService $userService)
     {
@@ -123,7 +126,7 @@ class UserProfileController extends Controller
         return ResponseService::success(
             message: __('User profile updated successfully.'),
             data: [
-                'user' => $userService->userData($user),
+                'user' => $this->userData($user),
             ]
         );
     }
@@ -140,6 +143,24 @@ class UserProfileController extends Controller
 
         return ResponseService::success(
             message: __('User deleted successfully.')
+        );
+    }
+
+    public function fetchByIdNumber(Request $request, ProfileService $profileService, string $idNumber)
+    {
+        $profile = Profile::query()
+            ->where('personal_id', $idNumber)
+            ->orWhere('ruc', $idNumber)
+            ->first();
+
+        if (! $profile) {
+            return null;
+        }
+
+        return ResponseService::success(
+            data: [
+                'profile' => $profileService->profileData($profile),
+            ]
         );
     }
 

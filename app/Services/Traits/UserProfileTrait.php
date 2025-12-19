@@ -3,18 +3,11 @@
 namespace App\Services\Traits;
 
 use App\Models\User;
+use App\Services\Utilities\DateTimeService;
 use Transliterator;
 
 trait UserProfileTrait
 {
-    protected function getFullName(string $type, ?string $firstName, ?string $lastName, ?string $companyName): string
-    {
-        if ($type === 'person') {
-            return trim($firstName . ' ' . $lastName);
-        } 
-        return trim($companyName);
-    }
-
     protected function getUsername(string $fullName): string
     {
         $userName =  str_replace(' ', '', strtolower(trim($fullName)));
@@ -58,11 +51,7 @@ trait UserProfileTrait
             'phone' => $profile->phone ?? null,
             'address' => $profile->address ?? null,
             'gender' => $profile->gender ?? null,
-            'birth_date' => $profile->birth_date?->format(match(app()->getLocale()) {
-                        'es', 'pt' => 'd/m/Y',
-                        'en' => 'm-d-Y',
-                        default => 'Y-m-d',
-                    }) ?? null,
+            'birth_date' => DateTimeService::formatDate($profile->birth_date),
             'full_name' => $profile->full_name ?? null,
             'email' => $user->email,
             'status' => $user->status,

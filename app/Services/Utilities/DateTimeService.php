@@ -52,8 +52,8 @@ class DateTimeService
         }
         
         return match(app()->getLocale()) {
-            'es', 'pt' => Carbon::createFromFormat('d/m/Y', $dateString)->format('Y-m-d'),
-            'en' => Carbon::createFromFormat('m-d-Y', $dateString)->format('Y-m-d'),
+            'es', 'pt' => Carbon::createFromFormat('d/m/Y', $dateString),
+            'en' => Carbon::createFromFormat('m-d-Y', $dateString),
             default => null,
         };
     }

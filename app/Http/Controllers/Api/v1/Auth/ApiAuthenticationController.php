@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers\Api\v1\Auth;
 
-use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\Profile;
-use App\Services\Auth\UserService;
+use App\Services\Auth\AuthService;
+use App\Services\Traits\UserProfileTrait;
 use App\Services\Utilities\ResponseService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class ApiAuthenticationController extends Controller
 {
-    public function login (LoginRequest $request, UserService $userService)
+    use UserProfileTrait; 
+    public function login (LoginRequest $request, AuthService $authService)
     {
-        if (! $userService->loginAttempt($request)) {
+        if (! $authService->loginAttempt($request)) {
             return ResponseService::unauthenticated(
                 message: __('Unauthenticated.'),
                 errors: ['authentication' => [__('Invalid credentials. Please try again.')]]
@@ -27,7 +26,7 @@ class ApiAuthenticationController extends Controller
         
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $userData = array_merge($userService->userData($user), ['token' => $token]);
+        $userData = array_merge($this->userData($user), ['token' => $token]);
 
         return ResponseService::success(
             message: __('Login successful.'), 
@@ -37,14 +36,13 @@ class ApiAuthenticationController extends Controller
         );
     }
 
-    public function register(RegisterRequest $request, UserService $userService)
+    public function register(RegisterRequest $request, AuthService $authService)
     {
-        $user = $userService->registerUser($request);
+        $user = $authService->registerUser($request);
         
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $userData = array_merge($userService->userData($user), ['token' => $token]);
-
+        $userData = array_merge($this->userData($user), ['token' => $token]);
         
         return ResponseService::created(
             message: __('Registration successful.'), 

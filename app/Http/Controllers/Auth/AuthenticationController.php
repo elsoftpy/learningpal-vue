@@ -5,17 +5,20 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Services\Auth\UserService;
+use App\Services\Auth\AuthService;
+use App\Services\Traits\UserProfileTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticationController extends Controller
 {
-    public function login(LoginRequest $request, UserService $userService)
+    use UserProfileTrait;
+
+    public function login(LoginRequest $request, AuthService $authService)
     {
 
-        if (! $userService->loginAttempt($request)) {
+        if (! $authService->loginAttempt($request)) {
             return ResponseService::unauthenticated(
                 message: __('Unauthenticated.'),
                 errors: ['authentication' => [__('Invalid credentials. Please try again.')]]
@@ -24,7 +27,7 @@ class AuthenticationController extends Controller
 
         $request->session()->regenerate();
         
-        $userData = $userService->userData(Auth::user());
+        $userData = $this->userData(Auth::user());
 
         return ResponseService::success(
             message: __('Login successful.'),
@@ -34,14 +37,14 @@ class AuthenticationController extends Controller
         );
     }
 
-    public function register(RegisterRequest $request, UserService $userService)
+    public function register(RegisterRequest $request, AuthService $authService)
     {   
-        $user = $userService->registerUser($request);
+        $user = $authService->registerUser($request);
 
         // Auto-login after registration
         Auth::login($user);
         
-        $userData = $userService->userData($user);
+        $userData = $this->userData($user);
 
         return ResponseService::created(
             message: __('Registration successful.'),
@@ -68,11 +71,11 @@ class AuthenticationController extends Controller
     /**
      * Return current logged in user
      */
-    public function me(Request $request, UserService $userService)
+    public function me(Request $request, AuthService $authService)
     {
         $user = $request->user();
 
-        $userData = $userService->userData($user);
+        $userData = $this->userData($user);
         
         return ResponseService::success(
             message: __('Authenticated user retrieved successfully.'),
