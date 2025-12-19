@@ -32,6 +32,7 @@
                             name="personal_id"
                             :disabled="!creating"
                             :placeholder="$t('Personal ID')"
+                            @blur="handlePersonalIdBlur"
                         />
                     </div>
                     <!-- First & Last Name -->
@@ -234,6 +235,7 @@ import InputText from 'primevue/inputtext'
 import FileUpload from '@/components/form/FileUpload.vue'
 import DateInput from '@/components/form/DateInput.vue'
 import Message from 'primevue/message'
+import axios from 'axios'
 
 const { t: $t } = useI18n()
 
@@ -260,7 +262,10 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['update:avatar'])
+const emit = defineEmits([
+    'update:avatar',
+    'check-personal-id',
+])
 
 const selectedFile = ref(null)
 
@@ -279,5 +284,15 @@ const onAvatarSelect = (file) => {
 const onAvatarClear = () => {
     selectedFile.value = null
     emit('update:avatar', null)
+}
+
+const handlePersonalIdBlur = () => {
+    const personalId = props.form.personal_id?.value
+
+    console.log('Personal ID blur:', personalId)
+
+    if (personalId && props.creating) { 
+        emit('check-personal-id', personalId)
+    }
 }
 </script>

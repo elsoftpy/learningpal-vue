@@ -12,6 +12,7 @@
             :creating="creating" 
             :isPersonProfile="false"
             :errors="errors"
+            @check-personal-id="checkExistingProfile"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -157,15 +158,35 @@ watch(studentData, (newData) => {
 });
 
 const initialValues = computed(() => {
-    if (crudAction === 'create') {
+    console.log('Computing initialValues with studentData:', studentData.value);
+    if (crudAction !== 'create') {
+        const data = studentData.value || {};
+        let isActive = studentData.value?.status === 'active' ? true : false;
         return {
-            personal_id: '',
-            first_name: '',
-            last_name: '',
-            address: '',
-            phone: '',
-            email: '',
-            birth_date: '',
+            personal_id: data.personal_id || '',
+            first_name: data.first_name || '',
+            last_name: data.last_name || '',
+            address: data.address || '',
+            phone: data.phone || '',
+            email: data.email || '',
+            birth_date: data.birth_date || '',
+            name: data.name || '',
+            password: data.password || '',
+            courses: data.courses || [],
+            status: data.status || '',
+            isActive: isActive || false,
+        };
+    }
+
+    if (studentData.value) {
+        return {
+            personal_id: studentData.value.personal_id || '',
+            first_name: studentData.value.first_name || '',
+            last_name: studentData.value.last_name || '',
+            address: studentData.value.address || '',
+            phone: studentData.value.phone || '',
+            email: studentData.value.email || '',
+            birth_date: studentData.value.birth_date || '',
             courses: [],
             display_courses: [],
             status: '',
@@ -173,21 +194,18 @@ const initialValues = computed(() => {
         };
     }
 
-    const data = studentData.value || {};
-    let isActive = studentData.value?.status === 'active' ? true : false;
     return {
-        personal_id: data.personal_id || '',
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
-        address: data.address || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        birth_date: data.birth_date || '',
-        name: data.name || '',
-        password: data.password || '',
-        courses: data.courses || [],
-        status: data.status || '',
-        isActive: isActive || false,
+        personal_id: '',
+        first_name: '',
+        last_name: '',
+        address: '',
+        phone: '',
+        email: '',
+        birth_date: '',
+        courses: [],
+        display_courses: [],
+        status: '',
+        isActive: true,
     };
 });
 
@@ -205,6 +223,31 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     isActive: '',
     general: '',
 });
+
+const checkExistingProfile = async (personalId) => {
+    if (!personalId) return;
+
+    try {
+        const response = await axios.post(`/settings/users/profile/${personalId}/profile-data`);
+        console.log('Profile data response:', response.data.data.profile);
+        if (response.data.success) {
+            const profile = response.data.data.profile;
+
+            studentData.value = {
+                ...studentData.value,
+                personal_id: profile.personal_id,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                address: profile.address,
+                phone: profile.phone,
+                email: profile.email,
+                birth_date: profile.birth_date,
+            }
+        }
+    } catch (error) {
+        console.error('Error checking existing profile:', error);
+    }
+};
 
 const fetchCourses = async (query = '') => {
     coursesLoading.value = true;

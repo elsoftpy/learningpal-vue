@@ -366,10 +366,12 @@ router.beforeEach(async (to, from, next) => {
       await authStore.checkAuth();
     } catch (error) {
       console.error('Failed to resolve auth state before navigation:', error);
+      if (error.response && error.response.status === 419) {
+        return next({ name: 'login', query: { redirect: to.fullPath } });
+      }
     }
   }
 
-  
   const isAuthenticated = authStore.isAuthenticated;
 
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -380,6 +382,7 @@ router.beforeEach(async (to, from, next) => {
   const userStatus = authStore.user?.status;
 
   if (isAuthenticated && userStatus === 'pending' && userId) {
+    console.log('Redirecting to own profile for pending user.', isAuthenticated, userStatus, userId);
     const profileRoute = { name: 'settings.users.profile', params: { id: userId } };
     const isOnOwnProfile = to.name === profileRoute.name && `${to.params.id ?? ''}` === `${userId}`;
 
