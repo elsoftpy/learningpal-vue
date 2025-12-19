@@ -16,7 +16,7 @@ class CalendarController extends Controller
 {
     public function calendarSessions(CalendarSessionRequest $request)
     {
-        $sessions = ClassScheduleDetail::query()
+        $sessionsQuery = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
             ->whereBetween('session_date', [
                 $request->start_date->startOfDay(), 
@@ -25,8 +25,17 @@ class CalendarController extends Controller
             ->whereIn('status', [
                 ClassScheduleStatusEnum::SCHEDULED->value, 
                 ClassScheduleStatusEnum::RESCHEDULED->value,
-            ])
-            ->get()
+            ]); 
+
+        $user = $request->user();
+        if (!$user->can('view all students')) {
+            $courses = $user->profile?->teacher?->courses->pluck('id')->toArray() ?? [];
+            $sessionsQuery->whereHas('classSchedule', function ($q) use ($courses) {
+                $q->whereIn('course_id', $courses);
+            });
+        }
+        
+        $sessions = $sessionsQuery->get()
             ->map(function (ClassScheduleDetail $detail) {
                 return (new ClassScheduleDetailService())->sessionData($detail);
             });
