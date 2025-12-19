@@ -57,7 +57,7 @@ export const useAuthStore = defineStore('auth', {
                 this.isAuthenticated = true;
                 this.user = response.data.data.user;
 
-                return {success: true, user: this.user};
+                return {success: true, user: response.data.data.user};
 
             } catch (error) {
                 this.user = null;

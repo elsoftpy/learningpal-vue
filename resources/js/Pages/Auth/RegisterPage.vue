@@ -9,14 +9,14 @@
             </label>
             <InputText
               id="documento_identidad"
-              v-model="form.documento_identidad"
+              v-model="form.personal_id"
               :placeholder="$t('ID Number')"
-              :invalid="!!errors.documento_identidad"
+              :invalid="!!errors.personal_id"
               autofocus
               fluid
             />
-            <small v-if="errors.documento_identidad" class="text-red-500">
-              {{ errors.documento_identidad }}
+            <small v-if="errors.personal_id" class="text-red-500">
+              {{ errors.personal_id }}
             </small>
           </div>
 
@@ -27,12 +27,12 @@
             </label>
             <InputText
               id="nombres"
-              v-model="form.nombres"
+              v-model="form.first_name"
               :placeholder="$t('Name')"
-              :invalid="!!errors.nombres"
+              :invalid="!!errors.first_name"
               fluid
             />
-            <small v-if="errors.nombres" class="text-red-500">{{ errors.nombres }}</small>
+            <small v-if="errors.first_name" class="text-red-500">{{ errors.first_name }}</small>
           </div>
 
           <!-- Last Name -->
@@ -42,12 +42,12 @@
             </label>
             <InputText
               id="apellidos"
-              v-model="form.apellidos"
+              v-model="form.last_name"
               :placeholder="$t('Last Name')"
-              :invalid="!!errors.apellidos"
+              :invalid="!!errors.last_name"
               fluid
             />
-            <small v-if="errors.apellidos" class="text-red-500">{{ errors.apellidos }}</small>
+            <small v-if="errors.last_name" class="text-red-500">{{ errors.last_name }}</small>
           </div>
 
           <!-- Phone -->
@@ -57,12 +57,12 @@
             </label>
             <InputText
               id="telefono"
-              v-model="form.telefono"
+              v-model="form.phone"
               :placeholder="$t('Phone')"
-              :invalid="!!errors.telefono"
+              :invalid="!!errors.phone"
               fluid
             />
-            <small v-if="errors.telefono" class="text-red-500">{{ errors.telefono }}</small>
+            <small v-if="errors.phone" class="text-red-500">{{ errors.phone }}</small>
           </div>
           <!-- Email -->
           <div>
@@ -146,10 +146,10 @@ import { useI18n } from 'vue-i18n'
 const router = useRouter()
 
 const form = reactive({
-  documento_identidad: '',
-  nombres: '',
-  apellidos: '',
-  telefono: '',
+  personal_id: '',
+  first_name: '',
+  last_name: '',
+  phone: '',
   name: '',
   email: '',
   password: '',
@@ -157,10 +157,10 @@ const form = reactive({
 })
 
 const errors = reactive({
-  documento_identidad: '',
-  nombres: '',
-  apellidos: '',
-  telefono: '',
+  personal_id: '',
+  first_name: '',
+  last_name: '',
+  phone: '',
   name: '',
   email: '',
   password: '',
@@ -178,10 +178,11 @@ const handleRegister = async () => {
     const authStore = useAuthStore();
 
     const result = await authStore.register({
-      documento_identidad: form.documento_identidad,
-      nombres: form.nombres,
-      apellidos: form.apellidos,
-      telefono: form.telefono,
+      type: 'person',
+      personal_id: form.personal_id,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      phone: form.phone,
       name: form.name,
       email: form.email,
       password: form.password,
@@ -189,7 +190,12 @@ const handleRegister = async () => {
     });
 
     if (result.success) {
-      router.push({ name: 'registered' })
+      console.log('Registration successful:', result);
+      router.push({ 
+        name: 'settings.users.profile', 
+        params: { id: result.user.id },
+        query: { from: 'register' }
+      });
     }else {
       // Handle unexpected failure
       console.error('Registration failed:', result.message);
@@ -204,6 +210,7 @@ const handleRegister = async () => {
         }
       })
     } else {
+      console.log(error);
       // General error
       errors.email = error.response?.data?.message || 'An error occurred. Please try again.'
     }

@@ -53,6 +53,7 @@
                             id="password"
                             name="password"
                             :placeholder="$t('Password')"
+                            input-class="w-full"
                         />
                         <Message
                             v-if="$form.password?.invalid"
@@ -190,6 +191,73 @@
                         </p>
                     </div>
                 </Dialog>
+
+                <Dialog
+                    v-model:visible="showNewUser"
+                    modal
+                    :closable="false"
+                    :style="{ width: '25rem' }"
+                >
+                    <template #header >
+                        <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-blue-500">
+                            <span class="text-xl font-semibold">{{ $t('Welcome!') }}</span>
+                            <Button
+                                icon="pi pi-times"
+                                rounded
+                                size="small"
+                                severity="primary"
+                                variant="outlined"
+                                class="text-white! border-2! hover:text-gray-800!"
+                                @click="showNewUser = false"
+                            />
+                        </div>
+                    </template>
+                    <div class="flex flex-col gap-3">
+                        <!-- Icon / Visual cue -->
+                        <div class="flex justify-center">
+                            <IconWrapper
+                                name="check-circle"
+                                class="text-green-500"
+                                size="48"
+                            />
+                        </div>
+
+                        <!-- Title -->
+                        <div class="flex justify-center text-lg font-semibold text-gray-900">
+                            {{ $t("Great news, you're in!") }}
+                        </div>
+
+                        <!-- Description -->
+                        <p class="text-gray-600 max-w-md">
+                            {{ $t('Your account is almost ready.') }}
+                        </p>
+                        <p class="text-gray-600 max-w-md">
+                            {{ $t('To activate it, please upload your payment receipt.') }}
+                        </p>
+
+                        <p class="text-gray-600 max-w-md">
+                            {{ $t("While your account is under review, you can update your information.") }}
+                            {{ $t('We\'ll notify you as soon as your account becomes active') }}
+                        </p>
+
+                        <!-- Footer / Thanks -->
+                        <p class="text-sm text-gray-500 mt-1">
+                            {{ $t('Thanks!') }}
+                        </p>
+
+                        <!-- Action -->
+                        <div class="flex justify-end">
+                            <Button
+                                type="button"
+                                icon="pi pi-check"
+                                severity="success"
+                                :label="$t('OK')"
+                                :aria-label="$t('OK')"
+                                @click="showNewUser = false"
+                            />
+                        </div>
+                    </div>
+                </Dialog>
             </template>
         </ProfilePage>
     </Form>
@@ -218,6 +286,7 @@ import MultiSelect from 'primevue/multiselect';
 import Message from 'primevue/message';
 import Dialog from 'primevue/dialog';
 import FileUpload from '@/components/form/FileUpload.vue';
+import IconWrapper from '@/components/common/IconWrapper.vue';
 import axios from 'axios';
 import SubmitButton from '../../../components/form/SubmitButton.vue';
 
@@ -246,16 +315,20 @@ const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
 
 const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
+const from = route.query.from|| null;
 
 const emit = defineEmits(['update:paymentReceipt']);
 const selectedPaymentFile = ref(null);
+
+const showNewUser = ref(false);
 
 const currentAvatarUrl = computed(() => {
     console.log('Computing currentAvatarUrl for crudAction:', auth.user?.avatar_url);
     if (crudAction === 'edit.auth-user') {
         return auth.user?.avatar_url || null;
     }
-    return null;
+
+    return userData.value?.avatar_url || null;
 });
 
 const paymentReceiptUrl = computed(() => {
@@ -518,6 +591,10 @@ onMounted(async () => {
             }
 
             await fetchUserData();
+        }
+
+        if (from === 'register') {
+            showNewUser.value = true;
         }
     } catch (error) {
         console.error('Error during component mount:', error);
