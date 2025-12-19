@@ -67,6 +67,7 @@ class PermissionSeeder extends Seeder
             'create students',
             'edit students',
             'delete students',
+            'reschedule class',
         ];
 
         foreach ($academicSettingsPermissions as $permission) {
@@ -118,8 +119,21 @@ class PermissionSeeder extends Seeder
             'show academic settings menu',
             'view language levels',
             'view class schedules',
+            'view students',
             // academic classes
             'show academic classes menu',
+        ]);
+
+        $annualStudent = Role::firstOrCreate(['name' => 'annual_student']);
+        $annualStudent->revokePermissionTo(Permission::all());
+        $annualStudent->givePermissionTo([
+            // system
+            'edit own profile',
+            // academic
+            'show academic menu',
+            // academic classes
+            'show academic classes menu',
+            'reschedule class',
         ]);
     }
 }
