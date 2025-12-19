@@ -64,6 +64,7 @@ class PermissionSeeder extends Seeder
             'edit teachers',
             'delete teachers',
             'view students',
+            'view all students',
             'create students',
             'edit students',
             'delete students',

@@ -95,14 +95,14 @@ class UserProfileController extends Controller
         );
     }
 
-    /* public function userDataResponse(User $user)
+    public function userDataResponse(User $user)
     {
         return ResponseService::success(
             data: [
                 'user' => $this->userData($user),
             ]
         );
-    } */
+    }
 
     public function update(UserProfileRequest $request, User $user, UserService $userService)
     {

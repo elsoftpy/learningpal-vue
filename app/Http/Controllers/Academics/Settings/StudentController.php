@@ -25,6 +25,14 @@ class StudentController extends Controller
         $studentsQuery = Student::query()
             ->with('profile');
 
+        $user = $request->user();
+        if (!$user->can('view all students')) {
+            $courses = $user->profile?->teacher?->courses->pluck('id')->toArray() ?? [];
+            $studentsQuery->whereHas('courses', function ($q) use ($courses) {
+                $q->whereIn('courses.id', $courses);
+            });
+        }
+
         if ($search) {
             $studentsQuery->where(function ($query) use ($search) {
                 $query->whereHas('profile', function ($q) use ($search) {
@@ -47,7 +55,7 @@ class StudentController extends Controller
         return ResponseService::success(
             data: [
                 'students' => $students,
-                'total ' => $paginated->total(),
+                'total' => $paginated->total(),
             ]
         );
     }

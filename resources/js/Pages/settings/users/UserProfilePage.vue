@@ -145,7 +145,7 @@
                     <div class="flex flex-col w-full md:w-1/6">
                         
                             <FileUpload
-                                v-if="!hasPayment"
+                                v-if="!hasPayment && isStudent"
                                 id="payment"
                                 :label="$t('Payment')"
                                 :button-label="$t('Payment')"
@@ -308,6 +308,7 @@ const selectedAvatar = ref(null);
 const rolesLoading = ref(false);
 const visible = ref(false);
 const userData = ref(null);
+const isStudent = ref(false);
 const formKey = ref(0);
 let rolesDebounceTimer = null;
 
@@ -366,6 +367,7 @@ const initialValues = computed(() => {
 
     if (crudAction === 'edit.auth-user') {
         const roleNames = getRoleNames(auth.user?.roles || []);
+        isStudent.value = roleNames.includes('student');
         return {
             personal_id: auth.user?.personal_id || '',
             first_name: auth.user?.first_name || '',
@@ -383,7 +385,7 @@ const initialValues = computed(() => {
 
     const roleNames = getRoleNames(userData.value?.roles || []);
     const data = userData.value || {};
-
+    isStudent.value = roleNames.includes('student');
     return {
         personal_id: data.personal_id || '',
         first_name: data.first_name || '',
@@ -436,6 +438,7 @@ const fetchUserData = async () => {
     try {
         const response = await axios.post(`/settings/users/profile/${userId}/data`);
         userData.value = response.data.data.user || response.data.user || {};
+
     } catch (error) {
         console.error('Error fetching user data:', error);
         userData.value = null;

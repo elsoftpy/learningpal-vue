@@ -256,6 +256,7 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+
     errors: {
         type: Object,
         default: () => ({}),

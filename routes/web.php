@@ -72,7 +72,7 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
             ->name('store')
             ->middleware('can:create users');
 
-        Route::post('profile/{user}/data', [UserProfileController::class, 'userData'])
+        Route::post('profile/{user}/data', [UserProfileController::class, 'userDataResponse'])
             ->name('profile.user.data')
             ->middleware('can:view users');
 
