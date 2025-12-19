@@ -12,6 +12,7 @@
             :creating="creating" 
             :isPersonProfile="false"
             :errors="errors"
+            @profile-found="handleProfileFound"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -157,37 +158,54 @@ watch(teacherData, (newData) => {
 });
 
 const initialValues = computed(() => {
-    if (crudAction === 'create') {
+    if (crudAction !== 'create') {
+        const data = teacherData.value || {};
+        let isActive = teacherData.value?.status === 'active' ? true : false;
+        
         return {
-            personal_id: '',
-            first_name: '',
-            last_name: '',
-            address: '',
-            phone: '',
-            email: '',
-            birth_date: '',
+            personal_id: data.personal_id || '',
+            first_name: data.first_name || '',
+            last_name: data.last_name || '',
+            address: data.address || '',
+            phone: data.phone || '',
+            email: data.email || '',
+            birth_date: data.birth_date || '',
+            name: data.name || '',
+            password: data.password || '',
+            courses: data.courses || [],
+            status: data.status || '',
+            isActive: isActive || false,
+        };    
+    }
+
+    if (teacherData.value) {
+        
+        return {
+            personal_id: teacherData.value.personal_id || '',
+            first_name: teacherData.value.first_name || '',
+            last_name: teacherData.value.last_name || '',
+            address: teacherData.value.address || '',
+            phone: teacherData.value.phone || '',
+            email: teacherData.value.email || '',
+            birth_date: teacherData.value.birth_date || '',
             courses: [],
-            display_courses: [],
             status: '',
             isActive: true,
         };
-    }
+    }  
 
-    const data = teacherData.value || {};
-    let isActive = teacherData.value?.status === 'active' ? true : false;
     return {
-        personal_id: data.personal_id || '',
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
-        address: data.address || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        birth_date: data.birth_date || '',
-        name: data.name || '',
-        password: data.password || '',
-        courses: data.courses || [],
-        status: data.status || '',
-        isActive: isActive || false,
+        personal_id: '',
+        first_name: '',
+        last_name: '',
+        address: '',
+        phone: '',
+        email: '',
+        birth_date: '',
+        courses: [],
+        display_courses: [],
+        status: '',
+        isActive: true,
     };
 });
 
@@ -205,6 +223,19 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     isActive: '',
     general: '',
 });
+
+const handleProfileFound = async (profileData) => {
+    teacherData.value = {
+        ...teacherData.value,
+        personal_id: profileData.personal_id,
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        address: profileData.address,
+        phone: profileData.phone,
+        email: profileData.email,
+        birth_date: profileData.birth_date,
+    };
+};
 
 const fetchCourses = async (query = '') => {
     coursesLoading.value = true;

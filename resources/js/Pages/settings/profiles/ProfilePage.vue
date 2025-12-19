@@ -235,9 +235,10 @@ import InputText from 'primevue/inputtext'
 import FileUpload from '@/components/form/FileUpload.vue'
 import DateInput from '@/components/form/DateInput.vue'
 import Message from 'primevue/message'
-import axios from 'axios'
+import { useProfileCheck } from '@/composables/useProfileCheck'
 
 const { t: $t } = useI18n()
+const { checkProfile, isChecking } = useProfileCheck()
 
 const props = defineProps({
     form: {
@@ -265,7 +266,7 @@ const props = defineProps({
 
 const emit = defineEmits([
     'update:avatar',
-    'check-personal-id',
+    'profile-found',
 ])
 
 const selectedFile = ref(null)
@@ -287,13 +288,20 @@ const onAvatarClear = () => {
     emit('update:avatar', null)
 }
 
-const handlePersonalIdBlur = () => {
+const handlePersonalIdBlur = async () => {
     const personalId = props.form.personal_id?.value
 
-    console.log('Personal ID blur:', personalId)
+    if (!personalId || !props.creating) {
+        return
+    }
 
-    if (personalId && props.creating) { 
-        emit('check-personal-id', personalId)
+    const profileData = await checkProfile(personalId, {
+        showToast: true,
+        showErrorToast: false,
+    })
+
+    if (profileData) {
+        emit('profile-found', profileData)
     }
 }
 </script>

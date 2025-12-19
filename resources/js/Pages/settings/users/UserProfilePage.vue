@@ -14,6 +14,7 @@
             :isPersonProfile="true"
             :errors="errors"
             @update:avatar="onAvatarUpdate"
+            @profile-found="handleProfileFound"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -350,24 +351,29 @@ watch(userData, (newData) => {
 
 const initialValues = computed(() => {
     if (crudAction === 'create') {
+        const roleNames = getRoleNames(userData.value?.roles || []);
+        const data = userData.value || {};
+        isStudent.value = roleNames.includes('student');
+        
         return {
-            personal_id: '',
-            first_name: '',
-            last_name: '',
-            address: '',
-            phone: '',
-            email: '',
-            birth_date: '',
-            name: '',
-            password: '',
-            roles: [],
-            status: '',
+            personal_id: data.personal_id || '',
+            first_name: data.first_name || '',
+            last_name: data.last_name || '',
+            address: data.address || '',
+            phone: data.phone || '',
+            email: data.email || '',
+            birth_date: data.birth_date || '',
+            name: data.name || '',
+            password: data.password || '',
+            roles: roleNames,
+            status: data.status || '',
         };
     }
 
     if (crudAction === 'edit.auth-user') {
         const roleNames = getRoleNames(auth.user?.roles || []);
         isStudent.value = roleNames.includes('student');
+        
         return {
             personal_id: auth.user?.personal_id || '',
             first_name: auth.user?.first_name || '',
@@ -383,22 +389,38 @@ const initialValues = computed(() => {
         };
     }
 
-    const roleNames = getRoleNames(userData.value?.roles || []);
-    const data = userData.value || {};
-    isStudent.value = roleNames.includes('student');
+    if (userData.value) {
+        const roleNames = getRoleNames(userData.value?.roles || []);
+        isStudent.value = roleNames.includes('student');
+        
+        return {
+            personal_id: userData.value.personal_id || '',
+            first_name: userData.value.first_name || '',
+            last_name: userData.value.last_name || '',
+            address: userData.value.address || '',
+            phone: userData.value.phone || '',
+            email: userData.value.email || '',
+            birth_date: userData.value.birth_date || '',
+            name: userData.value.name || '',
+            password: userData.value.password || '',
+            roles: roleNames,
+            status: userData.value.status || '',
+        };
+    }
+
     return {
-        personal_id: data.personal_id || '',
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
-        address: data.address || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        birth_date: data.birth_date || '',
-        name: data.name || '',
-        password: data.password || '',
-        roles: roleNames,
-        status: data.status || '',
-    };
+            personal_id: '',
+            first_name: '',
+            last_name: '',
+            address: '',
+            phone: '',
+            email: '',
+            birth_date: '',
+            name: '',
+            password: '',
+            roles: [],
+            status: '',
+        };
 });
 
 
@@ -418,6 +440,21 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     status: '',
     general: '',
 });
+
+const handleProfileFound = async (profileData) => {
+    if (!profileData) return;
+
+    userData.value = {
+        ...userData.value,
+        personal_id: profileData.personal_id,
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        address: profileData.address,
+        phone: profileData.phone,
+        email: profileData.email,
+        birth_date: profileData.birth_date,
+    };
+}
 
 const fetchRoles = async (query = '') => {
     rolesLoading.value = true;

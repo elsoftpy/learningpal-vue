@@ -12,7 +12,7 @@
             :creating="creating" 
             :isPersonProfile="false"
             :errors="errors"
-            @check-personal-id="checkExistingProfile"
+            @profile-found="handleProfileFound"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -158,10 +158,10 @@ watch(studentData, (newData) => {
 });
 
 const initialValues = computed(() => {
-    console.log('Computing initialValues with studentData:', studentData.value);
     if (crudAction !== 'create') {
         const data = studentData.value || {};
         let isActive = studentData.value?.status === 'active' ? true : false;
+        
         return {
             personal_id: data.personal_id || '',
             first_name: data.first_name || '',
@@ -179,6 +179,7 @@ const initialValues = computed(() => {
     }
 
     if (studentData.value) {
+        
         return {
             personal_id: studentData.value.personal_id || '',
             first_name: studentData.value.first_name || '',
@@ -224,30 +225,18 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     general: '',
 });
 
-const checkExistingProfile = async (personalId) => {
-    if (!personalId) return;
-
-    try {
-        const response = await axios.post(`/settings/users/profile/${personalId}/profile-data`);
-        console.log('Profile data response:', response.data.data.profile);
-        if (response.data.success) {
-            const profile = response.data.data.profile;
-
-            studentData.value = {
-                ...studentData.value,
-                personal_id: profile.personal_id,
-                first_name: profile.first_name,
-                last_name: profile.last_name,
-                address: profile.address,
-                phone: profile.phone,
-                email: profile.email,
-                birth_date: profile.birth_date,
-            }
-        }
-    } catch (error) {
-        console.error('Error checking existing profile:', error);
-    }
-};
+const handleProfileFound = async (profileData) => {
+    studentData.value = {
+        ...studentData.value,
+        personal_id: profileData.personal_id,
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        address: profileData.address,
+        phone: profileData.phone,
+        email: profileData.email,
+        birth_date: profileData.birth_date,
+    };
+}
 
 const fetchCourses = async (query = '') => {
     coursesLoading.value = true;
