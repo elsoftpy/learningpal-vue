@@ -4,32 +4,9 @@ namespace App\Services\Traits;
 
 use App\Models\User;
 use App\Services\Utilities\DateTimeService;
-use Transliterator;
 
 trait UserProfileTrait
 {
-    protected function getUsername(string $fullName): string
-    {
-        $userName =  str_replace(' ', '', strtolower(trim($fullName)));
-
-        $existingUserCount = User::where('name', 'like', $userName . '%')->count();
-        
-        $userName = $this->normalizeString($userName);
-
-        if ($existingUserCount > 0) {
-            $userName .= str_pad($existingUserCount + 1, 3, '0', STR_PAD_LEFT);
-        }
-
-        return $userName;
-    }
-
-    protected function normalizeString(?string $value): ?string
-    {
-        $transliterator = Transliterator::create('Any-Latin; Latin-ASCII');
-        
-        return $transliterator->transliterate($value);
-    }
-
     public function userData(User $user): array
     {
         $roles = $user->getRoleNames()->toArray();

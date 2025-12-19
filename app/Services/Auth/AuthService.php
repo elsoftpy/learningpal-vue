@@ -34,7 +34,7 @@ class AuthService
         return DB::transaction(function () use ($request) {
             $user = (new UserService())->createUser(
                 userData: $request->only(['name', 'email', 'password']),
-                profileData: $request->except(['name', 'email', 'password']),
+                profileData: $request->except(['name', 'password']),
             );
 
             $user->assignRole('student');

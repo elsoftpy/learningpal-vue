@@ -2,13 +2,44 @@
 
 namespace App\Services\Settings\Users;
 
+use App\Enums\StatusEnum;
 use App\Models\User;
+use Transliterator;
 
 class UserService
 {
+    protected function getUsername(string $fullName): string
+    {
+        $userName =  str_replace(' ', '', strtolower(trim($fullName)));
+
+        $existingUserCount = User::where('name', 'like', $userName . '%')->count();
+        
+        $userName = $this->normalizeString($userName);
+
+        if ($existingUserCount > 0) {
+            $userName .= str_pad($existingUserCount + 1, 3, '0', STR_PAD_LEFT);
+        }
+
+        return $userName;
+    }
+
+    protected function normalizeString(?string $value): ?string
+    {
+        $transliterator = Transliterator::create('Any-Latin; Latin-ASCII');
+        
+        return $transliterator->transliterate($value);
+    }
+
     public function createUser(array $userData, array $profileData): User
     {
         $profile = (new ProfileService())->createProfile($profileData);
+
+        if (empty($userData['name'])) {
+            $userData['name'] = $this->getUsername($profile->full_name ?? 'user');
+        
+        }
+        
+        $userData['status'] = StatusEnum::PENDING->value;
 
         $user = $profile->user()->create($userData);
 

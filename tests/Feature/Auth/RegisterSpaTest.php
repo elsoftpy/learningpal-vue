@@ -67,7 +67,7 @@ class RegisterSpaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
-            'name' => 'JohnDoe',
+            'name' => 'johndoe',
             'email' => 'john.doe@example.com',
             'status' => StatusEnum::PENDING->value,
         ]);
@@ -124,7 +124,7 @@ class RegisterSpaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
-            'name' => 'AcmeCorp',
+            'name' => 'acmecorp',
             'email' => 'contact@acmecorp.com',
             'status' => StatusEnum::PENDING->value,
         ]);

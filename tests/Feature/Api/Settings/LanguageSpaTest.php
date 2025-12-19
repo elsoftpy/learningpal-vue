@@ -93,7 +93,7 @@ class LanguageSpaTest extends TestCase
 
     public function test_unauthenticated_user_cannot_delete_language(): void
     {
-        $language = Language::factory()->create();
+        $language = Language::first() ?? Language::factory()->create();
         $response = $this->postJson(route('settings.languages.destroy', ['language' => $language->id]));
         
 
@@ -106,7 +106,7 @@ class LanguageSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        $language = Language::factory()->create();
+        $language = Language::first() ?? Language::factory()->create();
 
         $user->assignRole('admin');
 
@@ -128,7 +128,7 @@ class LanguageSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        $language = Language::factory()->create();
+        $language = Language::first() ?? Language::factory()->create();
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
