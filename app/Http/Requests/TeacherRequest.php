@@ -47,8 +47,10 @@ class TeacherRequest extends FormRequest
             $birthDate = DateTimeService::dateFromLocalizedString($this->birth_date);
         }
 
+        $profile = $this->profileByIdNumber($this->personal_id ?? $this->ruc);
+
         $this->merge([
-            'profile' => $this->teacher?->profile,
+            'profile' => $this->teacher?->profile ?? $profile,
             'birth_date' => $birthDate ?? null,
         ]);
     }

@@ -10,12 +10,8 @@ class TeacherService
 
     public function createTeacher(array $teacherData, array $profileData): Teacher
     {
-        $profileService = new ProfileService();
-        $profile = $profileService->findByEmail($profileData['email']);
-        if (!$profile) {
-
-            $profile = $profileService->createProfile($profileData);
-        }
+        $profile = (new ProfileService())->firstOrCreateProfile($profileData);
+        
         $teacher = $profile->teacher()->create($teacherData);
 
         $teacher->courses()->sync($teacherData['courses'] ?? []);

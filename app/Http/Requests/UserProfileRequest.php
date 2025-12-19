@@ -100,8 +100,10 @@ class UserProfileRequest extends FormRequest
             $birthDate = DateTimeService::dateFromLocalizedString($this->birth_date);
         }
 
+        $profile = $this->profileByIdNumber($this->personal_id ?? $this->ruc);
+
         $this->merge([
-            'profile' => $this->user?->profile,
+            'profile' => $this->user?->profile ?? $profile,
             'birth_date' => $birthDate ?? null,
         ]);
     }

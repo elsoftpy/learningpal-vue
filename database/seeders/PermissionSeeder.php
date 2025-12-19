@@ -108,11 +108,6 @@ class PermissionSeeder extends Seeder
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
         $teacher->revokePermissionTo(Permission::all());
         $teacher->givePermissionTo([
-            // system
-            'show system menu',
-            'show system settings menu',
-            // users
-            'view users', 
             'edit own profile',
             // academic
             'show academic menu', 

@@ -9,14 +9,7 @@ class StudentService
 {
     public function createStudent(array $studentData, array $profileData): Student
     {
-        $profileService = new ProfileService();
-
-        $profile = $profileService->findByEmail($profileData['email']);
-
-        if (!$profile) {
-
-            $profile = $profileService->createProfile($profileData);
-        }
+        $profile = (new ProfileService())->firstOrCreateProfile($profileData);
 
         $student = $profile->student()->create($studentData);
 

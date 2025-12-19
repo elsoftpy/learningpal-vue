@@ -32,7 +32,7 @@ class UserService
 
     public function createUser(array $userData, array $profileData): User
     {
-        $profile = (new ProfileService())->createProfile($profileData);
+        $profile = (new ProfileService())->firstOrCreateProfile($profileData);
 
         if (empty($userData['name'])) {
             $userData['name'] = $this->getUsername($profile->full_name ?? 'user');

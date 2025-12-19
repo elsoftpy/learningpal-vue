@@ -29,6 +29,15 @@ class ProfileService
         return Profile::create($profileData);
     }
 
+    public function firstOrCreateProfile(array $profileData): Profile
+    {
+        $profile = $this->findByEmail($profileData['email']);
+        if (!$profile) {
+            $profile = $this->createProfile($profileData);
+        }
+        return $profile;
+    }
+
     public function updateProfile(Profile $profile, array $profileData): void
     {
         $fullName = $this->getFullName(
