@@ -223,5 +223,18 @@
   "Email is required.": "Email is required.",
   "Password must be at least 6 characters long.": "Password must be at least 6 characters long.",
   "Password Confirmation is required.": "Password Confirmation is required.",
-  "Passwords do not match.": "Passwords do not match."
+  "Passwords do not match.": "Passwords do not match.",
+  "Class Schedules List": "Class Schedules List",
+  "Class Schedule": "Class Schedule",
+  "Month": "Month",
+  "Back to schedule": "Back to schedule",
+  "Rescheduled Date": "Rescheduled Date",
+  "Rescheduled Start Time": "Rescheduled Start Time",
+  "Rescheduled End Time": "Rescheduled End Time",
+  "Edit Class Schedule Detail": "Edit Class Schedule Detail", 
+  "Date": "Date",
+  "Rescheduled Start": "Rescheduled Start",
+  "Rescheduled End": "Rescheduled End",
+  "Reschedule Count": "Rescheduled Count",
+  "Record": "Record"
 }

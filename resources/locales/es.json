@@ -223,5 +223,17 @@
   "Email is required.": "El correo electrónico es obligatorio.",
   "Password must be at least 6 characters long.": "La contraseña debe tener al menos 6 caracteres.",
   "Password Confirmation is required.": "La confirmación de la contraseña es obligatoria.",
-  "Passwords do not match.": "Las contraseñas no coinciden."
+  "Passwords do not match.": "Las contraseñas no coinciden.",
+  "Class Schedules List": "Lista de horarios de clase",
+  "Class Schedule": "Horario de clase",
+  "Month": "Mes",
+  "Back to schedule": "Volver al horario",
+  "Rescheduled Date": "Fecha reprogramada",
+  "Rescheduled Start Time": "Hora de inicio reprogramada",
+  "Rescheduled End Time": "Hora de fin reprogramada",
+  "Date": "Fecha",
+  "Rescheduled Start": "Inicio reprogramado",
+  "Rescheduled End": "Fin reprogramado",
+  "Reschedule Count": "Cantidad de reprogramaciones",
+  "Record": "Registro"
 }

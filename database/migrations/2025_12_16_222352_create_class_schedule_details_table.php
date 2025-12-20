@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('topic')->nullable();
             $table->string('activity')->nullable();
             $table->text('comments')->nullable();
-            $table->integer('order');
+            $table->integer('order')->nullable();
             $table->string('status')->default('scheduled')->comment('Values: scheduled, completed, pending, ongoing, reprogramed, canceled');
             $table->timestamps();
         });
