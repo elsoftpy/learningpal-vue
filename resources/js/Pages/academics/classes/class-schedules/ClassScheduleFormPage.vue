@@ -425,8 +425,8 @@ const fetchCourses = async (query = '') => {
 
 const fetchClassScheduleData = async () => {
     try {
-        const response = await axios.post(`/academics/settings/students/${studentId}/data`);
-        classScheduleData.value = response.data.data.classSchedule || response.data.classSchedule || {};
+        const response = await axios.post(`/academics/lessons/class-schedules/${classScheduleId}/data`);
+        classScheduleData.value = response.data.data.class_schedule || response.data.class_schedule || {};
         loadScheduleDetails(classScheduleData.value?.details || []);
     } catch (error) {
         console.error('Error fetching class schedule data:', error);
