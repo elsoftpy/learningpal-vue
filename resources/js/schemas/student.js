@@ -37,6 +37,6 @@ export const createStudentSchema = (t, locale) => {
         message: t('Invalid date format'),
       })
       .optional(),
-    courses: z.array(z.number()).min(1, t('At least one course must be selected')),
+    courses: z.array(z.number()).min(1, t('At least one course must be selected.')),
   });
 }
