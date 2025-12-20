@@ -24,7 +24,17 @@ class ClassScheduleController extends Controller
             ->with(['course', 'details']);
 
         if ($search) {
+            if (str_contains($search, '/')) {
+                $searchArray = explode('/', $search);
+                if (count($searchArray) === 3) {
+                    $search = $searchArray[2] . '-' . $searchArray[1] . '-' . $searchArray[0];
+                } elseif (count($searchArray) === 2) {
+                    $search = $searchArray[1] . '-' . $searchArray[0];
+                }
+            }
+
             $query->where('name', 'like', '%' . $search . '%')
+                ->orWhere('schedule_month', 'like', '%' . $search . '%')
                 ->orWhereHas('course', function ($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%');
                 });
@@ -38,7 +48,8 @@ class ClassScheduleController extends Controller
         }
 
         // Pagination
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+        $paginated = $query->orderBy('schedule_month', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
 
         $classSchedules = $paginated->getCollection()->map(function (ClassSchedule $classSchedule) {
             return (new ClassScheduleService())->classScheduleData($classSchedule);
