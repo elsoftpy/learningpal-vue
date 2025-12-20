@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StudentRequest;
 use App\Models\Student;
 use App\Services\Academics\Settings\StudentService;
+use App\Services\Academics\Settings\TeacherService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
@@ -26,12 +27,11 @@ class StudentController extends Controller
             ->with('profile');
 
         $user = $request->user();
-        if (!$user->can('view all students')) {
-            $courses = $user->profile?->teacher?->courses->pluck('id')->toArray() ?? [];
-            $studentsQuery->whereHas('courses', function ($q) use ($courses) {
-                $q->whereIn('courses.id', $courses);
-            });
-        }
+        $studentsQuery = (new TeacherService())->applyTeacherCoursesFilter(
+            user: $user, 
+            query: $studentsQuery,
+            relation: 'courses'
+        );
 
         if ($search) {
             $studentsQuery->where(function ($query) use ($search) {

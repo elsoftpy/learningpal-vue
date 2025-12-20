@@ -3,7 +3,9 @@
 namespace App\Services\Academics\Settings;
 
 use App\Models\Teacher;
+use App\Models\User;
 use App\Services\Settings\Users\ProfileService;
+use Illuminate\Database\Eloquent\Builder;
 
 class TeacherService
 {
@@ -11,7 +13,7 @@ class TeacherService
     public function createTeacher(array $teacherData, array $profileData): Teacher
     {
         $profile = (new ProfileService())->firstOrCreateProfile($profileData);
-        
+
         $teacher = $profile->teacher()->create($teacherData);
 
         $teacher->courses()->sync($teacherData['courses'] ?? []);
@@ -24,6 +26,18 @@ class TeacherService
         $profile = $teacher->profile;
 
         (new ProfileService())->updateProfile($profile, $profileData);
+    }
+
+    public function applyTeacherCoursesFilter(User $user, Builder $query, string $relation): Builder
+    {
+        if (!$user->can('view all students')) {    
+            $courses = $user->profile?->teacher?->courses->pluck('id')->toArray() ?? [];
+                $query->whereHas($relation, function ($q) use ($courses) {
+                    $q->whereIn('course_id', $courses);
+            });
+        }
+
+        return $query;
     }
 
     public function teacherData(Teacher $teacher)

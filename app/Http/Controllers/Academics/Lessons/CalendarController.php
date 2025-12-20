@@ -10,6 +10,7 @@ use App\Models\ClassScheduleDetail;
 use App\Models\Course;
 use App\Services\Academics\Lessons\ClassScheduleDetailService;
 use App\Services\Academics\Settings\CourseService;
+use App\Services\Academics\Settings\TeacherService;
 use Illuminate\Http\Request;
 
 class CalendarController extends Controller
@@ -28,12 +29,11 @@ class CalendarController extends Controller
             ]); 
 
         $user = $request->user();
-        if (!$user->can('view all students')) {
-            $courses = $user->profile?->teacher?->courses->pluck('id')->toArray() ?? [];
-            $sessionsQuery->whereHas('classSchedule', function ($q) use ($courses) {
-                $q->whereIn('course_id', $courses);
-            });
-        }
+        $sessionsQuery = (new TeacherService())->applyTeacherCoursesFilter(
+            user: $user,
+            query: $sessionsQuery,
+            relation: 'classSchedule'
+        );
         
         $sessions = $sessionsQuery->get()
             ->map(function (ClassScheduleDetail $detail) {
