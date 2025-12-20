@@ -9,24 +9,59 @@
     >
         <PageContainer>
             <template #body>
-                <div class="max-w-3xl mx-auto w-full space-y-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs uppercase tracking-wide text-gray-500">
-                                {{ $t('Class Schedule Detail') }}
-                            </p>
-                            <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                {{ scheduleInfoDisplay }}
+                <div class="flex flex-col w-full space-y-4">
+                    <div class="flex flex-col md:hidden w-full space-y-2">
+                        <div class="flex w-full justify-end">
+                            <Button
+                                type="button"
+                                icon="pi pi-arrow-left"
+                                :label="$t('Back to schedule')"
+                                severity="primary"
+                                @click="goBack"
+                            />
+                        </div>
+                        <div class="flex flex-row items-baseline space-x-2 justify-start">
+                            <span class="text-xs uppercase tracking-wide text-gray-500">
+                                {{ $t('Class Schedule') }}:
+                            </span>
+                            <h1 class="text-sm font-semibold text-gray-800 dark:text-gray-100 overflow-clip text-ellipsis">
+                                {{ scheduleInfo.name }} {{ scheduleInfo.course }} {{ scheduleInfo.month }}
                             </h1>
-                            <p class="text-sm text-gray-500" v-if="detailContext.order">
-                                {{ $t('Session {order}', { order: detailContext.order }) }}
-                            </p>
+                        </div>
+
+                    </div>
+                    <div class="hidden md:flex items-center justify-between">
+                        <div class="flex flex-col md:flex-row space-y-2 space-x-0 md:space-y-0 md:space-x-6">
+                            <div class="flex items-baseline space-x-2">
+                                <span class="text-xs uppercase tracking-wide text-gray-500">
+                                    {{ $t('Class Schedule') }}:
+                                </span>
+                                <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                    {{ scheduleInfo.name }}
+                                </h1>
+                            </div>
+                            <div class="flex items-baseline space-x-2">
+                                <span class="text-xs uppercase tracking-wide text-gray-500">
+                                    {{ $t('Course') }}:
+                                </span>
+                                <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                    {{ scheduleInfo.course }}
+                                </h1>
+                            </div>
+                                                        <div class="flex items-baseline space-x-2">
+                                <span class="text-xs uppercase tracking-wide text-gray-500">
+                                    {{ $t('Month') }}:
+                                </span>
+                                <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                    {{ scheduleInfo.month }}
+                                </h1>
+                            </div>
                         </div>
                         <Button
                             type="button"
                             icon="pi pi-arrow-left"
                             :label="$t('Back to schedule')"
-                            severity="secondary"
+                            severity="primary"
                             @click="goBack"
                         />
                     </div>
@@ -45,22 +80,25 @@
                     </div>
 
                     <div v-else-if="!loadError" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <DateInput
-                                id="session_date"
-                                name="session_date"
-                                :label="`${$t('Session Date')} *`"
-                                :placeholder="$t('dd/mm/yyyy')"
-                            />
-                            <Message
-                                v-if="$form.session_date?.invalid"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ $form.session_date?.error?.message }}
-                            </Message>
-                            <div class="flex flex-col">
+                        <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
+                            <div class="flex flex-col w-full md:w-1/4">
+                                <DateInput
+                                    id="session_date"
+                                    name="session_date"
+                                    :label="$t('Session Date')"
+                                    :placeholder="$t('dd/mm/yyyy')"
+                                    :mandatory="true"
+                                />
+                                <Message
+                                    v-if="$form.session_date?.invalid"
+                                    severity="error"
+                                    size="small"
+                                    variant="simple"
+                                >
+                                    {{ $form.session_date?.error?.message }}
+                                </Message>
+                            </div>
+                            <div class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Start Time') }}
                                     <span class="text-red-500">*</span>
@@ -69,7 +107,7 @@
                                     name="start_time"
                                     v-maska="timeMaskOptions"
                                     :placeholder="$t('HH:MM')"
-                                    class="w-full"
+                                    class="w-full text-right"
                                 />
                                 <Message
                                     v-if="$form.start_time?.invalid"
@@ -80,16 +118,16 @@
                                     {{ $form.start_time?.error?.message }}
                                 </Message>
                             </div>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('End Time') }}
-                                    <span class="text-red-500">*</span>
+                                        <span class="text-red-500">*</span>
                                 </label>
                                 <InputText
                                     name="end_time"
                                     v-maska="timeMaskOptions"
                                     :placeholder="$t('HH:MM')"
-                                    class="w-full"
+                                    class="w-full text-right"
                                 />
                                 <Message
                                     v-if="$form.end_time?.invalid"
@@ -100,25 +138,28 @@
                                     {{ $form.end_time?.error?.message }}
                                 </Message>
                             </div>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Topic') }}
                                 </label>
                                 <InputText
-                                    name="topic"
-                                    :placeholder="$t('Topic')"
-                                    class="w-full"
-                                />
-                                <Message
-                                    v-if="$form.topic?.invalid"
-                                    severity="error"
-                                    size="small"
-                                    variant="simple"
-                                >
-                                    {{ $form.topic?.error?.message }}
-                                </Message>
-                            </div>
-                            <div class="flex flex-col">
+                                        name="topic"
+                                        :placeholder="$t('Topic')"
+                                        class="w-full"
+                                    />
+                                    <Message
+                                        v-if="$form.topic?.invalid"
+                                        severity="error"
+                                        size="small"
+                                        variant="simple"
+                                    >
+                                        {{ $form.topic?.error?.message }}
+                                    </Message>
+                                </div>
+                            </div>  
+                        </div>
+                        <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
+                            <div class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Activity') }}
                                 </label>
@@ -136,21 +177,23 @@
                                     {{ $form.activity?.error?.message }}
                                 </Message>
                             </div>
-                            <DateInput
-                                id="rescheduled_date"
-                                name="rescheduled_date"
-                                :label="$t('Rescheduled Date')"
-                                :placeholder="$t('dd/mm/yyyy')"
-                            />
-                            <Message
-                                v-if="$form.rescheduled_date?.invalid"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ $form.rescheduled_date?.error?.message }}
-                            </Message>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col w-full md:w-1/4">
+                                <DateInput
+                                    id="rescheduled_date"
+                                    name="rescheduled_date"
+                                    :label="$t('Rescheduled Date')"
+                                    :placeholder="$t('dd/mm/yyyy')"
+                                />
+                                <Message
+                                    v-if="$form.rescheduled_date?.invalid"
+                                    severity="error"
+                                    size="small"
+                                    variant="simple"
+                                >
+                                    {{ $form.rescheduled_date?.error?.message }}
+                                </Message>
+                            </div>
+                            <div class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Rescheduled Start Time') }}
                                 </label>
@@ -158,7 +201,7 @@
                                     name="rescheduled_start_time"
                                     v-maska="timeMaskOptions"
                                     :placeholder="$t('HH:MM')"
-                                    class="w-full"
+                                    class="w-full text-right"
                                 />
                                 <Message
                                     v-if="$form.rescheduled_start_time?.invalid"
@@ -169,7 +212,7 @@
                                     {{ $form.rescheduled_start_time?.error?.message }}
                                 </Message>
                             </div>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Rescheduled End Time') }}
                                 </label>
@@ -177,7 +220,7 @@
                                     name="rescheduled_end_time"
                                     v-maska="timeMaskOptions"
                                     :placeholder="$t('HH:MM')"
-                                    class="w-full"
+                                    class="w-full text-right"
                                 />
                                 <Message
                                     v-if="$form.rescheduled_end_time?.invalid"
@@ -187,7 +230,7 @@
                                 >
                                     {{ $form.rescheduled_end_time?.error?.message }}
                                 </Message>
-                            </div>
+                            </div>  
                         </div>
 
                         <Message
@@ -203,7 +246,6 @@
                             <SubmitButton :isLoading="isLoading" />
                         </div>
                     </div>
-                </div>
             </template>
         </PageContainer>
     </Form>
@@ -322,12 +364,6 @@ const { errors, isLoading, setErrors } = useFormSubmitter({
     rescheduled_start_time: '',
     rescheduled_end_time: '',
     general: '',
-});
-
-const scheduleInfoDisplay = computed(() => {
-    const segments = [scheduleInfo.value.name, scheduleInfo.value.course, scheduleInfo.value.month]
-        .filter((segment) => Boolean(segment));
-    return segments.length ? segments.join(' • ') : $t('Loading...');
 });
 
 const setDetailData = (detail) => {

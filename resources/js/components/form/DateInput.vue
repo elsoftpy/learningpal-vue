@@ -6,6 +6,7 @@
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
         >
             {{ label }}
+            <span v-if="mandatory" class="text-red-500">*</span>
         </label>
 
         <InputText
@@ -14,7 +15,7 @@
             v-model="localValue"
             v-maska="maskOptions"
             :placeholder="placeholder"
-            class="w-full"
+            class="w-full text-right"
         />
     </div>
 </template>
@@ -44,7 +45,11 @@ const props = defineProps({
     placeholder: {
         type: String,
         default: null,
-    }
+    },
+    mandatory: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits(["update:modelValue", "update:unmasked"]);
