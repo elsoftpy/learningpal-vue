@@ -216,5 +216,12 @@
   "Search class schedule": "Search class schedule",
   "Add Class Schedule": "Add Class Schedule",
   "Ongoing Sessions": "Ongoing Sessions",
-  "Refresh": "Refresh"
+  "Refresh": "Refresh",
+  "Personal ID is required.": "Personal ID is required.",
+  "First Name is required.": "First Name is required.",
+  "Last Name is required.": "Last Name is required.",
+  "Email is required.": "Email is required.",
+  "Password must be at least 6 characters long.": "Password must be at least 6 characters long.",
+  "Password Confirmation is required.": "Password Confirmation is required.",
+  "Passwords do not match.": "Passwords do not match."
 }

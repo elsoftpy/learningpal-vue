@@ -1,6 +1,22 @@
 <template>
     <div class="w-full">
-      <form @submit.prevent="handleRegister">
+      <Form
+        :key="formKey"
+        v-slot="$form"
+        :resolver="resolver"
+        :initialValues="initialValues"
+        :validateOnBlur="true"
+        @submit="handleRegister"
+        class="max-w-md mx-auto bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md"
+      >
+        <Message
+          v-if="errors.general"
+          severity="error"
+          size="small"
+          variant="outlined"
+        >
+          {{ errors.general }}
+        </Message>
         <div class="mt-4 space-y-2">
           <!-- ID Number -->
           <div>
@@ -8,16 +24,28 @@
               {{ $t('ID Number') }} <span class="text-red-500">*</span>
             </label>
             <InputText
-              id="documento_identidad"
-              v-model="form.personal_id"
+              id="personal_id"
+              name="personal_id"
               :placeholder="$t('ID Number')"
-              :invalid="!!errors.personal_id"
               autofocus
               fluid
             />
-            <small v-if="errors.personal_id" class="text-red-500">
+            <Message 
+              v-if="$form.personal_id?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.personal_id.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.personal_id"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
               {{ errors.personal_id }}
-            </small>
+            </Message>
           </div>
 
           <!-- Name -->
@@ -26,13 +54,27 @@
               {{ $t('Name') }} <span class="text-red-500">*</span>
             </label>
             <InputText
-              id="nombres"
-              v-model="form.first_name"
+              id="first_name"
+              name="first_name"
               :placeholder="$t('Name')"
-              :invalid="!!errors.first_name"
               fluid
             />
-            <small v-if="errors.first_name" class="text-red-500">{{ errors.first_name }}</small>
+            <Message 
+              v-if="$form.first_name?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.first_name.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.first_name"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ errors.first_name }}
+            </Message>
           </div>
 
           <!-- Last Name -->
@@ -41,28 +83,56 @@
               {{ $t('Last Name') }} <span class="text-red-500">*</span>
             </label>
             <InputText
-              id="apellidos"
-              v-model="form.last_name"
+              id="last_name"
+              name="last_name"
               :placeholder="$t('Last Name')"
-              :invalid="!!errors.last_name"
               fluid
             />
-            <small v-if="errors.last_name" class="text-red-500">{{ errors.last_name }}</small>
+            <Message 
+              v-if="$form.last_name?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.last_name.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.last_name"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ errors.last_name }}
+            </Message>
           </div>
 
           <!-- Phone -->
           <div>
-            <label for="telefono" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {{ $t('Phone') }}
             </label>
             <InputText
-              id="telefono"
-              v-model="form.phone"
+              id="phone"
+              name="phone"
               :placeholder="$t('Phone')"
-              :invalid="!!errors.phone"
               fluid
             />
-            <small v-if="errors.phone" class="text-red-500">{{ errors.phone }}</small>
+            <Message 
+              v-if="$form.phone?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.phone.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.phone"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ errors.phone }}
+            </Message>
           </div>
           <!-- Email -->
           <div>
@@ -71,13 +141,27 @@
             </label>
             <InputText
               id="email"
-              v-model="form.email"
+              name="email"
               type="email"
               :placeholder="$t('Email')"
-              :invalid="!!errors.email"
               fluid
             />
-            <small v-if="errors.email" class="text-red-500">{{ errors.email }}</small>
+            <Message 
+              v-if="$form.email?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.email.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.email"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ errors.email }}
+            </Message>
           </div>
 
           <!-- Password -->
@@ -87,13 +171,27 @@
             </label>
             <Password
               id="password"
-              v-model="form.password"
+              name="password"
               :feedback="true"
-              :invalid="!!errors.password"
               toggleMask
               fluid
             />
-            <small v-if="errors.password" class="text-red-500">{{ errors.password }}</small>
+            <Message 
+              v-if="$form.password?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.password.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.password"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ errors.password }}
+            </Message>
           </div>
 
           <!-- Password Confirmation -->
@@ -103,15 +201,27 @@
             </label>
             <Password
               id="password_confirmation"
-              v-model="form.password_confirmation"
+              name="password_confirmation"
               :feedback="false"
-              :invalid="!!errors.password_confirmation"
               toggleMask
               fluid
             />
-            <small v-if="errors.password_confirmation" class="text-red-500">
+            <Message 
+              v-if="$form.password_confirmation?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.password_confirmation.error?.message }}
+            </Message>
+            <Message 
+              v-if="errors.password_confirmation"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
               {{ errors.password_confirmation }}
-            </small>
+            </Message>
           </div>
         </div>
 
@@ -126,26 +236,45 @@
 
           <Button
             type="submit"
-            :loading="loading"
+            :loading="isLoading"
             :label="$t('Send')"
             class="ms-4"
           />
         </div>
-      </form>
+      </Form>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
+import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
+import { useFormSubmitter } from '@/composables/useFormSubmitter'
+import { useFormValues } from '@/composables/useFormValues';
+import { createRegisterSchema } from '@/schemas/register'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { useToast } from 'primevue/usetoast'
+import { Form } from '@primevue/forms'
 import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
-import { useI18n } from 'vue-i18n'
+import { set } from 'zod'
+
+const { t: $t } = useI18n()
+const { handleApiError } = useApiErrorHandler();
+const { extractFormData } = useFormValues();
+
 const router = useRouter()
+const registerSchema = computed(() => createRegisterSchema($t))
+const resolver = computed(() => zodResolver(registerSchema.value))
+const toast = useToast();
 
-const form = reactive({
+const formKey = ref(0)
+
+const initialValues = {
   personal_id: '',
   first_name: '',
   last_name: '',
@@ -154,9 +283,9 @@ const form = reactive({
   email: '',
   password: '',
   password_confirmation: ''
-})
+}
 
-const errors = reactive({
+const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
   personal_id: '',
   first_name: '',
   last_name: '',
@@ -164,63 +293,61 @@ const errors = reactive({
   name: '',
   email: '',
   password: '',
-  password_confirmation: ''
+  password_confirmation: '',
+  general: ''
 })
 
-const loading = ref(false)
-
-const handleRegister = async () => {
+const handleRegister = async (formData) => {
   // Clear previous errors
-  Object.keys(errors).forEach(key => errors[key] = '')
-  loading.value = true
+  clearErrors()
+  const { valid, values } = extractFormData(formData)
+  
+  if (!valid) {
+    return
+  }
+
+  isLoading.value = true
 
   try {
     const authStore = useAuthStore();
 
     const result = await authStore.register({
       type: 'person',
-      personal_id: form.personal_id,
-      first_name: form.first_name,
-      last_name: form.last_name,
-      phone: form.phone,
-      name: form.name,
-      email: form.email,
-      password: form.password,
-      password_confirmation: form.password_confirmation
+      personal_id: values.personal_id,
+      first_name: values.first_name,
+      last_name: values.last_name,
+      phone: values.phone,
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      password_confirmation: values.password_confirmation
     });
 
-    if (result.success) {
-      console.log('Registration successful:', result);
-      router.push({ 
-        name: 'settings.users.profile', 
-        params: { id: result.user.id },
-        query: { from: 'register' }
-      });
-    }else {
-      // Handle unexpected failure
-      console.error('Registration failed:', result.message);
-    }
+    console.log('Registration successful:', result);
+    
+    router.push({ 
+      name: 'settings.users.profile', 
+      params: { id: result.user.id },
+      query: { from: 'register' }
+    });
+    
   } catch (error) {
-    if (error.response?.status === 422) {
-      // Validation errors
-      const validationErrors = error.response.data.errors
-      Object.keys(validationErrors).forEach(key => {
-        if (errors.hasOwnProperty(key)) {
-          errors[key] = validationErrors[key][0]
-        }
-      })
-    } else {
-      console.log(error);
-      // General error
-      errors.email = error.response?.data?.message || 'An error occurred. Please try again.'
-    }
+      const apiError = handleApiError(error);
+      if (apiError.isValidationError) {
+          setErrors(apiError.validationErrors);
+      } else {
+          setErrors({ general: apiError.message || $t('An unexpected error occurred. Please try again.') });
+          toast.add({
+              severity: 'error',
+              summary: $t('Error'),
+              detail: apiError.message || $t('An unexpected error occurred. Please try again.'),
+              life: 5000,
+          });
+      }
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
-
-// Translation helper (replace with your i18n solution)
-const { t : $t } = useI18n()
 </script>
 
 <style scoped>

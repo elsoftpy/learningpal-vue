@@ -139,11 +139,11 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '../../stores/auth'
+import { useAuthStore } from '@/stores/auth'
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
 import { createLoginSchema } from '@/schemas/login'
-import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { Form } from '@primevue/forms'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Message from 'primevue/message'
@@ -158,7 +158,6 @@ const route = useRoute()
 const authStore = useAuthStore()
 const loginSchema = computed(() => createLoginSchema($t))
 const resolver = zodResolver(loginSchema.value)
-const status = ref('')
 const hasPasswordReset = ref(true)
 
 

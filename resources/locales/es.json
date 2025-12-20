@@ -216,5 +216,12 @@
   "Search class schedule": "Buscar horario de clase",
   "Add Class Schedule": "Agregar horario de clase",
   "Ongoing Sessions": "Sesiones en curso",
-  "Refresh": "Actualizar"
+  "Refresh": "Actualizar",
+  "Personal ID is required.": "El ID personal es obligatorio.",
+  "First Name is required.": "El nombre es obligatorio.",
+  "Last Name is required.": "El apellido es obligatorio.",
+  "Email is required.": "El correo electrónico es obligatorio.",
+  "Password must be at least 6 characters long.": "La contraseña debe tener al menos 6 caracteres.",
+  "Password Confirmation is required.": "La confirmación de la contraseña es obligatoria.",
+  "Passwords do not match.": "Las contraseñas no coinciden."
 }
