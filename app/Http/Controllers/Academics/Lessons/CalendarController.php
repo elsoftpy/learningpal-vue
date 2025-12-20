@@ -98,7 +98,7 @@ class CalendarController extends Controller
         ]);
     }
 
-    public function unscheduledSessions(Request $request)
+    public function ongoingSessions(Request $request)
     {
         $ongoingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])

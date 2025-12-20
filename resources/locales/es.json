@@ -214,5 +214,7 @@
   "Are you sure you want to delete this class schedule?": "¿Estás seguro de que deseas eliminar este horario de clase?",
   "Schedule Month": "Mes del horario",
   "Search class schedule": "Buscar horario de clase",
-  "Add Class Schedule": "Agregar horario de clase"
+  "Add Class Schedule": "Agregar horario de clase",
+  "Ongoing Sessions": "Sesiones en curso",
+  "Refresh": "Actualizar"
 }

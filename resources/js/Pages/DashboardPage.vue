@@ -32,7 +32,7 @@
             class="text-xs text-blue-500 hover:underline"
             @click="fetchOngoingSessions"
           >
-            Refresh
+            {{ $t('Refresh') }}
           </button>
         </div>
         <p v-if="ongoingLoading" class="text-xs text-blue-500">Loading ongoing sessions…</p>
