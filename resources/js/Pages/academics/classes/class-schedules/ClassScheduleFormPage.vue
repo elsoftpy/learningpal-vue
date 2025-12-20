@@ -170,7 +170,7 @@
                                 />
                             </div>
 
-                            <div class="flex flex-col w-full lg:w-1/5">
+                            <!-- <div class="flex flex-col w-full lg:w-1/5">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Topic') }}
                                 </label>
@@ -190,7 +190,7 @@
                                     :placeholder="$t('Activity')"
                                     class="w-full"
                                 />
-                            </div>
+                            </div> -->
                         </div>
 
                         <Message
