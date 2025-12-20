@@ -54,7 +54,7 @@ const table = useSettingsTable({
 
 const actions = useRowActions({
     editRouteName: 'academics.classes.class-schedules.edit',
-    deleteEndpoint: '/academics/classes/class-schedules/:id/destroy',
+    deleteEndpoint: '/academics/lessons/class-schedules/:id/destroy',
     onDeleteSuccess: () => {
         table.refresh();
     },

@@ -80,4 +80,25 @@ class ClassScheduleController extends Controller
             data: ['class_schedule' => $classScheduleService->classScheduleData($classSchedule)]
         );
     }
+
+    public function update(
+        ClassScheduleRequest $request,
+        ClassSchedule $classSchedule,
+        ClassScheduleService $classScheduleService
+    ) {
+        $classSchedule->update($request->validated());
+        return ResponseService::success(
+            message: __('Class schedule updated successfully.'),
+            data: ['class_schedule' => $classScheduleService->classScheduleData($classSchedule)]
+        );
+    }
+
+    public function destroy(ClassSchedule $classSchedule)
+    {
+        $classSchedule->details()->delete();
+        $classSchedule->delete();
+        return ResponseService::success(
+            message: __('Class schedule deleted successfully.')
+        );
+    }
 }
