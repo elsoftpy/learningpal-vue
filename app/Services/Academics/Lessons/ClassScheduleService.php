@@ -8,11 +8,21 @@ use App\Services\Utilities\DateTimeService;
 
 class ClassScheduleService
 {
-    public function createClassSchedule(array $data, array $detail): ClassSchedule
+    public function createClassSchedule(array $data): ClassSchedule
     {
+        $detail = $data['details'] ?? null;
+        unset($data['details']);
+
         $classSchedule = ClassSchedule::create($data);
+
         if (isset($detail) && is_array($detail)) {
+            $order = 1;
             foreach ($detail as $detailData) {
+                if (isset($detailData['start_time']) && isset($detailData['end_time'])) {
+                    $estimatedDuration = $detailData['start_time']->diffInMinutes($detailData['end_time']);
+                    $detailData['estimated_duration_minutes'] = $estimatedDuration;
+                }
+                $detailData['order'] = $order++;
                 $classSchedule->details()->create($detailData);
             }
         }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Academics\Lessons;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ClassScheduleRequest;
 use App\Models\ClassSchedule;
 use App\Services\Academics\Lessons\ClassScheduleService;
 use App\Services\Traits\FilterResolverTrait;
@@ -68,6 +69,15 @@ class ClassScheduleController extends Controller
         $classScheduleData = $classScheduleService->classScheduleData($classSchedule);
         return ResponseService::success(
             data: ['class_schedule' => $classScheduleData]
+        );
+    }
+
+    public function store(ClassScheduleRequest $request, ClassScheduleService $classScheduleService)
+    {
+        $classSchedule = $classScheduleService->createClassSchedule($request->validated());
+        return ResponseService::success(
+            message: __('Class schedule created successfully.'),
+            data: ['class_schedule' => $classScheduleService->classScheduleData($classSchedule)]
         );
     }
 }

@@ -10,6 +10,15 @@
         <PageContainer>
             <template #body>
                 <div class="flex flex-col w-full space-y-4">
+                    <Message
+                        v-if="errors?.general"
+                        severity="error"
+                        size="small"
+                        variant="outlined"
+                        :closable="true"
+                    >
+                        {{ Array.isArray(errors?.general) ? errors?.general.join(', ') : errors?.general }}
+                    </Message>
                     <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
                         <div class="flex flex-col w-full md:w-1/3">
                             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -46,8 +55,8 @@
                                 <span class="text-red-500">*</span>
                             </label>
                             <Select 
-                                id="course"
-                                name="course"
+                                id="course_id"
+                                name="course_id"
                                 :options="coursesOptions"
                                 option-label="name"
                                 option-value="id"
@@ -74,7 +83,7 @@
                                 </template>
                             </Select>
                             <Message
-                                v-if="$form.course ?.invalid"
+                                v-if="$form.course_id ?.invalid"
                                 severity="error"
                                 size="small"
                                 variant="simple"
@@ -82,37 +91,37 @@
                                 {{ $form.course.error?.message }}
                             </Message>
                             <Message
-                                v-if="errors?.courses"
+                                v-if="errors?.courses_id"
                                 severity="error"
                                 size="small"
                                 variant="simple"
                             >
-                                {{ Array.isArray(errors?.course) ? errors?.course.join(', ') : errors?.course }}
+                                {{ Array.isArray(errors?.course_id) ? errors?.course_id.join(', ') : errors?.course_id }}
                             </Message>
                         </div>
                         <div class="flex flex-col w-full md:w-1/3">
                             <MonthInput
-                                id="start_month"
-                                name="start_month"
+                                id="schedule_month"
+                                name="schedule_month"
                                 :label="$t('Start Month')"
                                 :placeholder="$t('mm/yyyy')"
                                 :mandatory="true"
                             />
                             <Message
-                                v-if="$form.start_month?.invalid"
+                                v-if="$form.schedule_month?.invalid"
                                 severity="error"
                                 size="small"
                                 variant="simple"
                             >
-                                {{ $form.start_month.error?.message }}
+                                {{ $form.schedule_month.error?.message }}
                             </Message>
                             <Message
-                                v-if="errors?.start_month"
+                                v-if="errors?.schedule_month"
                                 severity="error"
                                 size="small"
                                 variant="simple"
                             >
-                                {{ Array.isArray(errors?.start_month) ? errors?.start_month.join(', ') : errors?.start_month }}
+                                {{ Array.isArray(errors?.schedule_month) ? errors?.schedule_month.join(', ') : errors?.schedule_month }}
                             </Message>
                         </div>
                     </div>
@@ -125,7 +134,7 @@
                         </div>
 
                         <div class="flex flex-col lg:flex-row w-full gap-4">
-                            <div class="flex flex-col w-full lg:w-1/5">
+                            <div class="flex flex-col w-full lg:w-1/3">
                                 <DateInput
                                     id="detail-session-date"
                                     name="detail_session_date"
@@ -135,7 +144,7 @@
                                 />
                             </div>
 
-                            <div class="flex flex-col w-full lg:w-1/5">
+                            <div class="flex flex-col w-full lg:w-1/3">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Start Time') }}
                                     <span class="text-red-500">*</span>
@@ -144,11 +153,11 @@
                                     v-model="detailForm.start_time"
                                     v-maska="timeMaskOptions"
                                     :placeholder="$t('HH:MM')"
-                                    class="w-full"
+                                    class="w-full text-right"
                                 />
                             </div>
 
-                            <div class="flex flex-col w-full lg:w-1/5">
+                            <div class="flex flex-col w-full lg:w-1/3">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('End Time') }}
                                     <span class="text-red-500">*</span>
@@ -157,7 +166,7 @@
                                     v-model="detailForm.end_time"
                                     v-maska="timeMaskOptions"
                                     :placeholder="$t('HH:MM')"
-                                    class="w-full"
+                                    class="w-full text-right"
                                 />
                             </div>
 
@@ -317,6 +326,10 @@ const resetDetailForm = () => {
     Object.assign(detailForm, createEmptyDetailForm());
 };
 
+const resetDetailFormDateOnly = () => {
+    detailForm.session_date = '';
+};
+
 const isValidTime = (value) => /^\d{2}:\d{2}$/.test(value || '');
 
 const addScheduleDetail = () => {
@@ -343,7 +356,14 @@ const addScheduleDetail = () => {
     });
 
     scheduleDetails.value = [...scheduleDetails.value, newDetail];
-    resetDetailForm();
+    //resetDetailForm();
+    resetDetailFormDateOnly();
+
+    // give focus back to session date input
+    const sessionDateInput = document.getElementById('detail-session-date');
+    if (sessionDateInput) {
+        sessionDateInput.focus();
+    }
 };
 
 const removeDetail = (detailKey) => {
@@ -386,8 +406,8 @@ const initialValues = computed(() => {
     if (crudAction === 'create') {
         return {
             name: '',
-            course: null,
-            start_month: '',
+            course_id: null,
+            schedule_month: '',
         };
     }
 
@@ -395,16 +415,16 @@ const initialValues = computed(() => {
     let isActive = classScheduleData.value?.status === 'active' ? true : false;
     return {
         name: data.name || '',
-        course: data.course_id || null,
-        start_month: data.start_month || '',
+        course_id: data.course_id || null,
+        schedule_month: data.schedule_month || '',
     };
 });
 
 
 const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     name: '',
-    course: '',
-    start_month: '',
+    course_id: '',
+    schedule_month: '',
     general: '',
 });
 
@@ -470,8 +490,8 @@ const handleSubmit =  async (formData) => {
 
     try {
         let url = crudAction === 'create' 
-            ? '/academics/settings/class-schedules' 
-            : `/academics/settings/class-schedules/${classScheduleId}/edit`;
+            ? '/academics/lessons/class-schedules' 
+            : `/academics/lessons/class-schedules/${classScheduleId}/edit`;
             
         const { data } = await axios.post(url, values);
 
@@ -482,7 +502,7 @@ const handleSubmit =  async (formData) => {
             life: 3000 
         });
 
-        router.push({ name: 'academics.settings.students.list' });
+        router.push({ name: 'academics.classes.class-schedules.list' });
 
     } catch (error) {
         const apiError = handleApiError(error)

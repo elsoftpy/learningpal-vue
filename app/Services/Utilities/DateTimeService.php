@@ -57,4 +57,30 @@ class DateTimeService
             default => null,
         };
     }
+
+    public static function dateTimeFromLocalizedString(string|null $timeString): Carbon|null
+    {
+        if (!$timeString) {
+            return null;
+        }
+        
+        return match(app()->getLocale()) {
+            'es', 'pt' => Carbon::createFromFormat('d/m/Y H:i:s', $timeString),
+            'en' => Carbon::createFromFormat('m-d-Y h:i:s A', $timeString),
+            default => null,
+        };
+    }
+
+    public static function monthYearFromLocalizedString(string|null $monthYearString): Carbon|null
+    {
+        if (!$monthYearString) {
+            return null;
+        }
+        
+        return match(app()->getLocale()) {
+            'es', 'pt' => Carbon::createFromFormat('m/Y', $monthYearString),
+            'en' => Carbon::createFromFormat('m/Y', $monthYearString),
+            default => null,
+        };
+    }
 }
