@@ -6,9 +6,10 @@ enum ClassScheduleStatusEnum: string
 {
     case SCHEDULED = 'scheduled';
     case COMPLETED = 'completed';
-    case CANCELED = 'canceled';
     case PENDING = 'pending';
-    case RESCHEDULED = 'rescheduled';
+    case ONGOING = 'ongoing';
+    case REPROGRAMED = 'reprogramed';
+    case CANCELED = 'canceled';
 
     public static function values(): array
     {
@@ -20,9 +21,10 @@ enum ClassScheduleStatusEnum: string
         return match ($value) {
             self::SCHEDULED->value => __('Scheduled'),
             self::COMPLETED->value => __('Completed'),
+            self::PENDING->value => __('Pending'),
+            self::ONGOING->value => __('Ongoing'),
+            self::REPROGRAMED->value => __('Reprogramed'),
             self::CANCELED->value => __('Canceled'),
-            self::PENDING->value => __('Pending Reschedule'),
-            self::RESCHEDULED->value => __('Rescheduled'),
         };
     }
 }

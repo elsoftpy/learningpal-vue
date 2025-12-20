@@ -120,12 +120,14 @@ const statusSeverity = (status) => {
             return 'primary';
         case 'completed':
             return 'success';
-        case 'canceled':
-            return 'danger';
         case 'pending':
             return 'warn';
-        case 'rescheduled':
+        case 'ongoing':
+            return 'secondary';
+        case 'reprogramed':
             return 'info';
+        case 'canceled':
+            return 'danger';
         default:
             return 'primary';
     }

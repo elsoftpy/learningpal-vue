@@ -67,5 +67,6 @@
     "scheduled": "Agendada",
     "completed": "Completada",
     "canceled": "Cancelada",
-    "rescheduled": "Reprogramada"
+    "reprogramed": "Reprogramada",
+    "ongoing": "En curso"
 }

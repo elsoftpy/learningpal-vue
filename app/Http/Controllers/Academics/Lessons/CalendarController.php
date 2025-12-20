@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Academics\Lessons;
 use App\Enums\ClassScheduleStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CalendarSessionRequest;
-use App\Models\ClassSchedule;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
 use App\Services\Academics\Lessons\ClassScheduleDetailService;
@@ -25,7 +24,7 @@ class CalendarController extends Controller
             ])
             ->whereIn('status', [
                 ClassScheduleStatusEnum::SCHEDULED->value, 
-                ClassScheduleStatusEnum::RESCHEDULED->value,
+                ClassScheduleStatusEnum::REPROGRAMED->value,
             ]); 
 
         $user = $request->user();
@@ -101,16 +100,16 @@ class CalendarController extends Controller
 
     public function unscheduledSessions(Request $request)
     {
-        $pendingSSessions = ClassScheduleDetail::query()
+        $ongoingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
-            ->where('status', ClassScheduleStatusEnum::PENDING->value)
+            ->where('status', ClassScheduleStatusEnum::ONGOING->value)
             ->get()
             ->map(function (ClassScheduleDetail $detail) {
                 return (new ClassScheduleDetailService())->sessionData($detail);
             });
         
         return response()->json([
-            'pending_sessions' => $pendingSSessions,
+            'ongoing_sessions' => $ongoingSessions,
         ]);
     }
 }

@@ -24,29 +24,29 @@
       <div class="w-full p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('Pending Sessions') }}
+            {{ $t('Ongoing Sessions') }}
           </div>
           <button
-            v-if="pendingSessions.length"
+            v-if="ongoingSessions.length"
             type="button"
             class="text-xs text-blue-500 hover:underline"
-            @click="fetchPendingSessions"
+            @click="fetchOngoingSessions"
           >
             Refresh
           </button>
         </div>
-        <p v-if="pendingLoading" class="text-xs text-blue-500">Loading pending sessions…</p>
-        <p v-else-if="pendingError" class="text-xs text-red-500">{{ pendingError }}</p>
-        <div v-else-if="!pendingSessions.length" class="text-xs text-slate-500">No pending sessions.</div>
+        <p v-if="ongoingLoading" class="text-xs text-blue-500">Loading ongoing sessions…</p>
+        <p v-else-if="ongoingError" class="text-xs text-red-500">{{ ongoingError }}</p>
+        <div v-else-if="!ongoingSessions.length" class="text-xs text-slate-500">No ongoing sessions.</div>
         <div v-else class="flex flex-wrap gap-2">
           <Tag
-            v-for="session in pendingSessions"
+            v-for="session in ongoingSessions"
             :key="session.id"
             class="text-xs"
             :style="getCourseTagStyle({ courseName: session.display_course, courseId: session.course_id })"
           >
             <div class="flex flex-col">
-              <span class="font-semibold">{{ session.display_course ?? 'Pending session' }}</span>
+              <span class="font-semibold">{{ session.display_course ?? 'Ongoing session' }}</span>
             </div>
           </Tag>
         </div>
@@ -103,9 +103,9 @@ const sessionsError = ref('');
 const courseLookupByName = ref({});
 const courseLookupById = ref({});
 const calendarDefinitions = ref({ ...defaultCalendars });
-const pendingSessions = ref([]);
-const pendingLoading = ref(false);
-const pendingError = ref('');
+const ongoingSessions = ref([]);
+const ongoingLoading = ref(false);
+const ongoingError = ref('');
 
 let activeSessionsController;
 let calendarAppRef = null;
@@ -320,18 +320,18 @@ async function fetchCalendarsConfig(range, calendarInstance = calendarAppRef) {
   }
 }
 
-async function fetchPendingSessions() {
-  pendingLoading.value = true;
-  pendingError.value = '';
+async function fetchOngoingSessions() {
+  ongoingLoading.value = true;
+  ongoingError.value = '';
 
   try {
-    const { data } = await api.post('/lists/pending_sessions');
-    pendingSessions.value = Array.isArray(data.pending_sessions) ? data.pending_sessions : [];
+    const { data } = await api.post('/lists/ongoing_sessions');
+    ongoingSessions.value = Array.isArray(data.ongoing_sessions) ? data.ongoing_sessions : [];
   } catch (error) {
-    console.error('Unable to load pending sessions', error);
-    pendingError.value = error?.response?.data?.message ?? 'Unable to load pending sessions.';
+    console.error('Unable to load ongoing sessions', error);
+    ongoingError.value = error?.response?.data?.message ?? 'Unable to load ongoing sessions.';
   } finally {
-    pendingLoading.value = false;
+    ongoingLoading.value = false;
   }
 }
 
@@ -364,7 +364,7 @@ if (initialRange) {
   fetchSessionsForRange(initialRange);
 }
 
-fetchPendingSessions();
+fetchOngoingSessions();
 
 defineOptions({
   layout: AppLayout,

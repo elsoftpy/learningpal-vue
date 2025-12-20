@@ -50,5 +50,10 @@
     "This username is already taken.": "This username is already taken.",
     "Password does not meet the required criteria.": "Password does not meet the required criteria.",
     "User profile updated successfully.": "User profile updated successfully.",
-    "User deleted successfully.": "User deleted successfully."
+    "User deleted successfully.": "User deleted successfully.",
+    "scheduled": "scheduled",
+    "completed": "completed",
+    "canceled": "canceled",
+    "reprogramed": "reprogramed",
+    "ongoing": "ongoing"
 }

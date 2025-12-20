@@ -63,5 +63,10 @@
     "This username is already taken.": "Este nome de usuário já está em uso.",
     "Password does not meet the required criteria.": "A senha não atende aos critérios exigidos.",
     "User profile updated successfully.": "Perfil de usuário atualizado com sucesso.",
-    "User deleted successfully.": "Usuário excluído com sucesso."
+    "User deleted successfully.": "Usuário excluído com sucesso.",
+    "scheduled": "Agendada",
+    "completed": "Completada",
+    "canceled": "Cancelada",
+    "reprogramed": "Reprogramada",
+    "ongoing": "Em andamento"
 }
