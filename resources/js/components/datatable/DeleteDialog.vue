@@ -1,8 +1,9 @@
 <template>
     <Dialog
-        v-model:visible="props.visible"
+        :visible="props.visible"
         modal
         :closable="false"
+        @update:visible="emit('update:visible', $event)"
     >
         <template #header >
             <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-red-500">

@@ -11,8 +11,6 @@
                             <th class="pb-2 pr-4 text-right">{{ $t('Rescheduled Date') }}</th>
                             <th class="pb-2 pr-4 text-right">{{ $t('Rescheduled Start') }}</th>
                             <th class="pb-2 pr-4 text-right">{{ $t('Reschedule Count') }}</th>
-                            <th class="pb-2 pr-4">{{ $t('Topic') }}</th>
-                            <th class="pb-2 pr-0">{{ $t('Activity') }}</th>
                             <th class="pb-2 pr-0">{{ $t('Status') }}</th>
                             <th class="pb-2 pr-0">{{ $t('Actions') }}</th>
                         </tr>
@@ -40,12 +38,6 @@
                             </td>
                             <td class="py-2 pr-4 text-right">
                                 {{ session.reschedule_count || null }}
-                            </td>
-                            <td class="py-2 pr-4">
-                                {{ session.topic }}
-                            </td>
-                            <td class="py-2 pr-4">
-                                {{ session.activity }}
                             </td>
                             <td class="py-2 pr-4">
                                <Tag
@@ -80,7 +72,6 @@
                                     />
                                 </div>
                             </td>
-
                         </tr>
                     </tbody>
                 </table>
@@ -90,7 +81,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
@@ -105,14 +95,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['edit-detail']);
-
-/* const sortedDetails = computed(() => {
-    return [...props.details].sort((a, b) => {
-        const orderA = a?.order ?? 0;
-        const orderB = b?.order ?? 0;
-        return orderA - orderB;
-    });
-}); */
 
 const statusSeverity = (status) => {
     switch (status) {

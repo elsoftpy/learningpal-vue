@@ -85,6 +85,8 @@ class PermissionSeeder extends Seeder
             'edit classes',
             'delete classes',
             'view class schedule details',
+            'edit class schedule details',
+            'delete class schedule details',
         ];
 
         foreach ($academicLessonsPermissions as $permission) {

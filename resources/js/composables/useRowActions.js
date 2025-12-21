@@ -37,6 +37,7 @@ export function useRowActions(options = {}) {
     }
 
     function handleDelete(id) {
+        console.log('handleDelete called with id:', id);
         if (!deleteEndpoint) {
             console.error('Delete endpoint is not provided.');
          

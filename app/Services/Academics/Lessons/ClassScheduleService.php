@@ -29,6 +29,16 @@ class ClassScheduleService
         return $classSchedule;
     }
 
+    public function updateClassSchedule(ClassSchedule $classSchedule, array $data): ClassSchedule
+    {
+        // We don't handle details update here
+        unset($data['details']);
+
+        $classSchedule->update($data);
+
+        return $classSchedule;
+    }
+
     public function classScheduleData(ClassSchedule $classSchedule)
     {
         $course = $classSchedule->course;

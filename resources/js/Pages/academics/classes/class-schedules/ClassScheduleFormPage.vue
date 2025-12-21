@@ -219,9 +219,7 @@
                                         <th class="px-3 py-2 text-left">{{ $t('Session Date') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('Start Time') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('End Time') }}</th>
-                                        <th class="px-3 py-2 text-left">{{ $t('Topic') }}</th>
-                                        <th class="px-3 py-2 text-left">{{ $t('Activity') }}</th>
-                                        <th class="px-3 py-2 text-right">{{ $t('Actions') }}</th>
+                                        <!-- <th class="px-3 py-2 text-right">{{ $t('Actions') }}</th> -->
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -229,17 +227,24 @@
                                         <td class="px-3 py-2">{{ detail.session_date }}</td>
                                         <td class="px-3 py-2">{{ detail.start_time }}</td>
                                         <td class="px-3 py-2">{{ detail.end_time }}</td>
-                                        <td class="px-3 py-2">{{ detail.topic || $t('N/A') }}</td>
-                                        <td class="px-3 py-2">{{ detail.activity || $t('N/A') }}</td>
-                                        <td class="px-3 py-2 text-right">
+                                        <!-- <td class="px-3 py-2 text-right">
                                             <Button
                                                 type="button"
                                                 icon="pi pi-trash"
                                                 severity="danger"
-                                                text
+                                                :label="$t('Delete')"
                                                 @click="removeDetail(detail._key)"
                                             />
-                                        </td>
+                                        </td> -->
+                                        <RowActionsColumn
+                                            :data="detail"
+                                            :on-edit="detail.id ? handleDetailEdit : null"
+                                            :on-delete="removeDetail"
+                                            :edit-label="$t('Edit')"
+                                            :delete-label="$t('Delete')"
+                                            edit-icon="pi pi-pencil"
+                                            delete-icon="pi pi-trash"
+                                        />
                                     </tr>
                                 </tbody>
                             </table>
@@ -251,6 +256,13 @@
                         <SubmitButton :isLoading="isLoading" />
                     </div>
                 </div>      
+                <DeleteDialog
+                    v-if="deleteDialogVisible"
+                    v-model:visible="deleteDialogVisible"
+                    :message="deleteDialogConfig.message"
+                    :onDelete="deleteDialogConfig.onDelete"
+                    :loading="deleteDialogConfig.loading"
+                />
             </template>
         </PageContainer>
     </Form>
@@ -264,6 +276,7 @@ import { createClassScheduleSchema } from '@/schemas/classSchedule';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useFormValues } from '@/composables/useFormValues';
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
+import { useRowActions } from '@/composables/useRowActions';
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
@@ -277,6 +290,8 @@ import Message from 'primevue/message';
 import Button from 'primevue/button';
 import axios from 'axios';
 import SubmitButton from '@/components/form/SubmitButton.vue';
+import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
+import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 
 const { locale, t: $t } = useI18n();
@@ -297,6 +312,23 @@ const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
 
 const classScheduleId = route.params.id;
+const scheduleDetails = ref([]);
+
+const actions = useRowActions({
+    deleteEndpoint: '/academics/lessons/class-schedules/details/:id/destroy',
+    buildDeleteUrl: (detailId) => `/academics/lessons/class-schedules/details/${detailId}/destroy`,
+    onDeleteSuccess: (deletedId) => {
+        scheduleDetails.value = scheduleDetails.value.filter((detail) => detail.id !== deletedId);
+    },
+    messages: {
+        successMessage: $t('Session deleted successfully.'),
+        errorMessage: $t('An error occurred while deleting the session.'),
+        confirmMessage: $t('Are you sure you want to delete this session?'),
+    }
+});
+
+const deleteDialogVisible = actions.deleteDialogVisible;
+const deleteDialogConfig = actions.deleteDialogConfig;
 
 const generateDetailKey = () => (typeof crypto !== 'undefined' && crypto.randomUUID
     ? crypto.randomUUID()
@@ -332,6 +364,20 @@ const resetDetailFormDateOnly = () => {
 
 const isValidTime = (value) => /^\d{2}:\d{2}$/.test(value || '');
 
+const handleDetailEdit = (detail) => {
+    if (!detail?.id) {
+        return;
+    }
+
+    router.push({
+        name: 'academics.classes.class-schedules.details.edit',
+        params: {
+            scheduleId: classScheduleId,
+            detailId: detail.id,
+        },
+    });
+};
+
 const addScheduleDetail = () => {
     detailFormError.value = '';
 
@@ -366,8 +412,17 @@ const addScheduleDetail = () => {
     }
 };
 
-const removeDetail = (detailKey) => {
-    scheduleDetails.value = scheduleDetails.value.filter((detail) => detail._key !== detailKey);
+const removeDetail = (detail) => {
+    if (!detail) {
+        return;
+    }
+
+    if (detail.id) {
+        actions.handleDelete(detail.id);
+        return;
+    }
+
+    scheduleDetails.value = scheduleDetails.value.filter((item) => item._key !== detail._key);
 };
 
 const buildDetailsPayload = () => scheduleDetails.value.map((detail, index) => ({
@@ -381,7 +436,6 @@ const buildDetailsPayload = () => scheduleDetails.value.map((detail, index) => (
 }));
 
 const timeMaskOptions = { mask: '##:##', eager: true };
-const scheduleDetails = ref([]);
 const detailFormError = ref('');
 const createEmptyDetailForm = () => ({
     session_date: '',
@@ -412,7 +466,6 @@ const initialValues = computed(() => {
     }
 
     const data = classScheduleData.value || {};
-    let isActive = classScheduleData.value?.status === 'active' ? true : false;
     return {
         name: data.name || '',
         course_id: data.course_id || null,
@@ -447,6 +500,7 @@ const fetchClassScheduleData = async () => {
     try {
         const response = await axios.post(`/academics/lessons/class-schedules/${classScheduleId}/data`);
         classScheduleData.value = response.data.data.class_schedule || response.data.class_schedule || {};
+        classScheduleData.value.schedule_month = response.data.data.class_schedule.display_schedule_month;
         loadScheduleDetails(classScheduleData.value?.details || []);
     } catch (error) {
         console.error('Error fetching class schedule data:', error);

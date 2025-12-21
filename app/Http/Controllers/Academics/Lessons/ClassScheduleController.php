@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Academics\Lessons;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClassScheduleRequest;
 use App\Models\ClassSchedule;
+use App\Models\ClassScheduleDetail;
 use App\Services\Academics\Lessons\ClassScheduleService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Utilities\ResponseService;
@@ -86,10 +87,12 @@ class ClassScheduleController extends Controller
         ClassSchedule $classSchedule,
         ClassScheduleService $classScheduleService
     ) {
-        $classSchedule->update($request->validated());
+
+        $updateClassSchedule = $classScheduleService->updateClassSchedule($classSchedule, $request->validated());
+
         return ResponseService::success(
             message: __('Class schedule updated successfully.'),
-            data: ['class_schedule' => $classScheduleService->classScheduleData($classSchedule)]
+            data: ['class_schedule' => $classScheduleService->classScheduleData($updateClassSchedule)]
         );
     }
 
@@ -99,6 +102,15 @@ class ClassScheduleController extends Controller
         $classSchedule->delete();
         return ResponseService::success(
             message: __('Class schedule deleted successfully.')
+        );
+    }
+
+    public function destroyDetail(ClassScheduleDetail $detail)
+    {
+        $detail->delete();
+
+        return ResponseService::success(
+            message: __('Class schedule detail deleted successfully.')
         );
     }
 }
