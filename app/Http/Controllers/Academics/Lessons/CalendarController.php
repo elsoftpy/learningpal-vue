@@ -16,23 +16,36 @@ class CalendarController extends Controller
 {
     public function calendarSessions(CalendarSessionRequest $request)
     {
-        $sessionsQuery = ClassScheduleDetail::query()
+        $scheduledSessionsQuery = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
             ->whereBetween('session_date', [
                 $request->start_date->startOfDay(), 
                 $request->end_date->endOfDay(),
             ])
-            ->whereIn('status', [
-                ClassScheduleStatusEnum::SCHEDULED->value, 
-                ClassScheduleStatusEnum::REPROGRAMED->value,
-            ]); 
+            ->where('status', ClassScheduleStatusEnum::SCHEDULED->value); 
+
+        $reprogramedSessionsQuery = ClassScheduleDetail::query()
+            ->with(['classSchedule', 'classSchedule.course'])
+            ->whereBetween('rescheduled_date', [
+                $request->start_date->startOfDay(), 
+                $request->end_date->endOfDay(),
+            ])
+            ->where('status', ClassScheduleStatusEnum::REPROGRAMED->value);
 
         $user = $request->user();
-        $sessionsQuery = (new TeacherService())->applyTeacherCoursesFilter(
+        $scheduledSessionsQuery = (new TeacherService())->applyTeacherCoursesFilter(
             user: $user,
-            query: $sessionsQuery,
+            query: $scheduledSessionsQuery,
             relation: 'classSchedule'
         );
+
+        $reprogramedSessionsQuery = (new TeacherService())->applyTeacherCoursesFilter(
+            user: $user,
+            query: $reprogramedSessionsQuery,
+            relation: 'classSchedule'
+        );
+
+        $sessionsQuery = $scheduledSessionsQuery->unionAll($reprogramedSessionsQuery);
         
         $sessions = $sessionsQuery->get()
             ->map(function (ClassScheduleDetail $detail) {

@@ -45,12 +45,17 @@
             class="text-xs"
             :style="getCourseTagStyle({ courseName: session.display_course, courseId: session.course_id })"
           >
-            <div class="flex flex-col">
-              <span class="font-semibold">{{ session.display_course ?? 'Ongoing session' }}</span>
-              <span v-if="session.rescheduled_date" class="text-xs">
-                {{ session.rescheduled_date }} {{ session.rescheduled_start_time }} - {{ session.rescheduled_end_time }}
-              </span>
-            </div>
+            <a 
+              href="#"
+              @click.prevent="toEditPage(session.class_schedule_id, session.id)"
+            >
+              <div class="flex flex-col">
+                <span class="font-semibold">{{ session.display_course ?? 'Ongoing session' }}</span>
+                <span v-if="session.rescheduled_date" class="text-xs">
+                  {{ session.rescheduled_date }} {{ session.rescheduled_start_time }} - {{ session.rescheduled_end_time }}
+                </span>
+              </div>
+            </a>
           </Tag>
         </div>
       </div>
@@ -71,12 +76,14 @@ import {
   viewMonthAgenda,
   viewMonthGrid,
 } from "@schedule-x/calendar";
+import { useThemeStore } from '@/stores/theme';
+import { useRouter } from "vue-router"; 
 import "@schedule-x/theme-default/dist/index.css";
 import 'temporal-polyfill/global';
-import { useThemeStore } from '@/stores/theme';
 import Tag from 'primevue/tag';
 import api from '@/axios';
 
+const router = useRouter();
 const appName = import.meta.env.VITE_APP_NAME || 'LearningPal';
 const appVersion = import.meta.env.VITE_APP_VERSION || 'N/A';
 const appLocale = import.meta.env.VITE_APP_LOCALE + '-ES'|| 'en-US';
@@ -210,26 +217,59 @@ const normalizeTime = (timeString) => {
   return timeString.length === 5 ? `${timeString}:00` : timeString;
 };
 
+const formatDisplayTime = (timeString) => {
+  const normalized = normalizeTime(timeString);
+  if (!normalized) return '';
+  const [hours = '', minutes = ''] = normalized.split(':');
+  return hours && minutes ? `${hours}:${minutes}` : normalized;
+};
+
+const buildZonedDateTime = (dateString, timeString) => {
+  if (!dateString) {
+    return null;
+  }
+
+  try {
+    const plainDate = Temporal.PlainDate.from(dateString);
+    const plainTime = Temporal.PlainTime.from(normalizeTime(timeString) ?? '00:00:00');
+    const dateTime = plainDate.toPlainDateTime(plainTime);
+    return dateTime.toZonedDateTime(calendarTimeZone);
+  } catch (error) {
+    console.error('Unable to build zoned date time for session', { dateString, timeString, error });
+    return null;
+  }
+};
+
 const sessionToCalendarEvent = (session) => {
-  const sessionDate = Temporal.PlainDate.from(session.date);
-  const startTime = normalizeTime(session.start_time);
-  const endTime = normalizeTime(session.end_time);
+  const eventDate = session.rescheduled_date ?? session.date;
+  const startTimeValue = session.rescheduled_start_time ?? session.start_time;
+  const endTimeValue = session.rescheduled_end_time ?? session.end_time;
 
-  const start = startTime
-    ? sessionDate.toZonedDateTime({ plainTime: Temporal.PlainTime.from(startTime), timeZone: calendarTimeZone })
-    : sessionDate;
-  const end = endTime
-    ? sessionDate.toZonedDateTime({ plainTime: Temporal.PlainTime.from(endTime), timeZone: calendarTimeZone })
-    : sessionDate;
+  const start = buildZonedDateTime(eventDate, startTimeValue) ?? buildZonedDateTime(eventDate, null);
+  const end = endTimeValue
+    ? buildZonedDateTime(eventDate, endTimeValue) ?? start
+    : start;
 
-  const customContent = session.chat_room_url
-    ? `<a href="${session.chat_room_url}" target="_blank" rel="noopener noreferrer">${session.display_course ?? 'Class session'}</a>`
-    : undefined;
+  const displayTime = formatDisplayTime(startTimeValue);
+  const eventTitle = session.display_course ?? 'Class session';
+  const titleWithTime = displayTime ? `${eventTitle} • ${displayTime}` : eventTitle;
+  const baseLabel = session.chat_room_url
+    ? `<a href="${session.chat_room_url}" target="_blank" rel="noopener noreferrer">${eventTitle}</a>`
+    : `<span>${eventTitle}</span>`;
+
+  const customContent = `
+    <div class="sx-event-content">
+      <div class="sx-event-row">
+        ${displayTime ? `<strong class="sx-event-time">${displayTime}</strong>` : ''}
+        ${baseLabel}
+      </div>
+    </div>
+  `.trim();
 
   return {
     id: session.id,
     calendarId: resolveCalendarId({ courseName: session.display_course, courseId: session.course_id }),
-    title: session.display_course ?? 'Class session',
+    title: titleWithTime,
     start,
     end,
     chatRoomUrl: session.chat_room_url,
@@ -338,6 +378,20 @@ async function fetchOngoingAndPendingSessions() {
   }
 }
 
+const toEditPage = (scheduleId, detailId) => {
+  if (!scheduleId || !detailId) {
+    return;
+  }
+
+  router.push({
+        name: 'academics.classes.class-schedules.details.edit',
+        params: {
+            scheduleId: scheduleId,
+            detailId: detailId,
+        },
+    });
+}
+
 const calendarApp = createCalendar({
   defaultView:  viewMonthGrid.name,
   isDark: themeStore.isDark,
@@ -351,6 +405,12 @@ const calendarApp = createCalendar({
   ],
   calendars: defaultCalendars,
   callbacks: {
+    onEventClick(info) {
+      if (!info.event?.chatRoomUrl) {
+        return;
+      }
+      window.open(info.event.chatRoomUrl, '_blank', 'noopener');
+    },
     onRangeUpdate(range) {
       fetchCalendarsConfig(range);
       fetchSessionsForRange(range);

@@ -36,10 +36,11 @@ class ClassScheduleDetailService
     {
         return [
             'id' => $detail->id,
+            'class_schedule_id' => $detail->class_schedule_id,
             'date' => $detail->session_date->toDateString(),
             'start_time' => DateTimeService::formatTime($detail->start_time),
             'end_time' => DateTimeService::formatTime($detail->end_time),
-            'rescheduled_date' => DateTimeService::formatDate($detail?->rescheduled_date),
+            'rescheduled_date' => $detail->rescheduled_date?->toDateString(),
             'rescheduled_start_time' => DateTimeService::formatTime($detail?->rescheduled_start_time),
             'rescheduled_end_time' => DateTimeService::formatTime($detail?->rescheduled_end_time),
             'course_id' => $detail->classSchedule->course->id,
