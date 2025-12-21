@@ -219,7 +219,7 @@
                                         <th class="px-3 py-2 text-left">{{ $t('Session Date') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('Start Time') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('End Time') }}</th>
-                                        <!-- <th class="px-3 py-2 text-right">{{ $t('Actions') }}</th> -->
+                                        <th class="px-3 py-2 text-left">{{ $t('Actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -236,15 +236,17 @@
                                                 @click="removeDetail(detail._key)"
                                             />
                                         </td> -->
-                                        <RowActionsColumn
-                                            :data="detail"
-                                            :on-edit="detail.id ? handleDetailEdit : null"
-                                            :on-delete="removeDetail"
-                                            :edit-label="$t('Edit')"
-                                            :delete-label="$t('Delete')"
-                                            edit-icon="pi pi-pencil"
-                                            delete-icon="pi pi-trash"
-                                        />
+                                        <td class="px-3 py-2">
+                                            <RowActionsColumn
+                                                :data="detail"
+                                                :on-edit="detail.id ? handleDetailEdit : null"
+                                                :on-delete="removeDetail"
+                                                :edit-label="$t('Edit')"
+                                                :delete-label="$t('Delete')"
+                                                edit-icon="pi pi-pencil"
+                                                delete-icon="pi pi-trash"
+                                            />
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
