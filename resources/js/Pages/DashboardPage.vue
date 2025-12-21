@@ -24,29 +24,32 @@
       <div class="w-full p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('Ongoing Sessions') }}
+            {{ $t('Ongoing and Pending Sessions') }}
           </div>
           <button
-            v-if="ongoingSessions.length"
+            v-if="ongoingAndPendingSessions.length"
             type="button"
             class="text-xs text-blue-500 hover:underline"
-            @click="fetchOngoingSessions"
+            @click="fetchOngoingAndPendingSessions"
           >
             {{ $t('Refresh') }}
           </button>
         </div>
-        <p v-if="ongoingLoading" class="text-xs text-blue-500">Loading ongoing sessions…</p>
+        <p v-if="ongoingLoading" class="text-xs text-blue-500">Loading ongoing and pending sessions…</p>
         <p v-else-if="ongoingError" class="text-xs text-red-500">{{ ongoingError }}</p>
-        <div v-else-if="!ongoingSessions.length" class="text-xs text-slate-500">No ongoing sessions.</div>
+        <div v-else-if="!ongoingAndPendingSessions.length" class="text-xs text-slate-500">No ongoing and pending sessions.</div>
         <div v-else class="flex flex-wrap gap-2">
           <Tag
-            v-for="session in ongoingSessions"
+            v-for="session in ongoingAndPendingSessions"
             :key="session.id"
             class="text-xs"
             :style="getCourseTagStyle({ courseName: session.display_course, courseId: session.course_id })"
           >
             <div class="flex flex-col">
               <span class="font-semibold">{{ session.display_course ?? 'Ongoing session' }}</span>
+              <span v-if="session.rescheduled_date" class="text-xs">
+                {{ session.rescheduled_date }} {{ session.rescheduled_start_time }} - {{ session.rescheduled_end_time }}
+              </span>
             </div>
           </Tag>
         </div>
@@ -103,7 +106,7 @@ const sessionsError = ref('');
 const courseLookupByName = ref({});
 const courseLookupById = ref({});
 const calendarDefinitions = ref({ ...defaultCalendars });
-const ongoingSessions = ref([]);
+const ongoingAndPendingSessions = ref([]);
 const ongoingLoading = ref(false);
 const ongoingError = ref('');
 
@@ -320,16 +323,16 @@ async function fetchCalendarsConfig(range, calendarInstance = calendarAppRef) {
   }
 }
 
-async function fetchOngoingSessions() {
+async function fetchOngoingAndPendingSessions() {
   ongoingLoading.value = true;
   ongoingError.value = '';
 
   try {
-    const { data } = await api.post('/lists/ongoing_sessions');
-    ongoingSessions.value = Array.isArray(data.ongoing_sessions) ? data.ongoing_sessions : [];
+    const { data } = await api.post('/lists/ongoing_and_pending_sessions');
+    ongoingAndPendingSessions.value = Array.isArray(data.ongoing_and_pending_sessions) ? data.ongoing_and_pending_sessions : [];
   } catch (error) {
-    console.error('Unable to load ongoing sessions', error);
-    ongoingError.value = error?.response?.data?.message ?? 'Unable to load ongoing sessions.';
+    console.error('Unable to load ongoing and pending sessions', error);
+    ongoingError.value = error?.response?.data?.message ?? 'Unable to load ongoing and pending sessions.';
   } finally {
     ongoingLoading.value = false;
   }
@@ -364,7 +367,7 @@ if (initialRange) {
   fetchSessionsForRange(initialRange);
 }
 
-fetchOngoingSessions();
+fetchOngoingAndPendingSessions();
 
 defineOptions({
   layout: AppLayout,

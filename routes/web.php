@@ -59,8 +59,8 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
     Route::post('/calendars', [CalendarController::class, 'scheduledCalendarCourses'])
         ->name('calendars');
 
-    Route::post('/ongoing_sessions', [CalendarController::class, 'ongoingSessions'])
-        ->name('ongoing_sessions');
+    Route::post('/ongoing_and_pending_sessions', [CalendarController::class, 'ongoingAndPendingSessions'])
+        ->name('ongoing_and_pending_sessions');
 });
 
 Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {

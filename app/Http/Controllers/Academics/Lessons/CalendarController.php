@@ -98,18 +98,21 @@ class CalendarController extends Controller
         ]);
     }
 
-    public function ongoingSessions(Request $request)
+    public function ongoingAndPendingSessions(Request $request)
     {
-        $ongoingSessions = ClassScheduleDetail::query()
+        $ongoingAndPendingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
-            ->where('status', ClassScheduleStatusEnum::ONGOING->value)
+            ->whereIn('status', [
+                ClassScheduleStatusEnum::ONGOING->value, 
+                ClassScheduleStatusEnum::PENDING->value
+            ])
             ->get()
             ->map(function (ClassScheduleDetail $detail) {
                 return (new ClassScheduleDetailService())->sessionData($detail);
             });
         
         return response()->json([
-            'ongoing_sessions' => $ongoingSessions,
+            'ongoing_and_pending_sessions' => $ongoingAndPendingSessions,
         ]);
     }
 }
