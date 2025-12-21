@@ -17,9 +17,15 @@ class LanguageLanguageLevelListController extends Controller
         $languageId = $request->language_id;
 
         return LanguageLevel::query()
-            ->select('id', 'description as name')
+            ->select('id', 'description', 'level')
             ->where('language_id', $languageId)
             ->where('status', StatusEnum::ACTIVE->value)
-            ->get();
+            ->get()
+            ->map(function (LanguageLevel $level) {
+                return [
+                    'id' => $level->id,
+                    'name' => $level->description.' - '.$level->level,
+                ];
+            });
     }
 }

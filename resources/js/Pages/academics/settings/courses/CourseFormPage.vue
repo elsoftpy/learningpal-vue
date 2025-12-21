@@ -10,6 +10,15 @@
         <PageContainer>
             <template #body>
                 <div class="flex flex-col w-full space-y-4">
+                    <Message
+                        v-if="errors?.general"
+                        severity="error"
+                        size="small"
+                        variant="outlined"
+                        :closable="true"
+                    >
+                        {{ Array.isArray(errors?.general) ? errors?.general.join(', ') : errors?.general }}
+                    </Message>
                     <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
                         <!-- Course name -->
                         <div class="flex flex-col w-full md:w-1/2">
@@ -253,6 +262,7 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     level: '',
     language_id: null,
     status: '',
+    chat_room_link: '',
     active: true,
 });
 
@@ -300,16 +310,32 @@ const handleSubmit = async (formData) => {
         router.push({ name: 'academics.settings.courses.list' });
     } catch (error) {
         const apiError = handleApiError(error);
-        if (apiError.isValidationError) {
-            setErrors(apiError.validationErrors);
-        } else {
-            toast.add({
-                severity: 'error',
-                summary: $t('Error'),
-                detail: apiError.message || $t('An unexpected error occurred. Please try again.'),
-                life: 5000,
+
+        if (apiError?.type === 'validation' && apiError.errors) {
+            setErrors(apiError.errors);
+
+            console.log('Errores de validación:', errors);
+
+            toast.add({ 
+                severity: 'error', 
+                summary: $t('Validation Error'), 
+                detail: $t('Please correct the errors in the form.'),
+                life: 5000 
             });
-        }
+
+            return;
+
+        } 
+        
+        setErrors({ general: apiError?.message || $t('An unexpected error occurred. Please try again.') });
+        
+        toast.add({
+            severity: 'error',
+            summary: $t('Error'),
+            detail: apiError.message || $t('An unexpected error occurred. Please try again.'),
+            life: 5000,
+        });
+        
     } finally {
         isLoading.value = false;
     }
