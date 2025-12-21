@@ -216,17 +216,25 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                                 <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">{{ $t('Session Date') }}</th>
-                                        <th class="px-3 py-2 text-left">{{ $t('Start Time') }}</th>
-                                        <th class="px-3 py-2 text-left">{{ $t('End Time') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('Date') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('Start') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('End') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('Rescheduled') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('Start') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('End') }}</th>
+                                        <th class="px-3 py-2 text-right">{{ $t('Count') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('Actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-for="detail in scheduleDetails" :key="detail._key" class="bg-white dark:bg-slate-900">
-                                        <td class="px-3 py-2">{{ detail.session_date }}</td>
-                                        <td class="px-3 py-2">{{ detail.start_time }}</td>
-                                        <td class="px-3 py-2">{{ detail.end_time }}</td>
+                                        <td class="px-3 py-2 text-left">{{ detail.session_date }}</td>
+                                        <td class="px-3 py-2 text-left">{{ detail.start_time }}</td>
+                                        <td class="px-3 py-2 text-left">{{ detail.end_time }}</td>
+                                        <td class="px-3 py-2 text-left">{{ detail.rescheduled_date }}</td>
+                                        <td class="px-3 py-2 text-left">{{ detail.rescheduled_start_time }}</td>
+                                        <td class="px-3 py-2 text-left">{{ detail.rescheduled_end_time }}</td>
+                                        <td class="px-3 py-2 text-right">{{ detail.reschedule_count }}</td>
                                         <!-- <td class="px-3 py-2 text-right">
                                             <Button
                                                 type="button"
@@ -341,6 +349,10 @@ const normalizeDetail = (detail = {}) => ({
     session_date: detail.session_date ?? '',
     start_time: detail.start_time ?? '',
     end_time: detail.end_time ?? '',
+    rescheduled_date: detail.rescheduled_date ?? '',
+    rescheduled_start_time: detail.rescheduled_start_time ?? '',
+    rescheduled_end_time: detail.rescheduled_end_time ?? '',
+    reschedule_count: detail.reschedule_count ?? null,
     topic: detail.topic ?? '',
     activity: detail.activity ?? '',
     order: detail.order ?? null,

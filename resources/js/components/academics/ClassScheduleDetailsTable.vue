@@ -5,14 +5,13 @@
                 <table class="w-full text-sm">
                     <thead class="bg-blue-50 dark:bg-gray-800 rounded-lg">
                         <tr class="text-left text-xs uppercase tracking-wide text-slate-600 dark:text-slate-100">
-                            <th class="pb-2 pr-4 text-right">#</th>
-                            <th class="pb-2 pr-4 text-right">{{ $t('Date') }}</th>
-                            <th class="pb-2 pr-4 text-right">{{ $t('Start') }}</th>
-                            <th class="pb-2 pr-4 text-right">{{ $t('Rescheduled Date') }}</th>
-                            <th class="pb-2 pr-4 text-right">{{ $t('Rescheduled Start') }}</th>
-                            <th class="pb-2 pr-4 text-right">{{ $t('Reschedule Count') }}</th>
-                            <th class="pb-2 pr-0">{{ $t('Status') }}</th>
-                            <th class="pb-2 pr-0">{{ $t('Actions') }}</th>
+                            <th class="py-2 px-2 text-left">{{ $t('Date') }}</th>
+                            <th class="py-2 px-2 text-left">{{ $t('Start') }}</th>
+                            <th class="py-2 px-2 text-left">{{ $t('Rescheduled') }}</th>
+                            <th class="py-2 px-2 text-left">{{ $t('Start') }}</th>
+                            <th class="py-2 px-2 text-right">{{ $t('Count') }}</th>
+                            <th class="py-2 px-2">{{ $t('Status') }}</th>
+                            <th class="py-2 px-2">{{ $t('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -21,25 +20,22 @@
                             :key="session.id"
                             class="border-t border-slate-200 dark:border-slate-700"
                         >
-                            <td class="py-2 pr-4 text-right font-medium text-slate-600 dark:text-slate-200">
-                                {{ session.order }}
-                            </td>
-                            <td class="py-2 pr-4 text-right">
+                            <td class="py-2 px-2 text-left">
                                 {{ session.session_date }}
                             </td>
-                            <td class="py-2 pr-4 text-right">
+                            <td class="py-2 px-2 text-left">
                                 {{ session.start_time }}
                             </td>
-                            <td class="py-2 pr-4 text-right">
+                            <td class="py-2 px-2 text-left">
                                 {{ session.rescheduled_date }}
                             </td>
-                            <td class="py-2 pr-4 text-right">
+                            <td class="py-2 px-2 text-left">
                                 {{ session.rescheduled_start_time }}
                             </td>
-                            <td class="py-2 pr-4 text-right">
+                            <td class="py-2 px-2 text-right">
                                 {{ session.reschedule_count || null }}
                             </td>
-                            <td class="py-2 pr-4">
+                            <td class="py-2 px-2">
                                <Tag
                                     :value="session.display_status"
                                     :severity="statusSeverity(session.status)"
