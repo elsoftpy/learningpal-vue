@@ -13,7 +13,8 @@
             <ClassScheduleDetailsTable
                 v-if="Array.isArray(data.details) && data.details.length"
                 :details="data.details"
-                @edit-detail="openDetailEditor(data.id, $event)"
+                @edit-detail="handleDetailEdit(data.id, $event)"
+                @delete-detail="handleDetailDelete($event)"
             />
             <div
                 v-else
@@ -23,10 +24,16 @@
             </div>
         </template>
     </ResourceTableLayout>
+    <DeleteDialog
+        v-if="detailDeleteDialogVisible"
+        v-model:visible="detailDeleteDialogVisible"
+        :message="detailDeleteDialogConfig.message"
+        :onDelete="detailDeleteDialogConfig.onDelete"
+        :loading="detailDeleteDialogConfig.loading"
+    />
 </template>
 <script setup>
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
@@ -35,9 +42,9 @@ import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 import ClassScheduleDetailsTable from '@/components/academics/ClassScheduleDetailsTable.vue';
+import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 
 const { t: $t } = useI18n();
-const router = useRouter();
 const { can } = usePermissions();
 const canViewDetailData = computed(() => can('view class schedule details'));
 const canViewActionsColumn = computed(() => can(['edit class schedules', 'delete class schedules']));
@@ -64,6 +71,35 @@ const actions = useRowActions({
         confirmMessage: $t('Are you sure you want to delete this class schedule?'),
     }
 });
+
+const detailActions = useRowActions({
+    editRouteName: 'academics.classes.class-schedules.details.edit',
+    deleteEndpoint: '/academics/lessons/class-schedules/details/:id/destroy',
+    buildEditRoute: (detailId, { scheduleId }) => {
+        if (!scheduleId || !detailId) {
+            return null;
+        }
+
+        return {
+            name: 'academics.classes.class-schedules.details.edit',
+            params: {
+                scheduleId,
+                detailId,
+            },
+        };
+    },
+    onDeleteSuccess: () => {
+        table.refresh();
+    },
+    messages: {
+        successMessage: $t('Session deleted successfully.'),
+        errorMessage: $t('An error occurred while deleting the session.'),
+        confirmMessage: $t('Are you sure you want to delete this session?'),
+    }
+});
+
+const detailDeleteDialogVisible = detailActions.deleteDialogVisible;
+const detailDeleteDialogConfig = detailActions.deleteDialogConfig;
 
 const columns = computed(() => [
     { 
@@ -110,17 +146,19 @@ const columns = computed(() => [
     },
 ]);
 
-const openDetailEditor = (scheduleId, detail) => {
+const handleDetailEdit = (scheduleId, detail) => {
     if (!scheduleId || !detail?.id) {
         return;
     }
 
-    router.push({
-        name: 'academics.classes.class-schedules.details.edit',
-        params: {
-            scheduleId,
-            detailId: detail.id,
-        },
-    });
+    detailActions.handleEdit(detail.id, { scheduleId });
+};
+
+const handleDetailDelete = (detail) => {
+    if (!detail?.id) {
+        return;
+    }
+
+    detailActions.handleDelete(detail.id);
 };
 </script>

@@ -68,7 +68,7 @@
                                         :label="$t('Delete')"
                                         icon="pi pi-trash"
                                         severity="danger"
-                                        @click="window.open(session.resource_url, '_blank')"
+                                        @click="handleDelete(session)"
                                     />
                                 </div>
                             </td>
@@ -94,7 +94,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['edit-detail']);
+const emit = defineEmits(['edit-detail', 'delete-detail']);
 
 const statusSeverity = (status) => {
     switch (status) {
@@ -117,6 +117,10 @@ const statusSeverity = (status) => {
 
 const handleEdit = (session) => {
     emit('edit-detail', session);
+};
+
+const handleDelete = (session) => {
+    emit('delete-detail', session);
 };
 </script>
 

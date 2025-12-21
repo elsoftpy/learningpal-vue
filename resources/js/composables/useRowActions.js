@@ -7,10 +7,12 @@ import axios from 'axios';
 export function useRowActions(options = {}) {
     const {
         editRouteName,
+        editRouteParam = 'id',
         deleteEndpoint,
         onDeleteSuccess,
         deleteMethod = 'post',
         buildDeleteUrl,
+        buildEditRoute,
         messages = {},
         confirmMessage,
     } = options;
@@ -26,14 +28,22 @@ export function useRowActions(options = {}) {
         throw new Error('At least one of editRouteName or deleteEndpoint must be provided to useRowActions');
     }
 
-    function handleEdit(id) {
-        if (!editRouteName) {
-            console.error('Edit route name is not provided.');
-            
+    function handleEdit(id, context = {}) {
+        if (!editRouteName && !buildEditRoute) {
+            console.error('Edit route is not configured.');
+
             return;
         }
 
-        router.push({ name: editRouteName, params: { 'id': id } });
+        if (buildEditRoute) {
+            const routeTarget = buildEditRoute(id, context);
+            if (routeTarget) {
+                router.push(routeTarget);
+            }
+            return;
+        }
+
+        router.push({ name: editRouteName, params: { [editRouteParam]: id } });
     }
 
     function handleDelete(id) {
