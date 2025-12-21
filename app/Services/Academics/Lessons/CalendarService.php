@@ -70,7 +70,7 @@ class CalendarService
                     'darkColors' => $caledarColors[$course->id]['dark'],
                 ]
             ];
-        });
+        })->toArray();
     }
 
     protected function calendarColors(array $courseIds)
