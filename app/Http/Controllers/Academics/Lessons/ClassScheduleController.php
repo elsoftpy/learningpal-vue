@@ -105,12 +105,5 @@ class ClassScheduleController extends Controller
         );
     }
 
-    public function destroyDetail(ClassScheduleDetail $detail)
-    {
-        $detail->delete();
-
-        return ResponseService::success(
-            message: __('Class schedule detail deleted successfully.')
-        );
-    }
+    
 }

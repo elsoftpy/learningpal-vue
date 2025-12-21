@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Academics\Lessons\CalendarController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
+use App\Http\Controllers\Academics\Lessons\ClassScheduleDetailController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Academics\Settings\StudentController;
@@ -220,15 +221,15 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 ->middleware('can:delete class schedules');
 
             Route::prefix('details')->name('details.')->group(function () {
-                Route::post('/', [ClassScheduleController::class, 'storeDetail'])
+                Route::post('/', [ClassScheduleDetailController::class, 'store'])
                     ->name('store')
                     ->middleware('can:create class schedule details');
 
-                Route::post('/{detail}/edit', [ClassScheduleController::class, 'updateDetail'])
+                Route::post('/{detail}/edit', [ClassScheduleDetailController::class, 'update'])
                     ->name('edit')
                     ->middleware('can:edit class schedule details');
 
-                Route::post('/{detail}/destroy', [ClassScheduleController::class, 'destroyDetail'])
+                Route::post('/{detail}/destroy', [ClassScheduleDetailController::class, 'destroy'])
                     ->name('destroy')
                     ->middleware('can:delete class schedule details');
             });
