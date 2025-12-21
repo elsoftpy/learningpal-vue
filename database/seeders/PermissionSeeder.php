@@ -87,6 +87,7 @@ class PermissionSeeder extends Seeder
             'view class schedule details',
             'edit class schedule details',
             'delete class schedule details',
+            'confirm class reprogramming',
         ];
 
         foreach ($academicLessonsPermissions as $permission) {
@@ -120,6 +121,12 @@ class PermissionSeeder extends Seeder
             'view students',
             // academic classes
             'show academic classes menu',
+            'create class schedules',
+            'edit class schedules',
+            /* 'view class schedule details',
+            'edit class schedule details',
+            'delete class schedule details',
+            'confirm class reprogramming', */
         ]);
 
         $annualStudent = Role::firstOrCreate(['name' => 'annual_student']);

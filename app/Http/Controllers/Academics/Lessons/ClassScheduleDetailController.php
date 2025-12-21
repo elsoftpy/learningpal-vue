@@ -15,6 +15,7 @@ class ClassScheduleDetailController extends Controller
     
     public function update(ClassScheduleDetailRequest $request, ClassScheduleDetail $detail)
     {
+        $user = $request->user();
         DB::transaction(function () use ($request, $detail) {
             $detail->update($request->validated());
 
@@ -22,9 +23,13 @@ class ClassScheduleDetailController extends Controller
                 $detail->reschedule_count = (int) $detail->reschedule_count + 1;
                 $detail->rescheduled_estimated_duration_minutes = $request
                     ->rescheduled_start_time->diffInMinutes($request->rescheduled_end_time);
-                $detail->status = ClassScheduleStatusEnum::REPROGRAMED->value;
+                
+                $detail->status = ClassScheduleStatusEnum::PENDING->value;
+                if ($request->user()->can('confirm class reprogramming')) {
+                    $detail->status = ClassScheduleStatusEnum::REPROGRAMED->value;
+                }
+
                 $detail->save();
-            
             }
         });
 
