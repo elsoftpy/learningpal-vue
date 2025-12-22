@@ -465,6 +465,27 @@ onBeforeUnmount(() => {
 });
 </script>
 <style scoped>
+
+:deep(.sx__month-grid-day.is-leading-or-trailing) {
+  background-color: #ededed !important;
+}
+
+:deep(.sx__calendar-wrapper.is-dark
+  .sx__month-grid-day.is-leading-or-trailing) {
+  background-color: #302f2f !important;
+}
+
+
+:deep(.sx__month-grid-day:not(.is-leading-or-trailing)) {
+  background-color: #e7f0ff !important;
+}
+
+:deep(.sx__calendar-wrapper.is-dark
+  .sx__month-grid-day:not(.is-leading-or-trailing)) {
+  background-color: #00081e !important;
+}
+
+/* Month grid cell height adjustment */
 :deep(.sx__month-grid-cell) {
   height: 3rem !important;
 }
