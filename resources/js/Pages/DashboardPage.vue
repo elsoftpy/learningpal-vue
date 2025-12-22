@@ -224,6 +224,9 @@ const formatDisplayTime = (timeString) => {
   return hours && minutes ? `${hours}:${minutes}` : normalized;
 };
 
+const APP_TIMEZONE = import.meta.env.VITE_APP_TIMEZONE || 'UTC';
+console.log('APP_TIMEZONE:', APP_TIMEZONE); // Add this line to debug
+
 const buildZonedDateTime = (dateString, timeString) => {
   if (!dateString) {
     return null;
@@ -233,7 +236,12 @@ const buildZonedDateTime = (dateString, timeString) => {
     const plainDate = Temporal.PlainDate.from(dateString);
     const plainTime = Temporal.PlainTime.from(normalizeTime(timeString) ?? '00:00:00');
     const dateTime = plainDate.toPlainDateTime(plainTime);
-    return dateTime.toZonedDateTime(calendarTimeZone);
+    
+    console.log('Converting:', { dateString, timeString, timezone: APP_TIMEZONE }); // Debug
+    const result = dateTime.toZonedDateTime(APP_TIMEZONE);
+    console.log('Result:', result.toString()); // Debug
+    
+    return result;
   } catch (error) {
     console.error('Unable to build zoned date time for session', { dateString, timeString, error });
     return null;
@@ -250,21 +258,30 @@ const sessionToCalendarEvent = (session) => {
     ? buildZonedDateTime(eventDate, endTimeValue) ?? start
     : start;
 
-  const displayTime = formatDisplayTime(startTimeValue);
+  const displayStartTime = formatDisplayTime(startTimeValue);
+  const displayEndTime = formatDisplayTime(endTimeValue);
+  const displayTime = displayStartTime && displayEndTime
+    ? `${displayStartTime} - ${displayEndTime}`
+    : displayStartTime || displayEndTime || '';
   const eventTitle = session.display_course ?? 'Class session';
-  const titleWithTime = displayTime ? `${eventTitle} • ${displayTime}` : eventTitle;
-  const baseLabel = session.chat_room_url
-    ? `<a href="${session.chat_room_url}" target="_blank" rel="noopener noreferrer">${eventTitle}</a>`
-    : `<span>${eventTitle}</span>`;
+  const titleWithTime = eventTitle;
+  const statusLabel = session.display_status ?? '';
 
   const customContent = `
+  ${session.chat_room_url 
+    ? `<a href="${session.chat_room_url}" target="_blank" rel="noopener noreferrer">` 
+    : ''}
     <div class="sx-event-content">
       <div class="sx-event-row">
-        ${displayTime ? `<strong class="sx-event-time">${displayTime}</strong>` : ''}
-        ${baseLabel}
+        <strong class="sx-event-time" title="${eventTitle}">${eventTitle}</strong>
+        <div class="sx-event-text" title="${displayTime} ${statusLabel}">
+          ${displayTime} 
+          ${statusLabel ? `<span class="sx-event-status">${statusLabel}</span>` : ''}
+        </div>
       </div>
     </div>
-  `.trim();
+  ${session.chat_room_url ? `</a>` : ''}
+`.trim();
 
   return {
     id: session.id,
@@ -272,6 +289,7 @@ const sessionToCalendarEvent = (session) => {
     title: titleWithTime,
     start,
     end,
+    description: [displayTime, statusLabel, session.description].filter(Boolean).join(' • '),
     chatRoomUrl: session.chat_room_url,
     _customContent: {
       monthGrid: customContent,
@@ -397,6 +415,7 @@ const calendarApp = createCalendar({
   isDark: themeStore.isDark,
   selectedDate: Temporal.PlainDate.from(selectedDate),
   locale: appLocale,
+  timezone: APP_TIMEZONE,
   views: [
     createViewMonthGrid(),
     createViewMonthAgenda(),
@@ -445,3 +464,96 @@ onBeforeUnmount(() => {
   abortActiveSessionsRequest();
 });
 </script>
+<style scoped>
+:deep(.sx__month-grid-cell) {
+  height: 3rem !important;
+}
+
+/* Month grid event - ensure container has width constraints */
+:deep(.sx__month-grid-event) {
+  overflow: hidden !important;
+}
+
+:deep(.sx__month-grid-event > div) {
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+:deep(.sx__month-grid-event a) {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+:deep(.sx__month-grid-event .sx-event-content) {
+  padding: 4px 8px !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
+:deep(.sx__month-grid-event .sx-event-row) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
+/* Month grid event text truncation */
+:deep(.sx__month-grid-event .sx-event-time) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+  max-width: 100% !important;
+}
+
+:deep(.sx__month-grid-event .sx-event-text) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 0.75rem !important;
+}
+
+/* Fix for week/day view time grid events - minimum height */
+:deep(.sx__time-grid-event) {
+  min-height: 3rem !important;
+}
+
+:deep(.sx__time-grid-event-inner) {
+  min-height: 3rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+/* Truncate long event titles with ellipsis */
+:deep(.sx__time-grid-event .sx-event-time) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+  max-width: 100% !important;
+}
+
+/* Keep event time/status text on one line */
+:deep(.sx__time-grid-event .sx-event-text) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+}
+
+:deep(.sx-event-content) {
+  padding: 4px 8px !important;
+  overflow: hidden !important;
+}
+
+:deep(.sx-event-row) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  overflow: hidden !important;
+}
+</style>

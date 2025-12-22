@@ -40,6 +40,11 @@ class TeacherService
         return $query;
     }
 
+    public function assignedCoursesArray(Teacher $teacher): array
+    {
+        return $teacher->courses->pluck('id')->toArray();
+    }
+
     public function teacherData(Teacher $teacher)
     {
         $profile = $teacher->profile;

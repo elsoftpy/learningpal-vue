@@ -46,6 +46,7 @@ class ClassScheduleDetailService
             'course_id' => $detail->classSchedule->course->id,
             'display_course' => (new CourseService())->getCourseDisplayName($detail->classSchedule->course),
             'chat_room_url' => $detail->classSchedule->course->chat_room_link,
+            'display_status' => ucfirst(__( $detail->status )),
         ];
     }   
 }
