@@ -69,6 +69,10 @@ class PermissionSeeder extends Seeder
             'edit students',
             'delete students',
             'reschedule class',
+            'view level contents',
+            'create level contents',
+            'edit level contents',
+            'delete level contents',
         ];
 
         foreach ($academicSettingsPermissions as $permission) {
@@ -123,9 +127,9 @@ class PermissionSeeder extends Seeder
             'show academic classes menu',
             'create class schedules',
             'edit class schedules',
-            /* 'view class schedule details',
+            'view class schedule details',
             'edit class schedule details',
-            'delete class schedule details',
+            /*'delete class schedule details',
             'confirm class reprogramming', */
         ]);
 

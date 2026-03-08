@@ -236,5 +236,21 @@
   "Rescheduled Start": "Rescheduled Start",
   "Rescheduled End": "Rescheduled End",
   "Reschedule Count": "Rescheduled Count",
-  "Record": "Record"
+  "Record": "Record",
+  "Level Contents": "Level Contents",
+  "Level Contents List": "Level Contents List",
+  "Add Level Content": "Add Level Content",
+  "Edit Level Content": "Edit Level Content",
+  "Content": "Content",
+  "Content is required.": "Content is required.",
+  "Level content saved successfully.": "Level content saved successfully.",
+  "Level content deleted successfully.": "Level content deleted successfully.",
+  "An error occurred while deleting the level content.": "An error occurred while deleting the level content.",
+  "Are you sure you want to delete this level content?": "Are you sure you want to delete this level content?",
+  "Search level contents...": "Search level contents...",
+  "No level contents found.": "No level contents found.",
+  "Ongoing and Pending Sessions": "Ongoing and Pending Sessions",
+  "Language level is required.": "Language level is required.",
+  "Failed to fetch level content data.": "Failed to fetch level content data.",
+  "Level content created successfully.": "Level content created successfully."
 }

@@ -70,6 +70,12 @@
                                     baseRoute="academics.settings.students"
                                     :title="$t('Students')"
                                 />
+                                <PlainMenuItem
+                                    v-if="can('view level contents')"
+                                    :route="{ name: 'academics.settings.level-contents.list' }"
+                                    baseRoute="academics.settings.level-contents"
+                                    :title="$t('Level Contents')"
+                                />
                             </template>
                         </SubmoduleMenuItem>
                         <!-- Academic Classes Menu-->

@@ -235,5 +235,21 @@
   "Rescheduled Start": "Inicio reprogramado",
   "Rescheduled End": "Fin reprogramado",
   "Reschedule Count": "Cantidad de reprogramaciones",
-  "Record": "Registro"
+  "Record": "Registro",
+  "Level Contents": "Contenidos del nivel",
+  "Level Contents List": "Lista de contenidos del nivel",
+  "Add Level Content": "Agregar contenido del nivel",
+  "Edit Level Content": "Editar contenido del nivel",
+  "Content": "Contenido",
+  "Content is required.": "El contenido es obligatorio.",
+  "Level content saved successfully.": "Contenido del nivel guardado con éxito.",
+  "Level content deleted successfully.": "Contenido del nivel eliminado con éxito.",
+  "An error occurred while deleting the level content.": "Ocurrió un error al eliminar el contenido del nivel.",
+  "Are you sure you want to delete this level content?": "¿Estás seguro de que deseas eliminar este contenido del nivel?",
+  "Search level contents...": "Buscar contenidos del nivel...",
+  "No level contents found.": "No se encontraron contenidos del nivel.",
+  "Ongoing and Pending Sessions": "Sesiones en curso y pendientes",
+  "Language level is required.": "El nivel de idioma es obligatorio.",
+  "Failed to fetch level content data.": "Error al obtener los datos del contenido del nivel.",
+  "Level content created successfully.": "Contenido del nivel creado con éxito."
 }

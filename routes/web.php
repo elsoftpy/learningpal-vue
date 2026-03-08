@@ -8,6 +8,7 @@ use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Academics\Settings\StudentController;
 use App\Http\Controllers\Academics\Settings\TeacherController;
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\LevelContentController;
 use App\Http\Controllers\Selectable\CourseListController;
 use App\Http\Controllers\Selectable\LanguageLanguageLevelListController;
 use App\Http\Controllers\Selectable\LanguageListController;
@@ -134,6 +135,29 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 ->name('destroy')
                 ->middleware('can:delete language levels');
         });
+
+        Route::prefix('level-contents')->name('level-contents.')->group(function () {
+            Route::get('/', [LevelContentController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view level contents');
+
+            Route::post('/', [LevelContentController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create level contents');
+
+            Route::post('/{levelContent}/data', [LevelContentController::class, 'levelContentData'])
+                ->name('data')
+                ->middleware('can:view level contents');
+
+            Route::post('/{levelContent}/edit', [LevelContentController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit level contents');
+
+            Route::post('/{levelContent}/destroy', [LevelContentController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete level contents');
+        });
+
         Route::prefix('courses')->name('courses.')->group(function () {
             Route::get('/', [CourseController::class, 'index'])
                 ->name('index')
@@ -155,6 +179,7 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 ->name('destroy')
                 ->middleware('can:delete courses');
         });
+
         Route::prefix('teachers')->name('teachers.')->group(function () {
             Route::get('/', [TeacherController::class, 'index'])
                 ->name('index')
@@ -176,6 +201,7 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 ->name('destroy')
                 ->middleware('can:delete teachers');
         });
+
         Route::prefix('students')->name('students.')->group(function () {
             Route::get('/', [StudentController::class, 'index'])
                 ->name('index')
