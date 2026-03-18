@@ -91,6 +91,12 @@
                                     baseRoute="academics.classes.class-schedules"
                                     :title="$t('Class Schedules')"
                                 />
+                                <PlainMenuItem
+                                    v-if="can('view class records')"
+                                    :route="{ name: 'academics.classes.class-records.list' }"
+                                    baseRoute="academics.classes.class-records"
+                                    :title="$t('Class Records')"
+                                />
                             </template>
                         </SubmoduleMenuItem>
                     </template>

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('class_record_detail_students', function (Blueprint $table) {
             $table->id();
             $table->foreignId('class_record_detail_id')->constrained();
-            $table->foreignId('student_id')->constrained('users');
+            $table->foreignId('student_id')->constrained();
             $table->integer('completed')->default(0)->comment('1 if completed, 0 otherwise');
             $table->dateTime('completed_at')->nullable();
             $table->timestamps();

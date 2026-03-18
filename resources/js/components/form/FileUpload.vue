@@ -34,11 +34,17 @@
                         <!-- Preview and Info -->
                         <div class="flex items-center space-x-3">
                             <img 
-                                v-if="file.objectURL" 
+                                v-if="isImageFile(file) && file.objectURL" 
                                 :src="file.objectURL" 
                                 :alt="file.name"
                                 :class="['rounded object-cover', previewClass]"
                             />
+                            <div
+                                v-else
+                                :class="['rounded flex items-center justify-center bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300', previewClass]"
+                            >
+                                <i class="pi pi-file text-base"></i>
+                            </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                                     {{ file.name }}
@@ -186,4 +192,6 @@ const formatFileSize = (bytes) => {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
 }
+
+const isImageFile = (file) => Boolean(file?.type?.startsWith('image/'))
 </script>

@@ -58,6 +58,7 @@ class ClassScheduleController extends Controller
         });
 
         return ResponseService::success(
+            message: __('Class schedules retrieved successfully.'),
             data: [
                 'class_schedules' => $classSchedules,
                 'total' => $paginated->total(),
@@ -69,6 +70,7 @@ class ClassScheduleController extends Controller
     {
         $classScheduleData = $classScheduleService->classScheduleData($classSchedule);
         return ResponseService::success(
+            message: __('Class schedule retrieved successfully.'),
             data: ['class_schedule' => $classScheduleData]
         );
     }

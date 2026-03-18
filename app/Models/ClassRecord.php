@@ -6,11 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class ClassRecord extends Model
+class ClassRecord extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\ClassRecordFactory> */
     use HasFactory;
+    use InteractsWithMedia;
 
     protected $table = 'class_records';
 
@@ -27,6 +30,16 @@ class ClassRecord extends Model
         'comments',
         'mode',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date',
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+            'attendance' => 'decimal:2',
+        ];
+    }
 
     public function details(): HasMany
     {
@@ -56,5 +69,10 @@ class ClassRecord extends Model
     public function classScheduleDetail(): BelongsTo
     {
         return $this->belongsTo(ClassScheduleDetail::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('student-production');
     }
 }

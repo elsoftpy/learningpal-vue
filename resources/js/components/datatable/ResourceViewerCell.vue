@@ -116,9 +116,9 @@ function iconByType(type) {
         case 'pdf':
             return 'file-pdf';
         case 'word':
-            return 'file-word';
+            return 'file-doc';
         case 'excel':
-            return 'file-excel';
+            return 'file-xls';
         case 'image':
             return 'file-image';
         default:

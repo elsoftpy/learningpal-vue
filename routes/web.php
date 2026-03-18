@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Academics\Lessons\CalendarController;
+use App\Http\Controllers\Academics\Lessons\ClassRecordController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleDetailController;
 use App\Http\Controllers\Academics\Settings\CourseController;
@@ -258,6 +259,54 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 Route::post('/{detail}/destroy', [ClassScheduleDetailController::class, 'destroy'])
                     ->name('destroy')
                     ->middleware('can:delete class schedule details');
+            });
+        });
+
+        Route::prefix('class-records')->name('class-records.')->group(function () {
+            Route::get('/', [ClassRecordController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view class records');
+
+            Route::post('/class-schedule-details/{detail}/context', [ClassRecordController::class, 'classScheduleDetailContext'])
+                ->name('class-schedule-details.context')
+                ->middleware('can:view class records');
+
+            Route::post('/form-data', [ClassRecordController::class, 'formData'])
+                ->name('form-data')
+                ->middleware('can:create class records');
+
+            Route::post('/', [ClassRecordController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create class records');
+
+            Route::post('/{classRecord}/data', [ClassRecordController::class, 'classRecordData'])
+                ->name('data')
+                ->middleware('can:edit class records');
+
+            Route::post('/{classRecord}/edit', [ClassRecordController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit class records');
+
+            Route::post('/{classRecord}/student-production', [ClassRecordController::class, 'saveStudentProduction'])
+                ->name('student-production.save')
+                ->middleware('can:edit class records');
+
+            Route::post('/{record}/destroy', [ClassRecordController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete class records');
+
+            Route::prefix('details')->name('details.')->group(function () {
+                Route::post('/{detail}/data', [ClassRecordController::class, 'detailFormData'])
+                    ->name('data')
+                    ->middleware('can:edit class records');
+
+                Route::post('/{detail}/edit', [ClassRecordController::class, 'updateDetail'])
+                    ->name('edit')
+                    ->middleware('can:edit class records');
+
+                Route::post('/{detail}/destroy', [ClassRecordController::class, 'destroyDetail'])
+                    ->name('destroy')
+                    ->middleware('can:delete class records');
             });
         });
     });

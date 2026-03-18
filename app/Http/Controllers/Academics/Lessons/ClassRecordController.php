@@ -1,0 +1,439 @@
+<?php
+
+namespace App\Http\Controllers\Academics\Lessons;
+
+use App\Enums\AttendanceStatusEnum;
+use App\Enums\ClassScheduleStatusEnum;
+use App\Enums\StatusEnum;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ClassRecordRequest;
+use App\Models\ClassRecord;
+use App\Models\ClassRecordDetail;
+use App\Models\ClassScheduleDetail;
+use App\Models\Course;
+use App\Models\LevelContent;
+use App\Models\Teacher;
+use App\Services\Academics\Lessons\ClassRecordDetailService;
+use App\Services\Academics\Lessons\ClassRecordService;
+use App\Services\Traits\FilterResolverTrait;
+use App\Services\Utilities\ResponseService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+
+class ClassRecordController extends Controller
+{
+    use FilterResolverTrait;
+
+    public function index(Request $request)
+    {
+        $page = $request->page;
+        $perPage = $request->per_page;
+        $search = $request->search;
+        $filters = $this->resolveFilters($request->filters);
+
+        $query = ClassRecord::query()
+            ->with(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.media', 'media']);
+
+        if ($search) {
+            if (str_contains($search, '/')) {
+                $searchArray = explode('/', $search);
+                if (count($searchArray) === 3) {
+                    $search = $searchArray[2] . '-' . $searchArray[1] . '-' . $searchArray[0];
+                } elseif (count($searchArray) === 2) {
+                    $search = $searchArray[1] . '-' . $searchArray[0];
+                }
+            }
+
+            $query->where('date', $search)
+                ->orWhereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('course', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('teacher', function ($q) use ($search) {
+                    $q->whereHas('profile', function ($teacherProfileQuery) use ($search) {
+                        $teacherProfileQuery->where('full_name', 'like', '%' . $search . '%');
+                    });
+                });
+        }
+
+        // Apply filters if any
+        if ($filters) {
+            foreach ($filters as $field => $value) {
+                $query->where($field, $value);
+            }
+        }
+
+        // Pagination
+        $paginated = $query->orderBy('date', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $classRecords = $paginated->getCollection()->map(function (ClassRecord $classRecord) {
+            return (new ClassRecordService())->classRecordData($classRecord);
+        });
+
+        return ResponseService::success(
+            message: __('Class records retrieved successfully.'),
+            data: [
+                'class_records' => $classRecords,
+                'total' => $paginated->total(),
+            ]
+        );
+    }
+
+    public function formData(Request $request)
+    {
+        $lockedClassScheduleDetailId = $request->integer('class_schedule_detail_id') ?: null;
+
+        return ResponseService::success(
+            message: __('Class record form data loaded successfully.'),
+            data: $this->buildFormData($request, null, $lockedClassScheduleDetailId)
+        );
+    }
+
+    public function classRecordData(Request $request, ClassRecord $classRecord)
+    {
+        $classRecord->loadMissing(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.content', 'media']);
+
+        $lockedClassScheduleDetailId = $request->integer('class_schedule_detail_id') ?: null;
+        $data = $this->buildFormData($request, $classRecord, $lockedClassScheduleDetailId);
+        $data['class_record'] = (new ClassRecordService())->classRecordData($classRecord);
+
+        return ResponseService::success(
+            message: __('Class record retrieved successfully.'),
+            data: $data
+        );
+    }
+
+    public function classScheduleDetailContext(ClassScheduleDetail $detail)
+    {
+        $courseId = $detail->classSchedule?->course_id;
+
+        return ResponseService::success(
+            message: __('Class schedule detail context loaded successfully.'),
+            data: [
+                'course_id' => $courseId,
+                'level_contents' => $this->levelContentsOptions($courseId),
+            ]
+        );
+    }
+    
+    public function store(ClassRecordRequest $request)
+    {
+        $classScheduleDetail = ClassScheduleDetail::query()
+            ->with('classSchedule')
+            ->findOrFail($request->class_schedule_detail_id);
+
+        $this->validateTeacherPermission($request, (int) $request->teacher_id);
+
+        $payload = array_merge($request->validated(), [
+            'course_id' => $classScheduleDetail->classSchedule->course_id,
+            'user_id' => $request->user()->id,
+            'mode' => 'online',
+        ]);
+
+        DB::transaction(function () use ($payload, $classScheduleDetail, $request) {
+            (new ClassRecordService())->createClassRecord(
+                $payload,
+                $request->file('detail_files', []),
+                [
+                    'student_production_file' => $request->file('student_production_file'),
+                    'student_production_audio' => $request->file('student_production_audio'),
+                ]
+            );
+            $classScheduleDetail->update([
+                'status' => ClassScheduleStatusEnum::COMPLETED->value,
+            ]);
+        });
+
+        return ResponseService::success(
+            message: __('Class record created successfully.'),
+        );
+    }
+
+    public function update(ClassRecordRequest $request, ClassRecord $classRecord)
+    {
+        $classScheduleDetail = ClassScheduleDetail::query()
+            ->with('classSchedule')
+            ->findOrFail($request->class_schedule_detail_id);
+
+        $this->validateTeacherPermission($request, (int) $request->teacher_id);
+
+        $payload = array_merge($request->validated(), [
+            'course_id' => $classScheduleDetail->classSchedule->course_id,
+            'user_id' => $request->user()->id,
+            'mode' => 'online',
+        ]);
+
+        DB::transaction(function () use ($classRecord, $payload, $request) {
+            (new ClassRecordService())->updateClassRecord(
+                $classRecord,
+                $payload,
+                $request->file('detail_files', []),
+                [
+                    'student_production_file' => $request->file('student_production_file'),
+                    'student_production_audio' => $request->file('student_production_audio'),
+                ]
+            );
+        });
+
+        return ResponseService::success(
+            message: __('Class record updated successfully.'),
+        );
+    }
+
+    public function destroy(ClassRecord $record)
+    {
+        $record->delete();
+
+        return ResponseService::success(
+            message: __('Class record deleted successfully.')
+        );
+    }
+
+    public function saveStudentProduction(Request $request, ClassRecord $classRecord)
+    {
+        $validated = $request->validate(
+            [
+                'student_production_file' => [
+                    'nullable',
+                    'file',
+                    'max:10240',
+                    'mimes:pdf,doc,docx,xls,xlsx,txt,jpeg,jpg,png,webp',
+                ],
+                'student_production_audio' => [
+                    'nullable',
+                    'file',
+                    'max:10240',
+                    'mimetypes:audio/mpeg,audio/mp3,audio/webm,audio/webm;codecs=opus,audio/ogg,video/webm',
+                ],
+            ],
+            [
+                'student_production_audio.mimetypes' => 'El campo student production audio debe ser un archivo de tipo: audio/mpeg, audio/mp3, audio/webm, audio/ogg.',
+            ]
+        );
+
+        $hasAnyFile = ! empty($validated['student_production_file']) || ! empty($validated['student_production_audio']);
+        if (! $hasAnyFile) {
+            return ResponseService::success(
+                message: __('No student production files were provided.'),
+                data: [
+                    'class_record' => (new ClassRecordService())->classRecordData($classRecord),
+                ]
+            );
+        }
+
+        DB::transaction(function () use ($classRecord, $request) {
+            (new ClassRecordService())->saveStudentProductionMedia(
+                $classRecord,
+                [
+                    'student_production_file' => $request->file('student_production_file'),
+                    'student_production_audio' => $request->file('student_production_audio'),
+                ]
+            );
+        });
+
+        return ResponseService::success(
+            message: __('Student production saved successfully.'),
+            data: [
+                'class_record' => (new ClassRecordService())->classRecordData($classRecord),
+            ]
+        );
+    }
+
+    public function detailFormData(ClassRecordDetail $detail)
+    {
+        $detail->loadMissing(['classRecord.teacher.profile', 'classRecord.course', 'media', 'content']);
+
+        $courseId = $detail->classRecord?->course_id;
+
+        return ResponseService::success(
+            message: __('Class record detail form data loaded successfully.'),
+            data: [
+                'detail' => (new ClassRecordDetailService())->classRecordDetailData($detail),
+                'level_contents' => $this->levelContentsOptions($courseId),
+                'record_info' => [
+                    'teacher' => $detail->classRecord?->teacher?->profile?->full_name ?? '',
+                    'course' => $detail->classRecord?->course?->name ?? '',
+                    'date' => $detail->classRecord?->date?->format('d/m/Y') ?? '',
+                ],
+            ]
+        );
+    }
+
+    public function updateDetail(Request $request, ClassRecordDetail $detail)
+    {
+        $validated = $request->validate([
+            'activity' => 'required|string|max:1000',
+            'content_id' => 'nullable|integer|exists:level_contents,id',
+            'free_content' => 'nullable|string|max:1000',
+            'links' => 'nullable|string|max:2000',
+            'attachment' => 'nullable|file|max:20480',
+        ]);
+
+        $detail->update([
+            'activity' => $validated['activity'],
+            'content_id' => $validated['content_id'] ?? null,
+            'free_content' => $validated['free_content'] ?? null,
+            'links' => $validated['links'] ?? null,
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            $detail->clearMediaCollection('attachment');
+            $detail->addMediaFromRequest('attachment')->toMediaCollection('attachment');
+        }
+
+        return ResponseService::success(
+            message: __('Class record detail updated successfully.')
+        );
+    }
+
+    public function destroyDetail(ClassRecordDetail $detail)
+    {
+        $detail->clearMediaCollection('attachment');
+        $detail->detailStudents()->delete();
+        $detail->delete();
+
+        return ResponseService::success(
+            message: __('Class record detail deleted successfully.')
+        );
+    }
+
+    private function buildFormData(Request $request, ?ClassRecord $classRecord = null, ?int $lockedClassScheduleDetailId = null): array
+    {
+        $selectedClassScheduleDetailId = $lockedClassScheduleDetailId ?? $classRecord?->class_schedule_detail_id;
+        $selectedTeacherId = $classRecord?->teacher_id;
+        $selectedCourseId = $this->resolveCourseIdFromClassScheduleDetail($selectedClassScheduleDetailId) ?? $classRecord?->course_id;
+
+        return [
+            'class_schedule_details' => $this->classScheduleDetailsOptions($selectedClassScheduleDetailId),
+            'teachers' => $this->teacherOptions($request, $selectedTeacherId),
+            'level_contents' => $this->levelContentsOptions($selectedCourseId),
+            'attendances' => collect(AttendanceStatusEnum::cases())
+                ->map(fn (AttendanceStatusEnum $status) => [
+                    'value' => $status->value,
+                    'label' => AttendanceStatusEnum::label($status->value),
+                ])
+                ->values(),
+            'locked_class_schedule_detail_id' => $lockedClassScheduleDetailId,
+        ];
+    }
+
+    private function teacherOptions(Request $request, ?int $selectedTeacherId = null): Collection
+    {
+        $teachersQuery = Teacher::query()
+            ->with('profile')
+            ->where(function ($query) use ($selectedTeacherId) {
+                $query->where('status', StatusEnum::ACTIVE->value);
+
+                if ($selectedTeacherId) {
+                    $query->orWhere('id', $selectedTeacherId);
+                }
+            });
+
+        if ($request->user()->cannot('list other teachers')) {
+            $teacherId = $request->user()->profile?->teacher?->id;
+
+            if (!$teacherId) {
+                throw new HttpException(403, __('Sorry, you\'re not a teacher, you can\'t create class records'));
+            }
+
+            $teachersQuery->where('id', $teacherId);
+        }
+
+        return $teachersQuery
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function (Teacher $teacher) {
+                return [
+                    'id' => $teacher->id,
+                    'name' => $teacher->profile?->full_name,
+                ];
+            })
+            ->values();
+    }
+
+    private function levelContentsOptions(?int $courseId = null): Collection
+    {
+        if (!$courseId) {
+            return collect([]);
+        }
+
+        $languageLevelId = Course::query()->find($courseId)?->language_level_id;
+
+        if (!$languageLevelId) {
+            return collect([]);
+        }
+
+        return LevelContent::query()
+            ->where('language_level_id', $languageLevelId)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (LevelContent $content) => [
+                'id' => $content->id,
+                'name' => $content->content,
+            ])
+            ->values();
+    }
+
+    private function resolveCourseIdFromClassScheduleDetail(?int $classScheduleDetailId = null): ?int
+    {
+        if (!$classScheduleDetailId) {
+            return null;
+        }
+
+        return ClassScheduleDetail::query()
+            ->with('classSchedule')
+            ->find($classScheduleDetailId)?->classSchedule?->course_id;
+    }
+
+    private function classScheduleDetailsOptions(?int $selectedClassScheduleDetailId = null): Collection
+    {
+        $statuses = [
+            ClassScheduleStatusEnum::SCHEDULED->value,
+            ClassScheduleStatusEnum::PENDING->value,
+            ClassScheduleStatusEnum::ONGOING->value,
+            ClassScheduleStatusEnum::REPROGRAMED->value,
+        ];
+
+        return ClassScheduleDetail::query()
+            ->with('classSchedule')
+            ->where(function ($query) use ($statuses, $selectedClassScheduleDetailId) {
+                $query->whereIn('status', $statuses);
+
+                if ($selectedClassScheduleDetailId) {
+                    $query->orWhere('id', $selectedClassScheduleDetailId);
+                }
+            })
+            ->orderBy('session_date')
+            ->orderBy('start_time')
+            ->get()
+            ->map(function (ClassScheduleDetail $detail) {
+                return [
+                    'id' => $detail->id,
+                    'name' => ($detail->classSchedule?->name ?? __('Schedule')).' - '.$detail->session_date?->format('d/m/Y'),
+                ];
+            })
+            ->values();
+    }
+
+    private function validateTeacherPermission(Request $request, int $teacherId): void
+    {
+        if ($request->user()->can('list other teachers')) {
+            return;
+        }
+
+        $profileTeacher = $request->user()->profile?->teacher;
+
+        if (!$profileTeacher) {
+            throw new HttpException(403, __('Sorry, you\'re not a teacher, you can\'t create class records'));
+        }
+
+        if ((int) $profileTeacher->id !== $teacherId) {
+            throw new HttpException(403, __('You do not have permission to select this teacher.'));
+        }
+    }
+}

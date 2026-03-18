@@ -382,6 +382,58 @@ const routes = [
       crud: 'edit',
     },
   },
+  {
+    path: '/academics/classes/class-records',
+    name: 'academics.classes.class-records.list',
+    component: () => import('../Pages/academics/classes/class-records/ClassRecordsListPage.vue'),
+    meta: { 
+      requiresAuth: true,
+      module: 'academics', 
+      submodule: 'classes', 
+      title: 'Class Records List',
+      headerIcon: 'list',
+      crud: 'read',
+    },
+  },
+  {
+    path: '/academics/classes/class-records/create/:classScheduleDetailId?',
+    name: 'academics.classes.class-records.create',
+    component: () => import('../Pages/academics/classes/class-records/ClassRecordFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Add Class Record',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/classes/class-records/:id/data',
+    name: 'academics.classes.class-records.edit',
+    component: () => import('../Pages/academics/classes/class-records/ClassRecordFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Edit Class Record',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
+    path: '/academics/classes/class-records/:recordId/details/:detailId/edit',
+    name: 'academics.classes.class-records.details.edit',
+    component: () => import('../Pages/academics/classes/class-records/ClassRecordDetailFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Edit Class Record Detail',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
   /* Fallback Route */
   {
     path: '/:pathMatch(.*)*',
