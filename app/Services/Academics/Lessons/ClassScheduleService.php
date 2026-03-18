@@ -39,13 +39,14 @@ class ClassScheduleService
         return $classSchedule;
     }
 
-    public function classScheduleData(ClassSchedule $classSchedule)
+    public function classScheduleData(ClassSchedule $classSchedule, bool $includeFeedback = true)
     {
         $course = $classSchedule->course;
         $courseName = (new CourseService())->getCourseDisplayName($course);
         return [
             'id' => $classSchedule->id,
             'name' => $classSchedule->name,
+            'feedback' => $includeFeedback ? $classSchedule->feedback : null,
             'schedule_month' => $classSchedule->schedule_month,
             'display_schedule_month' => DateTimeService::formatDateMonthYear($classSchedule->schedule_month),
             'course_id' => $course->id,

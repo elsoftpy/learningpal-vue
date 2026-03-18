@@ -243,6 +243,10 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 ->name('edit')
                 ->middleware('can:edit class schedules');
 
+            Route::post('/{classSchedule}/feedback', [ClassScheduleController::class, 'updateFeedback'])
+                ->name('feedback')
+                ->middleware('can:view class schedules');
+
             Route::post('/{classSchedule}/destroy', [ClassScheduleController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:delete class schedules');

@@ -84,6 +84,10 @@ class PermissionSeeder extends Seeder
             'create class schedules',
             'edit class schedules',
             'delete class schedules',
+            'view schedule feedback',
+            'create schedule feedback',
+            'edit schedule feedback',
+            'delete schedule feedback', 
             'view classes',
             'create classes',
             'edit classes',
@@ -122,11 +126,15 @@ class PermissionSeeder extends Seeder
         $teacher->givePermissionTo([
             'edit own profile',
             // academic
-            'show academic menu', 
+            'show academic menu',
             // academic settings
             'show academic settings menu',
             'view language levels',
             'view class schedules',
+            'view schedule feedback',
+            /* 'create schedule feedback',
+            'edit schedule feedback',
+            'delete schedule feedback', */
             'view students',
             // academic classes
             'show academic classes menu',

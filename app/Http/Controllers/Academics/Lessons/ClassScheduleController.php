@@ -9,6 +9,7 @@ use App\Models\ClassScheduleDetail;
 use App\Services\Academics\Lessons\ClassScheduleService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 
 class ClassScheduleController extends Controller
@@ -42,19 +43,20 @@ class ClassScheduleController extends Controller
                 });
         }
 
-        // Apply filters if any
         if ($filters) {
             foreach ($filters as $field => $value) {
                 $query->where($field, $value);
             }
         }
 
-        // Pagination
         $paginated = $query->orderBy('schedule_month', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $classSchedules = $paginated->getCollection()->map(function (ClassSchedule $classSchedule) {
-            return (new ClassScheduleService())->classScheduleData($classSchedule);
+        $includeFeedback = $request->user()?->can('view schedule feedback') ?? false;
+        $classScheduleService = new ClassScheduleService();
+
+        $classSchedules = $paginated->getCollection()->map(function (ClassSchedule $classSchedule) use ($classScheduleService, $includeFeedback) {
+            return $classScheduleService->classScheduleData($classSchedule, $includeFeedback);
         });
 
         return ResponseService::success(
@@ -66,9 +68,13 @@ class ClassScheduleController extends Controller
         );
     }
 
-    public function classScheduleData(ClassSchedule $classSchedule, ClassScheduleService $classScheduleService)
+    public function classScheduleData(Request $request, ClassSchedule $classSchedule, ClassScheduleService $classScheduleService)
     {
-        $classScheduleData = $classScheduleService->classScheduleData($classSchedule);
+        $classScheduleData = $classScheduleService->classScheduleData(
+            $classSchedule,
+            $request->user()?->can('view schedule feedback') ?? false
+        );
+
         return ResponseService::success(
             message: __('Class schedule retrieved successfully.'),
             data: ['class_schedule' => $classScheduleData]
@@ -78,9 +84,13 @@ class ClassScheduleController extends Controller
     public function store(ClassScheduleRequest $request, ClassScheduleService $classScheduleService)
     {
         $classSchedule = $classScheduleService->createClassSchedule($request->validated());
+
         return ResponseService::success(
             message: __('Class schedule created successfully.'),
-            data: ['class_schedule' => $classScheduleService->classScheduleData($classSchedule)]
+            data: ['class_schedule' => $classScheduleService->classScheduleData(
+                $classSchedule,
+                $request->user()?->can('view schedule feedback') ?? false
+            )]
         );
     }
 
@@ -89,13 +99,69 @@ class ClassScheduleController extends Controller
         ClassSchedule $classSchedule,
         ClassScheduleService $classScheduleService
     ) {
-
         $updateClassSchedule = $classScheduleService->updateClassSchedule($classSchedule, $request->validated());
 
         return ResponseService::success(
             message: __('Class schedule updated successfully.'),
-            data: ['class_schedule' => $classScheduleService->classScheduleData($updateClassSchedule)]
+            data: ['class_schedule' => $classScheduleService->classScheduleData(
+                $updateClassSchedule,
+                $request->user()?->can('view schedule feedback') ?? false
+            )]
         );
+    }
+
+    public function updateFeedback(
+        Request $request,
+        ClassSchedule $classSchedule,
+        ClassScheduleService $classScheduleService
+    ) {
+        $validated = $request->validate([
+            'feedback' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
+        ]);
+
+        $feedback = $validated['feedback'] ?? null;
+        $feedback = is_string($feedback) ? trim($feedback) : null;
+
+        $existingFeedback = is_string($classSchedule->feedback) ? trim($classSchedule->feedback) : null;
+        $hasExistingFeedback = $existingFeedback !== null && $existingFeedback !== '';
+        $hasIncomingFeedback = $feedback !== null && $feedback !== '';
+
+        if ($hasExistingFeedback && !$hasIncomingFeedback) {
+            $this->authorizeFeedbackAction($request, 'delete schedule feedback');
+        } elseif (!$hasExistingFeedback && $hasIncomingFeedback) {
+            $this->authorizeFeedbackAction($request, 'create schedule feedback');
+        } elseif ($hasExistingFeedback && $hasIncomingFeedback && $existingFeedback !== $feedback) {
+            $this->authorizeFeedbackAction($request, 'edit schedule feedback');
+        } else {
+            $this->authorizeFeedbackAction($request, 'view schedule feedback');
+        }
+
+        $updatedClassSchedule = $classScheduleService->updateClassSchedule($classSchedule, [
+            'feedback' => $hasIncomingFeedback ? $feedback : null,
+        ]);
+
+        return ResponseService::success(
+            message: __('Class schedule feedback updated successfully.'),
+            data: ['class_schedule' => $classScheduleService->classScheduleData(
+                $updatedClassSchedule,
+                $request->user()?->can('view schedule feedback') ?? false
+            )]
+        );
+    }
+
+    protected function authorizeFeedbackAction(Request $request, string $permission): void
+    {
+        if (!($request->user()?->can('view schedule feedback') ?? false)) {
+            throw new AuthorizationException(__('This action is unauthorized.'));
+        }
+
+        if (!($request->user()?->can($permission) ?? false)) {
+            throw new AuthorizationException(__('This action is unauthorized.'));
+        }
     }
 
     public function destroy(ClassSchedule $classSchedule)
@@ -106,6 +172,4 @@ class ClassScheduleController extends Controller
             message: __('Class schedule deleted successfully.')
         );
     }
-
-    
 }

@@ -31,23 +31,52 @@
         :onDelete="detailDeleteDialogConfig.onDelete"
         :loading="detailDeleteDialogConfig.loading"
     />
+    <FeedbackDialog
+        v-if="selectedSchedule"
+        v-model:visible="feedbackDialogVisible"
+        :feedback="feedbackValue"
+        :loading="feedbackDialogLoading"
+        :readonly="feedbackDialogReadonly"
+        :show-save="feedbackDialogShowSave"
+        :save-disabled="feedbackDialogSaveDisabled"
+        :show-delete="feedbackDialogShowDelete"
+        :delete-disabled="feedbackDeleteDisabled"
+        :dismiss-label="feedbackDialogDismissLabel"
+        :onSave="saveFeedback"
+        :onDelete="deleteFeedback"
+    />
 </template>
 <script setup>
-import { computed } from 'vue';
+import { computed, h, ref, watch } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
+import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import { useI18n } from 'vue-i18n';
+import { useToast } from 'primevue/usetoast';
 import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 import ClassScheduleDetailsTable from '@/components/academics/ClassScheduleDetailsTable.vue';
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
+import FeedbackDialog from '@/components/datatable/FeedbackDialog.vue';
+import Button from 'primevue/button';
+import axios from 'axios';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
+const { handleApiError } = useApiErrorHandler();
+const toast = useToast();
 const canViewDetailData = computed(() => can('view class schedule details'));
+const canViewFeedback = computed(() => can('view schedule feedback'));
+const canCreateFeedback = computed(() => can('create schedule feedback'));
+const canEditFeedback = computed(() => can('edit schedule feedback'));
+const canDeleteFeedback = computed(() => can('delete schedule feedback'));
 const canViewActionsColumn = computed(() => can(['edit class schedules', 'delete class schedules']));
+const feedbackDialogVisible = ref(false);
+const feedbackDialogLoading = ref(false);
+const selectedSchedule = ref(null);
+const feedbackValue = ref('');
 
 const table = useSettingsTable({
     endpoint: '/academics/lessons/class-schedules',
@@ -101,8 +130,31 @@ const detailActions = useRowActions({
 const detailDeleteDialogVisible = detailActions.deleteDialogVisible;
 const detailDeleteDialogConfig = detailActions.deleteDialogConfig;
 
+const selectedScheduleHasFeedback = computed(() => Boolean(selectedSchedule.value?.feedback?.trim()));
+const feedbackDialogReadonly = computed(() => {
+    if (selectedScheduleHasFeedback.value) {
+        return !canEditFeedback.value;
+    }
+
+    return !canCreateFeedback.value;
+});
+const feedbackDialogShowSave = computed(() => {
+    if (selectedScheduleHasFeedback.value) {
+        return canEditFeedback.value;
+    }
+
+    return canCreateFeedback.value;
+});
+const feedbackDialogSaveDisabled = computed(() => feedbackDialogLoading.value || !feedbackDialogShowSave.value);
+const feedbackDialogShowDelete = computed(() => selectedScheduleHasFeedback.value && canDeleteFeedback.value);
+const feedbackDeleteDisabled = computed(() => feedbackDialogLoading.value || !feedbackDialogShowDelete.value);
+const feedbackDialogDismissLabel = computed(() => {
+    const hasOnlyDismissAction = !feedbackDialogShowSave.value && !feedbackDialogShowDelete.value;
+    return hasOnlyDismissAction ? $t('Dismiss') : $t('Cancel');
+});
+
 const columns = computed(() => [
-    { 
+    {
         key: 'expander',
         isExpander: true,
         style: 'width: 1%',
@@ -114,7 +166,7 @@ const columns = computed(() => [
         style: 'width: 1%',
     }),
     textColumn({
-        key: "name",
+        key: 'name',
         header: $t('Name'),
         fieldName: 'name',
         style: 'min-width:15%',
@@ -129,6 +181,21 @@ const columns = computed(() => [
         header: $t('Course'),
         fieldName: 'course',
     }),
+    {
+        key: 'feedback',
+        header: $t('Feedback'),
+        style: 'min-width: 12rem',
+        visible: () => canViewFeedback.value,
+        body: ({ data }) => h(Button, {
+            size: 'small',
+            severity: 'info',
+            outlined: true,
+            icon: resolveFeedbackButtonIcon(data),
+            label: resolveFeedbackButtonLabel(data),
+            disabled: isFeedbackButtonDisabled(data),
+            onClick: () => openFeedbackDialog(data),
+        }),
+    },
     {
         key: 'actions',
         header: $t('Actions'),
@@ -146,6 +213,26 @@ const columns = computed(() => [
     },
 ]);
 
+const rowHasFeedback = (schedule) => Boolean(schedule?.feedback?.trim());
+
+const isFeedbackButtonDisabled = (schedule) => !rowHasFeedback(schedule) && !canCreateFeedback.value;
+
+const resolveFeedbackButtonLabel = (schedule) => {
+    if (rowHasFeedback(schedule)) {
+        return canEditFeedback.value ? $t('Edit Feedback') : $t('View Feedback');
+    }
+
+    return $t('Add Feedback');
+};
+
+const resolveFeedbackButtonIcon = (schedule) => {
+    if (rowHasFeedback(schedule)) {
+        return canEditFeedback.value ? 'pi pi-pencil' : 'pi pi-eye';
+    }
+
+    return 'pi pi-comment';
+};
+
 const handleDetailEdit = (scheduleId, detail) => {
     if (!scheduleId || !detail?.id) {
         return;
@@ -160,5 +247,96 @@ const handleDetailDelete = (detail) => {
     }
 
     detailActions.handleDelete(detail.id);
+};
+
+const openFeedbackDialog = (schedule) => {
+    if (!schedule?.id || !canViewFeedback.value || isFeedbackButtonDisabled(schedule)) {
+        return;
+    }
+
+    selectedSchedule.value = schedule;
+    feedbackValue.value = schedule.feedback ?? '';
+    feedbackDialogVisible.value = true;
+};
+
+watch(feedbackDialogVisible, (visible) => {
+    if (visible) {
+        return;
+    }
+
+    selectedSchedule.value = null;
+    feedbackValue.value = '';
+});
+
+const saveFeedback = async (value) => {
+    if (!selectedSchedule.value?.id || feedbackDialogSaveDisabled.value) {
+        return;
+    }
+
+    feedbackDialogLoading.value = true;
+
+    try {
+        await axios.post(`/academics/lessons/class-schedules/${selectedSchedule.value.id}/feedback`, {
+            feedback: value,
+        });
+
+        toast.add({
+            severity: 'success',
+            summary: $t('Success'),
+            detail: $t('Feedback saved successfully.'),
+            life: 3000,
+        });
+
+        await table.refresh();
+    } catch (error) {
+        const apiError = handleApiError(error);
+
+        toast.add({
+            severity: 'error',
+            summary: $t('Error'),
+            detail: apiError?.message || $t('An unexpected error occurred. Please try again.'),
+            life: 5000,
+        });
+
+        throw error;
+    } finally {
+        feedbackDialogLoading.value = false;
+    }
+};
+
+const deleteFeedback = async () => {
+    if (!selectedSchedule.value?.id || feedbackDeleteDisabled.value) {
+        return;
+    }
+
+    feedbackDialogLoading.value = true;
+
+    try {
+        await axios.post(`/academics/lessons/class-schedules/${selectedSchedule.value.id}/feedback`, {
+            feedback: null,
+        });
+
+        toast.add({
+            severity: 'success',
+            summary: $t('Success'),
+            detail: $t('Feedback deleted successfully.'),
+            life: 3000,
+        });
+
+        await table.refresh();
+    } catch (error) {
+        const apiError = handleApiError(error);
+
+        toast.add({
+            severity: 'error',
+            summary: $t('Error'),
+            detail: apiError?.message || $t('An unexpected error occurred. Please try again.'),
+            life: 5000,
+        });
+
+        throw error;
+    } finally {
+        feedbackDialogLoading.value = false;
+    }
 };
 </script>
