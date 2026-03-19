@@ -73,6 +73,14 @@ class PermissionSeeder extends Seeder
             'create level contents',
             'edit level contents',
             'delete level contents',
+            'view study programs',
+            'create study programs',
+            'edit study programs',
+            'edit study program week',
+            'delete study program week',
+            'edit study program week activity',
+            'delete study program week activity',
+            'delete study programs',
         ];
 
         foreach ($academicSettingsPermissions as $permission) {
@@ -101,6 +109,13 @@ class PermissionSeeder extends Seeder
             'edit class records',
             'delete class records',
             'list other teachers',
+            'view assigned distance activities',
+            'view own distance activities',
+            'view all distance activities',
+            'complete own distance activity tasks',
+            'upload own distance activity production',
+            'reset distance activity completion',
+            'delete distance activity submissions',
         ];
 
         foreach ($academicLessonsPermissions as $permission) {
@@ -119,6 +134,9 @@ class PermissionSeeder extends Seeder
             'show academic menu',
             // academic classes
             'show academic classes menu',
+            'view assigned distance activities',
+            'complete own distance activity tasks',
+            'upload own distance activity production',
         ]);
 
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
@@ -145,6 +163,7 @@ class PermissionSeeder extends Seeder
             /*'delete class schedule details',
             'confirm class reprogramming', */
             'view class records',
+            'view own distance activities',
 /*             'create class records',
             'edit class records',
             'delete class records', */
@@ -161,6 +180,13 @@ class PermissionSeeder extends Seeder
             // academic classes
             'show academic classes menu',
             'reschedule class',
+            'view class records',
+            'view assigned distance activities',
+            'complete own distance activity tasks',
+            'upload own distance activity production',
+            'view assigned distance activities',
+            'view own distance activities',
+            'complete own distance activity tasks',
         ]);
     }
 }

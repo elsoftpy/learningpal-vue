@@ -20,6 +20,13 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             LanguageSeeder::class,
+            LanguageLevelSeeder::class,
+            TeacherSeeder::class,
+            StudentSeeder::class,
+            StudyProgramSeeder::class,
+            StudyProgramWeekSeeder::class,
+            StudyProgramWeekActivitySeeder::class,
+            CourseSeeder::class,
         ]);
     }
 }

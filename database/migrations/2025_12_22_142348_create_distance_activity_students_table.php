@@ -15,9 +15,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('distance_activity_id')->constrained();
             $table->foreignId('student_id')->constrained('users');
-            $table->integer('status')->default(0);
-            $table->dateTime('status_date')->nullable();
+            $table->boolean('completed')->default(false);
+            $table->dateTime('completed_at')->nullable();
             $table->timestamps();
+
+            $table->unique(
+                ['distance_activity_id', 'student_id'],
+                'distance_activity_student_unique'
+            );
         });
     }
 
