@@ -37,6 +37,15 @@ class StudentRequest extends FormRequest
                     'string', 
                     Rule::in(StatusEnum::values()),
                 ],
+                'courses' => [
+                    'sometimes',
+                    'array',
+                ],
+                'courses.*' => [
+                    'integer',
+                    'distinct',
+                    'exists:courses,id',
+                ],
             ]
         );
     }

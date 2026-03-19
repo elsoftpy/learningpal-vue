@@ -13,10 +13,11 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
-        $emails = [
-            'student@example.com',
-            'annualstudent@example.com',
-        ];
+        $emails = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $emails[] = sprintf('student%02d@example.com', $index);
+        }
 
         foreach ($emails as $email) {
             $user = User::query()->where('email', $email)->first();

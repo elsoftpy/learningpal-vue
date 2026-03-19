@@ -20,9 +20,9 @@ class AuthService
             'password' => $request->input('password'),
             'status' => [StatusEnum::ACTIVE->value, StatusEnum::PENDING->value],
         ];
-
+        
         if (! Auth::attempt($credentials, )) {
-            
+             
             return false;
         }
 

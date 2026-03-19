@@ -16,10 +16,17 @@ class DistanceActivity extends Model
 
     protected $fillable = [
         'course_id',
+        'study_program_week_id',
         'teacher_id',
         'user_id',
+        'title',
         'comments',
     ];
+
+    public function course(): BelongsTo
+    {
+        return $this->belongsTo(Course::class);
+    }
 
     public function details(): HasMany
     {
@@ -33,11 +40,16 @@ class DistanceActivity extends Model
 
     public function teacher(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->belongsTo(Teacher::class, 'teacher_id');
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function studyProgramWeek(): BelongsTo
+    {
+        return $this->belongsTo(StudyProgramWeek::class);
     }
 }

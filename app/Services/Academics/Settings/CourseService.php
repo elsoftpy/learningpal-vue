@@ -3,10 +3,23 @@
 namespace App\Services\Academics\Settings;
 
 use App\Models\Course;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
 class CourseService
 {
+    public function createCourse(array $data, User $user): Course
+    {
+        return DB::transaction(function () use ($data, $user) {
+            $course = Course::query()->create($data);
+
+            (new StudyProgramReplicationService())->replicateToCourse($course, $user);
+
+            return $course->fresh(['language', 'languageLevel']);
+        });
+    }
+
     public function courseData(Course $course)
     {
         return [

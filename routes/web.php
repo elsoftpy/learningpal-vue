@@ -4,8 +4,12 @@ use App\Http\Controllers\Academics\Lessons\CalendarController;
 use App\Http\Controllers\Academics\Lessons\ClassRecordController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleDetailController;
+use App\Http\Controllers\Academics\Lessons\DistanceActivityController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
+use App\Http\Controllers\Academics\Settings\StudyProgramController;
+use App\Http\Controllers\Academics\Settings\StudyProgramWeekActivityController;
+use App\Http\Controllers\Academics\Settings\StudyProgramWeekController;
 use App\Http\Controllers\Academics\Settings\StudentController;
 use App\Http\Controllers\Academics\Settings\TeacherController;
 use App\Http\Controllers\Auth\AuthenticationController;
@@ -181,6 +185,72 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                 ->middleware('can:delete courses');
         });
 
+        Route::prefix('study-programs')->name('study-programs.')->group(function () {
+            Route::get('/', [StudyProgramController::class, 'index'])
+                ->name('index')
+                ->middleware('can:view study programs');
+
+            Route::post('/', [StudyProgramController::class, 'store'])
+                ->name('store')
+                ->middleware('can:create study programs');
+
+            Route::post('/{studyProgram}/data', [StudyProgramController::class, 'studyProgramData'])
+                ->name('data')
+                ->middleware('can:view study programs');
+
+            Route::post('/{studyProgram}/edit', [StudyProgramController::class, 'update'])
+                ->name('edit')
+                ->middleware('can:edit study programs');
+
+            Route::post('/{studyProgram}/destroy', [StudyProgramController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:delete study programs');
+
+            Route::prefix('weeks')->name('weeks.')->group(function () {
+                Route::post('/study-program/{studyProgram}/data', [StudyProgramWeekController::class, 'createData'])
+                    ->name('create-data')
+                    ->middleware('can:edit study program week');
+
+                Route::post('/study-program/{studyProgram}', [StudyProgramWeekController::class, 'store'])
+                    ->name('store')
+                    ->middleware('can:edit study program week');
+
+                Route::post('/{week}/data', [StudyProgramWeekController::class, 'data'])
+                    ->name('data')
+                    ->middleware('can:edit study program week');
+
+                Route::post('/{week}/edit', [StudyProgramWeekController::class, 'update'])
+                    ->name('edit')
+                    ->middleware('can:edit study program week');
+
+                Route::post('/{week}/destroy', [StudyProgramWeekController::class, 'destroy'])
+                    ->name('destroy')
+                    ->middleware('can:delete study program week');
+            });
+
+            Route::prefix('activities')->name('activities.')->group(function () {
+                Route::post('/study-program-week/{week}/data', [StudyProgramWeekActivityController::class, 'createData'])
+                    ->name('create-data')
+                    ->middleware('can:edit study program week activity');
+
+                Route::post('/study-program-week/{week}', [StudyProgramWeekActivityController::class, 'store'])
+                    ->name('store')
+                    ->middleware('can:edit study program week activity');
+
+                Route::post('/{activity}/data', [StudyProgramWeekActivityController::class, 'data'])
+                    ->name('data')
+                    ->middleware('can:edit study program week activity');
+
+                Route::post('/{activity}/edit', [StudyProgramWeekActivityController::class, 'update'])
+                    ->name('edit')
+                    ->middleware('can:edit study program week activity');
+
+                Route::post('/{activity}/destroy', [StudyProgramWeekActivityController::class, 'destroy'])
+                    ->name('destroy')
+                    ->middleware('can:delete study program week activity');
+            });
+        });
+
         Route::prefix('teachers')->name('teachers.')->group(function () {
             Route::get('/', [TeacherController::class, 'index'])
                 ->name('index')
@@ -312,6 +382,29 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
                     ->name('destroy')
                     ->middleware('can:delete class records');
             });
+        });
+
+        Route::prefix('distance-activities')->name('distance-activities.')->group(function () {
+            Route::get('/', [DistanceActivityController::class, 'index'])
+                ->name('index');
+
+            Route::post('/{distanceActivity}/data', [DistanceActivityController::class, 'data'])
+                ->name('data');
+
+            Route::post('/details/{detail}/complete', [DistanceActivityController::class, 'completeDetail'])
+                ->name('details.complete');
+
+            Route::post('/details/{detail}/video-open', [DistanceActivityController::class, 'recordVideoOpen'])
+                ->name('details.video-open');
+
+            Route::post('/details/{detail}/student-production', [DistanceActivityController::class, 'saveStudentProduction'])
+                ->name('details.student-production.save');
+
+            Route::post('/detail-students/{detailStudent}/complete', [DistanceActivityController::class, 'updateManagedDetailCompletion'])
+                ->name('detail-students.complete');
+
+            Route::post('/detail-students/{detailStudent}/submissions/{media}/destroy', [DistanceActivityController::class, 'deleteStudentSubmission'])
+                ->name('detail-students.submissions.destroy');
         });
     });
 });

@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
             StudyProgramWeekSeeder::class,
             StudyProgramWeekActivitySeeder::class,
             CourseSeeder::class,
+            ClassScheduleSeeder::class,
+            ClassScheduleDetailSeeder::class,
+            ClassRecordSeeder::class,
         ]);
     }
 }

@@ -13,9 +13,20 @@ class StudentService
 
         $student = $profile->student()->create($studentData);
 
-        $student->courses()->sync($studentData['courses'] ?? []);
+        $this->syncCourses($student, $studentData['courses'] ?? []);
 
         return $student;
+    }
+
+    public function syncCourses(Student $student, array $courseIds): void
+    {
+        $changes = $student->courses()->sync($courseIds);
+
+        $attachedCourseIds = array_map('intval', $changes['attached'] ?? []);
+
+        if (! empty($attachedCourseIds)) {
+            (new DistanceActivityEnrollmentService())->syncStudentEnrollments($student, $attachedCourseIds);
+        }
     }
 
     public function updateStudentProfile($student, array $profileData): void

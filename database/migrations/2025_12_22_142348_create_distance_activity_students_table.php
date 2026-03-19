@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('distance_activity_students', function (Blueprint $table) {
             $table->id();
             $table->foreignId('distance_activity_id')->constrained();
-            $table->foreignId('student_id')->constrained('users');
+            $table->foreignId('student_id')->constrained();
             $table->boolean('completed')->default(false);
             $table->dateTime('completed_at')->nullable();
             $table->timestamps();

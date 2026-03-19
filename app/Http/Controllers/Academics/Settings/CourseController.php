@@ -67,8 +67,7 @@ class CourseController extends Controller
 
     public function store(CourseRequest $request, CourseService $courseService)
     {
-        
-        $course = Course::create($request->validated());
+        $course = $courseService->createCourse($request->validated(), $request->user());
 
         $courseData = $courseService->courseData($course);
 

@@ -34,43 +34,73 @@ class CourseSeeder extends Seeder
             return;
         }
 
-        $course = Course::query()->updateOrCreate(
-            ['name' => 'English A1 Demo Course'],
+        $courseConfigs = [
             [
-                'language_id' => $languageLevel->language_id,
-                'language_level_id' => $languageLevel->id,
-                'chat_room_link' => 'https://meet.example.com/english-a1-demo-course',
-                'status' => 'active',
-            ]
-        );
+                'name' => 'English A1 Demo Course 1',
+                'chat_room_link' => 'https://meet.example.com/english-a1-demo-course-1',
+                'teacher_email' => 'teacher@example.com',
+                'student_emails' => collect(range(1, 10))
+                    ->map(fn ($index) => sprintf('student%02d@example.com', $index))
+                    ->all(),
+            ],
+            [
+                'name' => 'English A1 Demo Course 2',
+                'chat_room_link' => 'https://meet.example.com/english-a1-demo-course-2',
+                'teacher_email' => 'teacher2@example.com',
+                'student_emails' => collect(range(11, 20))
+                    ->map(fn ($index) => sprintf('student%02d@example.com', $index))
+                    ->all(),
+            ],
+        ];
 
-        $teacher = Teacher::query()
-            ->whereHas('profile.user', fn ($query) => $query->where('email', 'teacher@example.com'))
-            ->first();
+        foreach ($courseConfigs as $config) {
+            $course = Course::query()->updateOrCreate(
+                ['name' => $config['name']],
+                [
+                    'language_id' => $languageLevel->language_id,
+                    'language_level_id' => $languageLevel->id,
+                    'chat_room_link' => $config['chat_room_link'],
+                    'status' => 'active',
+                ]
+            );
 
-        $students = Student::query()
-            ->whereHas('profile.user', fn ($query) => $query->whereIn('email', [
-                'student@example.com',
-                'annualstudent@example.com',
-            ]))
-            ->get();
+            $teacher = Teacher::query()
+                ->whereHas('profile.user', fn ($query) => $query->where('email', $config['teacher_email']))
+                ->first();
 
-        if ($teacher) {
-            $course->teachers()->sync([$teacher->id]);
-        }
+            $students = Student::query()
+                ->whereHas('profile.user', fn ($query) => $query->whereIn('email', $config['student_emails']))
+                ->get();
 
-        if ($students->isNotEmpty()) {
-            $course->students()->sync($students->pluck('id')->all());
-        }
+            if ($teacher) {
+                $course->teachers()->sync([$teacher->id]);
+            }
 
-        $teacherUser = User::query()->where('email', 'teacher@example.com')->first();
-        if ($teacherUser) {
-            $course->distanceActivities()->delete();
-            (new StudyProgramReplicationService())->replicateToCourse($course, $teacherUser);
-        }
+            if ($students->isNotEmpty()) {
+                $course->students()->sync($students->pluck('id')->all());
+            }
 
-        foreach ($students as $student) {
-            (new DistanceActivityEnrollmentService())->syncStudentEnrollments($student, [$course->id]);
+            $teacherUser = User::query()->where('email', $config['teacher_email'])->first();
+            if ($teacherUser) {
+                $course->distanceActivities()
+                    ->with(['details.students', 'students'])
+                    ->get()
+                    ->each(function ($activity) {
+                        $activity->details->each(function ($detail) {
+                            $detail->students()->delete();
+                            $detail->delete();
+                        });
+
+                        $activity->students()->delete();
+                        $activity->delete();
+                    });
+
+                (new StudyProgramReplicationService())->replicateToCourse($course, $teacherUser);
+            }
+
+            foreach ($students as $student) {
+                (new DistanceActivityEnrollmentService())->syncStudentEnrollments($student, [$course->id]);
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\StatusEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\Query\Builder;
 
 class CourseRequest extends FormRequest
 {
@@ -26,7 +27,12 @@ class CourseRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'language_id' => ['required', 'exists:languages,id'],
-            'language_level_id' => ['required', 'exists:language_levels,id'],
+            'language_level_id' => [
+                'required',
+                Rule::exists('language_levels', 'id')->where(function (Builder $query) {
+                    $query->where('language_id', $this->input('language_id'));
+                }),
+            ],
             'chat_room_link' => ['nullable', 'url'],
             'status' => ['required', Rule::in(StatusEnum::values())],
         ];

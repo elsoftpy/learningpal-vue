@@ -47,4 +47,9 @@ class Course extends Model
     {
         return $this->hasMany(ClassSchedule::class);
     }
+
+    public function distanceActivities(): HasMany
+    {
+        return $this->hasMany(DistanceActivity::class);
+    }
 }

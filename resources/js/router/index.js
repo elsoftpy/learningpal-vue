@@ -214,6 +214,104 @@ const routes = [
     },
   },
   {
+    path: '/academics/settings/study-programs',
+    name: 'academics.settings.study-programs.list',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramsListPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'view study programs',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Study Programs List',
+      headerIcon: 'list',
+      crud: 'read',
+    },
+  },
+  {
+    path: '/academics/settings/study-programs/create',
+    name: 'academics.settings.study-programs.create',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'create study programs',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Add Study Program',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/settings/study-programs/:id/data',
+    name: 'academics.settings.study-programs.edit',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'edit study programs',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Edit Study Program',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
+    path: '/academics/settings/study-programs/:studyProgramId/weeks/create',
+    name: 'academics.settings.study-programs.weeks.create',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramWeekFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'edit study program week',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Add Study Program Week',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/settings/study-programs/weeks/:weekId/data',
+    name: 'academics.settings.study-programs.weeks.edit',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramWeekFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'edit study program week',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Edit Study Program Week',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
+    path: '/academics/settings/study-programs/weeks/:weekId/activities/create',
+    name: 'academics.settings.study-programs.activities.create',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramWeekActivityFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'edit study program week activity',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Add Study Program Activity',
+      headerIcon: 'plus',
+      crud: 'create',
+    },
+  },
+  {
+    path: '/academics/settings/study-programs/activities/:activityId/data',
+    name: 'academics.settings.study-programs.activities.edit',
+    component: () => import('../Pages/academics/settings/study-programs/StudyProgramWeekActivityFormPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'edit study program week activity',
+      module: 'academics',
+      submodule: 'settings',
+      title: 'Edit Study Program Activity',
+      headerIcon: 'pencil',
+      crud: 'edit',
+    },
+  },
+  {
     path: '/academics/settings/courses',
     name: 'academics.settings.courses.list',
     component: () => import('../Pages/academics/settings/courses/CoursesListPage.vue'),
@@ -383,6 +481,34 @@ const routes = [
     },
   },
   {
+    path: '/academics/classes/distance-activities',
+    name: 'academics.classes.distance-activities.list',
+    component: () => import('../Pages/academics/classes/distance-activities/DistanceActivitiesListPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: ['view assigned distance activities', 'view own distance activities', 'view all distance activities'],
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Distance Activities',
+      headerIcon: 'list',
+      crud: 'read',
+    },
+  },
+  {
+    path: '/academics/classes/distance-activities/:id/data',
+    name: 'academics.classes.distance-activities.detail',
+    component: () => import('../Pages/academics/classes/distance-activities/DistanceActivityDetailPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: ['view assigned distance activities', 'view own distance activities', 'view all distance activities'],
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Distance Activity Detail',
+      headerIcon: 'pencil',
+      crud: 'read',
+    },
+  },
+  {
     path: '/academics/classes/class-records',
     name: 'academics.classes.class-records.list',
     component: () => import('../Pages/academics/classes/class-records/ClassRecordsListPage.vue'),
@@ -465,6 +591,19 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next({ name: 'login', query: { redirect: to.fullPath } });
+  }
+
+  const requiredPermissions = Array.isArray(to.meta.permission)
+    ? to.meta.permission
+    : (to.meta.permission ? [to.meta.permission] : []);
+
+  if (isAuthenticated && requiredPermissions.length > 0) {
+    const ownedPermissions = authStore.user?.permissions || [];
+    const hasPermission = requiredPermissions.some((permission) => ownedPermissions.includes(permission));
+
+    if (!hasPermission) {
+      return next({ name: 'dashboard' });
+    }
   }
 
   const userId = authStore.user?.id;

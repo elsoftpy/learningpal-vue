@@ -26,23 +26,40 @@ class UserSeeder extends Seeder
                 'email' => 'teacher@example.com',
                 'name' => 'teacher.user',
                 'first_name' => 'Teacher',
-                'last_name' => 'User',
+                'last_name' => 'One',
+            ],
+            [
+                'role' => 'teacher',
+                'email' => 'teacher2@example.com',
+                'name' => 'teacher.two',
+                'first_name' => 'Teacher',
+                'last_name' => 'Two',
             ],
             [
                 'role' => 'student',
-                'email' => 'student@example.com',
-                'name' => 'student.user',
+                'email' => 'student01@example.com',
+                'name' => 'student.one',
                 'first_name' => 'Student',
-                'last_name' => 'User',
+                'last_name' => 'One',
             ],
             [
                 'role' => 'annual_student',
-                'email' => 'annualstudent@example.com',
-                'name' => 'annual.student',
-                'first_name' => 'Annual',
-                'last_name' => 'Student',
+                'email' => 'student02@example.com',
+                'name' => 'student.two',
+                'first_name' => 'Student',
+                'last_name' => 'Two',
             ],
         ];
+
+        for ($index = 3; $index <= 20; $index++) {
+            $users[] = [
+                'role' => $index % 2 === 0 ? 'annual_student' : 'student',
+                'email' => sprintf('student%02d@example.com', $index),
+                'name' => sprintf('student.%02d', $index),
+                'first_name' => 'Student',
+                'last_name' => (string) $index,
+            ];
+        }
 
         foreach ($users as $userData) {
             $profile = Profile::query()->updateOrCreate(

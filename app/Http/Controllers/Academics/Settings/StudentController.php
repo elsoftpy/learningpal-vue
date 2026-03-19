@@ -62,7 +62,7 @@ class StudentController extends Controller
 
     public function store(StudentRequest $request, StudentService $studentService)
     {
-        $profileData = $request->except(['status']);
+        $profileData = $request->except(['status', 'courses']);
         $studentData = $request->only(['status', 'courses']);
 
         $student = null;
@@ -92,14 +92,16 @@ class StudentController extends Controller
 
     public function update(StudentRequest $request, Student $student, StudentService $studentService)
     {
-        $profileData = $request->except(['status']);
-        $studentData = $request->only(['status']);
-        $student->courses()->sync($request->courses ?? []);
+        $profileData = $request->except(['status', 'courses']);
+        $studentData = $request->only(['status', 'courses']);
         
         DB::transaction(function () use ($student, $profileData, $studentData, $studentService) {
         
             $studentService->updateStudentProfile($student, $profileData);
-            $student->update($studentData);
+            $student->update([
+                'status' => $studentData['status'] ?? $student->status,
+            ]);
+            $studentService->syncCourses($student, $studentData['courses'] ?? []);
         });
         
         return ResponseService::success(

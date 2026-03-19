@@ -16,12 +16,25 @@ class DistanceActivityStudent extends Model
     protected $fillable = [
         'distance_activity_id',
         'student_id',
-        'status',
-        'status_date',
+        'completed',
+        'completed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'completed' => 'boolean',
+            'completed_at' => 'datetime',
+        ];
+    }
 
     public function distanceActivity(): BelongsTo
     {
         return $this->belongsTo(DistanceActivity::class, 'distance_activity_id');
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'student_id');
     }
 }

@@ -59,6 +59,12 @@
                                     :title="$t('Courses')"
                                 />
                                 <PlainMenuItem
+                                    v-if="can('view study programs')"
+                                    :route="{ name: 'academics.settings.study-programs.list' }"
+                                    baseRoute="academics.settings.study-programs"
+                                    :title="$t('Study Programs')"
+                                />
+                                <PlainMenuItem
                                     v-if="can('view teachers')"
                                     :route="{ name: 'academics.settings.teachers.list' }"
                                     baseRoute="academics.settings.teachers"
@@ -78,28 +84,35 @@
                                 />
                             </template>
                         </SubmoduleMenuItem>
-                        <!-- Academic Classes Menu-->
-                        <SubmoduleMenuItem
-                            submodule="classes"
-                            :submoduleName="$t('Classes')"
-                            icon="chalkboard-teacher"
-                        >
-                            <template #items>
-                                <PlainMenuItem
-                                    v-if="can('view class schedules')"
-                                    :route="{ name: 'academics.classes.class-schedules.list' }"
-                                    baseRoute="academics.classes.class-schedules"
-                                    :title="$t('Class Schedules')"
-                                />
-                                <PlainMenuItem
-                                    v-if="can('view class records')"
-                                    :route="{ name: 'academics.classes.class-records.list' }"
-                                    baseRoute="academics.classes.class-records"
-                                    :title="$t('Class Records')"
-                                />
-                            </template>
-                        </SubmoduleMenuItem>
                     </template>
+                    <!-- Academic Classes Menu-->
+                    <SubmoduleMenuItem
+                        v-if="can('show academic classes menu')"
+                        submodule="classes"
+                        :submoduleName="$t('Classes')"
+                        icon="chalkboard-teacher"
+                    >
+                        <template #items>
+                            <PlainMenuItem
+                                v-if="can('view class schedules')"
+                                :route="{ name: 'academics.classes.class-schedules.list' }"
+                                baseRoute="academics.classes.class-schedules"
+                                :title="$t('Class Schedules')"
+                            />
+                            <PlainMenuItem
+                                v-if="can('view class records')"
+                                :route="{ name: 'academics.classes.class-records.list' }"
+                                baseRoute="academics.classes.class-records"
+                                :title="$t('Class Records')"
+                            />
+                            <PlainMenuItem
+                                v-if="can(['view assigned distance activities', 'view own distance activities', 'view all distance activities'])"
+                                :route="{ name: 'academics.classes.distance-activities.list' }"
+                                baseRoute="academics.classes.distance-activities"
+                                :title="$t('Distance Activities')"
+                            />
+                        </template>
+                    </SubmoduleMenuItem>
                 </template>
             </ModuleMenuItem>
         </template>

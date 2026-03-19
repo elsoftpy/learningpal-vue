@@ -13,15 +13,22 @@ class TeacherSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::query()->where('email', 'teacher@example.com')->first();
+        $emails = [
+            'teacher@example.com',
+            'teacher2@example.com',
+        ];
 
-        if (!$user?->profile_id) {
-            return;
+        foreach ($emails as $email) {
+            $user = User::query()->where('email', $email)->first();
+
+            if (!$user?->profile_id) {
+                continue;
+            }
+
+            Teacher::query()->updateOrCreate(
+                ['profile_id' => $user->profile_id],
+                ['status' => 'active']
+            );
         }
-
-        Teacher::query()->updateOrCreate(
-            ['profile_id' => $user->profile_id],
-            ['status' => 'active']
-        );
     }
 }

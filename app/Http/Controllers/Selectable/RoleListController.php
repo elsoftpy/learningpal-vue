@@ -59,6 +59,7 @@ class RoleListController extends Controller
                     'admin' => 'Administrador',
                     'student' => 'Estudiante',
                     'teacher' => 'Profesor',
+                    'annual_student' => 'Estudiante Anual',
                 ]
             ],
             [
@@ -67,6 +68,7 @@ class RoleListController extends Controller
                     'admin' => 'admin',
                     'student' => 'Estudante',
                     'teacher' => 'Professor',
+                    'annual_student' => 'Estudante Anual',
                 ]
             ],
             [
@@ -75,6 +77,7 @@ class RoleListController extends Controller
                     'admin' => 'admin',
                     'student' => 'student',
                     'teacher' => 'teacher',
+                    'annual_student' => 'annual student',
                 ]
             ],
         ]);
@@ -92,6 +95,7 @@ class RoleListController extends Controller
 
     protected function getUnpaginatedRoles(Builder $query)
     {
+
         return  $query->limit(10)
                 ->get()
                 ->map(function ($role) {
