@@ -14,6 +14,7 @@ use App\Http\Controllers\Academics\Settings\StudyProgramWeekController;
 use App\Http\Controllers\Academics\Settings\StudentController;
 use App\Http\Controllers\Academics\Settings\TeacherController;
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\ClassReminderActionController;
 use App\Http\Controllers\LevelContentController;
 use App\Http\Controllers\Selectable\CourseListController;
 use App\Http\Controllers\Selectable\LanguageLanguageLevelListController;
@@ -426,6 +427,29 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
 
 Route::get('/test', function () {
     return view('test');
+});
+
+Route::prefix('email/class-reminder')->name('email.class-reminder.')->group(function () {
+    // New single entry point from email "Avisar" button
+    Route::get('/notify/{detail}/{student}', [ClassReminderActionController::class, 'showNotifyPage'])
+        ->name('notify')
+        ->middleware('signed');
+
+    // Legacy routes — keep for old emails still in inboxes
+    Route::get('/pending/{detail}/{student}', [ClassReminderActionController::class, 'confirmPending'])
+        ->name('pending')
+        ->middleware('signed');
+
+    Route::get('/upload-task/{detail}/{student}', [ClassReminderActionController::class, 'confirmUploadTask'])
+        ->name('upload-task')
+        ->middleware('signed');
+
+    Route::post('/execute/{action}/{detail}/{student}', [ClassReminderActionController::class, 'execute'])
+        ->name('execute')
+        ->middleware('signed');
+
+    Route::get('/done', [ClassReminderActionController::class, 'showDonePage'])
+        ->name('done');
 });
 
 

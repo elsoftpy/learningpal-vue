@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('personal_id')->nullable()->unique();
             $table->string('ruc')->nullable()->unique();
             $table->string('email');
+            $table->string('email_alt')->nullable();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->string('gender')->nullable();

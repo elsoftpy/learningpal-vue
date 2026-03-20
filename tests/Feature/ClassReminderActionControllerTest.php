@@ -1,0 +1,172 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\ClassScheduleStatusEnum;
+use App\Models\ClassSchedule;
+use App\Models\ClassScheduleDetail;
+use App\Models\Course;
+use App\Models\Profile;
+use App\Models\Student;
+use App\Models\Teacher;
+use App\Notifications\ClassStudentActionToTeacherNotification;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
+use Tests\TestCase;
+
+class ClassReminderActionControllerTest extends TestCase
+{
+    public function test_notify_page_shows_choice_page_without_side_effects(): void
+    {
+        Notification::fake();
+
+        $teacher = Teacher::factory()->create();
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create(['name' => 'Ingles B1']);
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'rescheduled_start_time' => null,
+        ]);
+
+        $notifyUrl = URL::temporarySignedRoute('email.class-reminder.notify', now()->addHour(), [
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->get($notifyUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Leave Pending'));
+        $response->assertSee(__('Upload Task'));
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        Notification::assertNothingSent();
+    }
+
+    public function test_pending_execute_marks_single_student_course_as_pending_and_notifies(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('services.class_notification.cc', 'cc@example.com');
+
+        $teacherProfile = Profile::factory()->create([
+            'full_name' => 'Docente Uno',
+            'email' => 'teacher@example.com',
+        ]);
+        $teacher = Teacher::factory()->create(['profile_id' => $teacherProfile->id]);
+
+        $studentProfile = Profile::factory()->create();
+        $student = Student::factory()->create(['profile_id' => $studentProfile->id]);
+
+        $course = Course::factory()->create(['name' => 'Ingles B1']);
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'rescheduled_start_time' => null,
+        ]);
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'pending',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Request Received'));
+        $this->assertSame(ClassScheduleStatusEnum::PENDING->value, $detail->fresh()->status);
+        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
+        Notification::assertCount(3);
+    }
+
+    public function test_upload_task_does_not_change_status_for_multi_student_course(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('services.class_notification.cc', 'cc@example.com');
+
+        $teacher = Teacher::factory()->create();
+        $studentA = Student::factory()->create();
+        $studentB = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$studentA->id, $studentB->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'upload_task',
+            'detail' => $detail->id,
+            'student' => $studentA->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Request Received'));
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
+        Notification::assertCount(3);
+    }
+
+    public function test_duplicate_execute_request_is_idempotent(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('services.class_notification.cc', 'cc@example.com');
+
+        $teacher = Teacher::factory()->create();
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'pending',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $first = $this->followingRedirects()->post($executeUrl);
+        $second = $this->followingRedirects()->post($executeUrl);
+
+        $first->assertOk();
+        $first->assertSee(__('Request Received'));
+
+        $second->assertOk();
+        $second->assertSee(__('Already Processed'));
+
+        $this->assertSame(ClassScheduleStatusEnum::PENDING->value, $detail->fresh()->status);
+        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
+        Notification::assertCount(3);
+    }
+}
+

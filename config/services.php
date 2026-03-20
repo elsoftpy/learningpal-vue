@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'class_notification' => [
+        'cc' => env('CLASS_NOTIFICATION_CC', 'iplconfirmaciondeclases@gmail.com'),
+    ],
+
 ];

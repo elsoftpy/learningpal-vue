@@ -25,6 +25,7 @@ class Profile extends Model implements HasMedia
         'personal_id',
         'ruc',
         'email',
+        'email_alt',
         'phone',
         'address',
         'gender',

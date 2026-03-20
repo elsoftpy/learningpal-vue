@@ -154,5 +154,20 @@
     "Generated At": "Generado el",
     "Page": "Página",
     "Total Hours": "Total de horas",
-    "annual_student": "estudiante anual"
+    "annual_student": "estudiante anual",
+    "Class Notification": "Notificación de clase",
+    "Please select one of the following options to let us know:": "Por favor selecciona una de las siguientes opciones para avisarnos:",
+    "Leave Class Pending": "Dejar clase pendiente",
+    "Your class will be marked as pending and rescheduled at a later date.": "Tu clase será marcada como pendiente y reprogramada en otra fecha.",
+    "Leave Pending": "Dejar pendiente",
+    "Request Class Record Upload": "Solicitar subida del class record",
+    "Your class will be cancelled and the teacher will be asked to upload the class record to the platform.": "Tu clase será cancelada y se le solicitará al profesor que suba el class record a la plataforma.",
+    "Upload Task": "Subir tarea",
+    "This page prevents automatic security scans from triggering actions on your behalf. Your manual selection is required.": "Esta pantalla evita que anlisis de seguridad automáticos ejecuten acciones en tu nombre. Se requiere tu selección manual.",
+    "Request Received": "Solicitud recibida",
+    "Already Processed": "Ya procesada",
+    "This request has already been processed. No further action is needed.": "Esta solicitud ya fue procesada anteriormente. No se requiere ninguna acción adicional.",
+    "Your request has been registered. We will be in touch shortly.": "Tu solicitud fue registrada. Nos pondremos en contacto contigo pronto.",
+    "Class reminder": "Recordatorio de clase",
+    "Student action notification": "Notificación de acción del estudiante"
 }
