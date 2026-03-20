@@ -16,6 +16,8 @@
                     :rows="table.perPage.value"
                     :totalRecords="table.totalRecords.value"
                     :first="table.first.value"
+                    :sortField="table.sortField?.value"
+                    :sortOrder="table.sortOrder?.value"
                     v-model:expandedRows="table.expandedRows.value"
                     expansionMode="single"
                     :dataKey="dataKey"
@@ -25,6 +27,7 @@
                     :size="size" 
                     :tableStyle="tableStyle"
                     @page="table.onPageChange"
+                    @sort="table.onSort"
                 >
                     <!-- Header slot -->
                     <template #header>

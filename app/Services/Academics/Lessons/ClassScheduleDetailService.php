@@ -12,6 +12,8 @@ class ClassScheduleDetailService
 {
     public function classScheduleDetailData(ClassScheduleDetail $detail): array
     {
+        $classRecordId = $detail->classRecord?->id;
+
         return [
             'id' => $detail->id,
             'class_schedule_id' => $detail->class_schedule_id,
@@ -29,6 +31,9 @@ class ClassScheduleDetailService
             'order' => $detail->order,
             'status' => $detail->status,
             'display_status' => ucfirst(__( $detail->status )),
+            'is_completed' => $detail->status === 'completed',
+            'class_record_id' => $classRecordId,
+            'has_class_record' => (bool) $classRecordId,
         ];
     }
 

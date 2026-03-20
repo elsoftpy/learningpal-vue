@@ -82,6 +82,8 @@ const table = useSettingsTable({
     endpoint: '/academics/lessons/class-schedules',
     searchFields: ['name'],
     filterConfig: {},
+    initialSortField: 'schedule_month',
+    initialSortOrder: -1,
     mapResponse: (response) => ({
         data: response.data?.data?.class_schedules || [],
         total: response.data?.data?.total || 0,
@@ -163,18 +165,21 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 1%',
     }),
     textColumn({
         key: 'name',
         header: $t('Name'),
         fieldName: 'name',
+        sortable: true,
         style: 'min-width:15%',
     }),
     textColumn({
         key: 'display_schedule_month',
         header: $t('Schedule Month'),
-        fieldName: 'display_schedule_month',
+        sortField: 'schedule_month',
+        sortable: true,
     }),
     textColumn({
         key: 'course',

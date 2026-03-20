@@ -355,7 +355,7 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
 
             Route::post('/{classRecord}/data', [ClassRecordController::class, 'classRecordData'])
                 ->name('data')
-                ->middleware('can:edit class records');
+                ->middleware('can:view class records');
 
             Route::post('/{classRecord}/edit', [ClassRecordController::class, 'update'])
                 ->name('edit')

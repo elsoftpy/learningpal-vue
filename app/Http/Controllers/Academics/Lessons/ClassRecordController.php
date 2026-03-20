@@ -305,7 +305,8 @@ class ClassRecordController extends Controller
     private function buildFormData(Request $request, ?ClassRecord $classRecord = null, ?int $lockedClassScheduleDetailId = null): array
     {
         $selectedClassScheduleDetailId = $lockedClassScheduleDetailId ?? $classRecord?->class_schedule_detail_id;
-        $selectedTeacherId = $classRecord?->teacher_id;
+        $preferredTeacherId = $classRecord?->teacher_id ?? $this->resolveTeacherIdFromClassScheduleDetail($selectedClassScheduleDetailId);
+        $selectedTeacherId = $preferredTeacherId;
         $selectedCourseId = $this->resolveCourseIdFromClassScheduleDetail($selectedClassScheduleDetailId) ?? $classRecord?->course_id;
 
         return [
@@ -319,6 +320,7 @@ class ClassRecordController extends Controller
                 ])
                 ->values(),
             'locked_class_schedule_detail_id' => $lockedClassScheduleDetailId,
+            'preferred_teacher_id' => $preferredTeacherId,
         ];
     }
 
@@ -388,6 +390,19 @@ class ClassRecordController extends Controller
         return ClassScheduleDetail::query()
             ->with('classSchedule')
             ->find($classScheduleDetailId)?->classSchedule?->course_id;
+    }
+
+    private function resolveTeacherIdFromClassScheduleDetail(?int $classScheduleDetailId = null): ?int
+    {
+        if (!$classScheduleDetailId) {
+            return null;
+        }
+
+        $detail = ClassScheduleDetail::query()
+            ->with(['classSchedule.course.teachers'])
+            ->find($classScheduleDetailId);
+
+        return $detail?->classSchedule?->course?->teachers?->sortBy('id')->first()?->id;
     }
 
     private function classScheduleDetailsOptions(?int $selectedClassScheduleDetailId = null): Collection

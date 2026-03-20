@@ -178,36 +178,6 @@
 
 					<div class="flex flex-col md:flex-row w-full space-y-4 md:space-y-0 md:space-x-2">
 						<div class="flex flex-col w-full md:w-1/3">
-							<label for="duration_minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-								{{ $t('Duration (minutes)') }}
-								<span class="text-red-500">*</span>
-							</label>
-							<InputText
-								id="duration_minutes"
-								name="duration_minutes"
-								type="number"
-								min="1"
-								class="w-full"
-							/>
-							<Message
-								v-if="$form.duration_minutes?.invalid"
-								severity="error"
-								size="small"
-								variant="simple"
-							>
-								{{ $form.duration_minutes?.error?.message }}
-							</Message>
-							<Message
-								v-if="errors?.duration_minutes"
-								severity="error"
-								size="small"
-								variant="simple"
-							>
-								{{ Array.isArray(errors?.duration_minutes) ? errors?.duration_minutes.join(', ') : errors?.duration_minutes }}
-							</Message>
-						</div>
-
-						<div class="flex flex-col w-full md:w-1/3">
 							<label for="attendance" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 								{{ $t('Attendance') }}
 								<span class="text-red-500">*</span>
@@ -236,6 +206,36 @@
 								variant="simple"
 							>
 								{{ Array.isArray(errors?.attendance) ? errors?.attendance.join(', ') : errors?.attendance }}
+							</Message>
+						</div>
+
+						<div class="flex flex-col w-full md:w-1/3">
+							<label for="duration_minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+								{{ $t('Duration (minutes)') }}
+								<span class="text-red-500">*</span>
+							</label>
+							<InputText
+								id="duration_minutes"
+								name="duration_minutes"
+								type="number"
+								min="1"
+								class="w-full"
+							/>
+							<Message
+								v-if="$form.duration_minutes?.invalid"
+								severity="error"
+								size="small"
+								variant="simple"
+							>
+								{{ $form.duration_minutes?.error?.message }}
+							</Message>
+							<Message
+								v-if="errors?.duration_minutes"
+								severity="error"
+								size="small"
+								variant="simple"
+							>
+								{{ Array.isArray(errors?.duration_minutes) ? errors?.duration_minutes.join(', ') : errors?.duration_minutes }}
 							</Message>
 						</div>
 
@@ -474,6 +474,7 @@ const levelContentsOptions = ref([]);
 const classRecordDetails = ref([]);
 const loadingOptions = ref(false);
 const formKey = ref(0);
+const preferredTeacherId = ref(null);
 
 const lockedClassScheduleDetailId = ref(null);
 const notTeacherDialogVisible = ref(false);
@@ -627,7 +628,7 @@ const initialValues = computed(() => {
 
 	return {
 		class_schedule_detail_id: selectedClassScheduleDetailId.value,
-		teacher_id: record.teacher_id || null,
+		teacher_id: record.teacher_id || preferredTeacherId.value || null,
 		date: record.date || '',
 		start_time: record.start_time || '',
 		end_time: record.end_time || '',
@@ -642,6 +643,7 @@ const applyFormData = (data) => {
 	teachersOptions.value = data?.teachers || [];
 	attendanceOptions.value = data?.attendances || [];
 	levelContentsOptions.value = data?.level_contents || [];
+	preferredTeacherId.value = data?.preferred_teacher_id ? Number(data.preferred_teacher_id) : null;
 	lockedClassScheduleDetailId.value = data?.locked_class_schedule_detail_id
 		? Number(data.locked_class_schedule_detail_id)
 		: (paramClassScheduleDetailId.value || null);

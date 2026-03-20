@@ -55,8 +55,8 @@
                                         size="small"
                                         :label="$t('Record')"
                                         icon="pi pi-upload"
-                                        severity="warn"
-                                        @click="window.open(session.resource_url, '_blank')"
+                                        :severity="recordSeverity(session)"
+                                        @click="handleRecord(session)"
                                     />
                                     <Button
                                         type="button"
@@ -77,11 +77,13 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 
 const { t: $t } = useI18n();
+const router = useRouter();
 
 const props = defineProps({
     details: {
@@ -117,6 +119,29 @@ const handleEdit = (session) => {
 
 const handleDelete = (session) => {
     emit('delete-detail', session);
+};
+
+const isSessionCompleted = (session) => session?.status === 'completed';
+
+const recordSeverity = (session) => (isSessionCompleted(session) ? 'success' : 'warn');
+
+const handleRecord = (session) => {
+    if (isSessionCompleted(session) && session?.class_record_id) {
+        router.push({
+            name: 'academics.classes.class-records.show',
+            params: {
+                id: session.class_record_id,
+            },
+        });
+        return;
+    }
+
+    router.push({
+        name: 'academics.classes.class-records.create',
+        params: {
+            classScheduleDetailId: session.id,
+        },
+    });
 };
 </script>
 

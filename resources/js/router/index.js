@@ -548,6 +548,20 @@ const routes = [
     },
   },
   {
+    path: '/academics/classes/class-records/:id/show',
+    name: 'academics.classes.class-records.show',
+    component: () => import('../Pages/academics/classes/class-records/ClassRecordShowPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'view class records',
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Class Record Detail',
+      headerIcon: 'eye',
+      crud: 'read',
+    },
+  },
+  {
     path: '/academics/classes/class-records/:recordId/details/:detailId/edit',
     name: 'academics.classes.class-records.details.edit',
     component: () => import('../Pages/academics/classes/class-records/ClassRecordDetailFormPage.vue'),

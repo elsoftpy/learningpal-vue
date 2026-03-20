@@ -52,6 +52,7 @@ class ClassScheduleService
             'course_id' => $course->id,
             'course' => $courseName,
             'details' => $classSchedule->details()
+                ->with('classRecord')
                 ->orderBy('session_date')
                 ->orderBy('start_time')
                 ->get()

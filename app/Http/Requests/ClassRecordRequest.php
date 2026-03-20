@@ -4,8 +4,10 @@ namespace App\Http\Requests;
 
 use App\Enums\AttendanceStatusEnum;
 use App\Services\Utilities\DateTimeService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ClassRecordRequest extends FormRequest
 {
@@ -118,6 +120,41 @@ class ClassRecordRequest extends FormRequest
         return [
             'student_production_audio.mimetypes' => 'El campo student production audio debe ser un archivo de tipo: audio/mpeg, audio/mp3, audio/webm, audio/ogg.',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ((string) $this->input('attendance') !== AttendanceStatusEnum::ABSENT->value) {
+                return;
+            }
+
+            $startTime = $this->input('start_time');
+            $endTime = $this->input('end_time');
+            $durationMinutes = $this->input('duration_minutes');
+
+            if (!$startTime || !$endTime || $durationMinutes === null) {
+                return;
+            }
+
+            try {
+                $sessionDuration = Carbon::parse($startTime)->diffInMinutes(Carbon::parse($endTime));
+            } catch (\Throwable) {
+                return;
+            }
+
+            $graceMinutes = (int) config('academics.class_records.absent_duration_grace_minutes', 10);
+            $maxAbsentDuration = max(1, $sessionDuration - $graceMinutes);
+
+            if ((int) $durationMinutes > $maxAbsentDuration) {
+                $validator->errors()->add(
+                    'duration_minutes',
+                    __('When attendance is absent, duration must be less than or equal to :minutes minutes.', [
+                        'minutes' => $maxAbsentDuration,
+                    ])
+                );
+            }
+        });
     }
 
     public function prepareForValidation()

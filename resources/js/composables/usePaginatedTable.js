@@ -9,7 +9,9 @@ export const usePaginatedTable = (options = {}) => {
         searchFields = [],
         filterConfig = {},
         mapResponse,
-        onError
+        onError,
+        initialSortField = null,
+        initialSortOrder = null,
     } = options;
 
     if (!endpoint) {
@@ -27,6 +29,8 @@ export const usePaginatedTable = (options = {}) => {
     const isLoading = ref(true);
     const searchQuery = ref('');
     const expandedRows = ref([]);
+    const sortField = ref(initialSortField);
+    const sortOrder = ref(initialSortOrder);
 
     const createFilters = () => ({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -100,10 +104,15 @@ export const usePaginatedTable = (options = {}) => {
             const params = {
                 page: currentPage.value,
                 per_page: perPage.value,
-            }
+            };
 
             if (searchValue) {
                 params.search = searchValue;
+            }
+
+            if (sortField.value) {
+                params.sort_field = sortField.value;
+                params.sort_order = sortOrder.value === 1 ? 'asc' : 'desc';
             }
 
             if (Object.keys(activeFilter).length > 0) {
@@ -157,6 +166,13 @@ export const usePaginatedTable = (options = {}) => {
         fetchData();
     }
 
+    function onSort(event) {
+        sortField.value = event.sortField || null;
+        sortOrder.value = typeof event.sortOrder === 'number' ? event.sortOrder : null;
+        currentPage.value = 1;
+        fetchData();
+    }
+
     function refresh() {
         fetchData();
     }
@@ -171,15 +187,18 @@ export const usePaginatedTable = (options = {}) => {
         filters,
         expandedRows,
         hasActiveFilters,
+        sortField,
+        sortOrder,
 
         fetchData,
         onSearchInput,
         clearFilters,
         onPageChange,
+        onSort,
         refresh,
 
         first: computed(() => (currentPage.value - 1) * perPage.value),
-    }
+    };
 
 
-}
+};

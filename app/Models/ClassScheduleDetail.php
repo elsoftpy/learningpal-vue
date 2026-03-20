@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ClassScheduleDetail extends Model
 {
@@ -45,5 +46,10 @@ class ClassScheduleDetail extends Model
     public function classSchedule(): BelongsTo
     {
         return $this->belongsTo(ClassSchedule::class);
+    }
+
+    public function classRecord(): HasOne
+    {
+        return $this->hasOne(ClassRecord::class, 'class_schedule_detail_id');
     }
 }

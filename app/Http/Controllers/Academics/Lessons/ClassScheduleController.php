@@ -22,6 +22,17 @@ class ClassScheduleController extends Controller
         $perPage = $request->per_page;
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
+        $allowedSortFields = ['id', 'name', 'schedule_month'];
+        $sortField = $request->string('sort_field')->toString();
+        $sortOrder = strtolower($request->string('sort_order', 'desc')->toString());
+
+        if (!in_array($sortField, $allowedSortFields, true)) {
+            $sortField = 'schedule_month';
+        }
+
+        if (!in_array($sortOrder, ['asc', 'desc'], true)) {
+            $sortOrder = 'desc';
+        }
 
         $query = ClassSchedule::query()
             ->with(['course', 'details']);
@@ -49,7 +60,7 @@ class ClassScheduleController extends Controller
             }
         }
 
-        $paginated = $query->orderBy('schedule_month', 'desc')
+        $paginated = $query->orderBy($sortField, $sortOrder)
             ->paginate($perPage, ['*'], 'page', $page);
 
         $includeFeedback = $request->user()?->can('view schedule feedback') ?? false;
