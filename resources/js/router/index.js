@@ -574,6 +574,20 @@ const routes = [
       crud: 'edit',
     },
   },
+  {
+    path: '/academics/reports/teacher-hours',
+    name: 'academics.reports.teacher-hours',
+    component: () => import('../Pages/academics/reports/TeacherHoursReportPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'view teacher hours report',
+      module: 'academics',
+      submodule: 'reports',
+      title: 'Teacher Hours Report',
+      headerIcon: 'chart-line',
+      crud: 'read',
+    },
+  },
   /* Fallback Route */
   {
     path: '/:pathMatch(.*)*',

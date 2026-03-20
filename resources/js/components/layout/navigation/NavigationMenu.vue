@@ -113,6 +113,22 @@
                             />
                         </template>
                     </SubmoduleMenuItem>
+
+                    <SubmoduleMenuItem
+                        v-if="can('view teacher hours report')"
+                        submodule="reports"
+                        :submoduleName="$t('Reports')"
+                        icon="chart-line"
+                    >
+                        <template #items>
+                            <PlainMenuItem
+                                v-if="can('view teacher hours report')"
+                                :route="{ name: 'academics.reports.teacher-hours' }"
+                                baseRoute="academics.reports"
+                                :title="$t('Teacher Hours')"
+                            />
+                        </template>
+                    </SubmoduleMenuItem>
                 </template>
             </ModuleMenuItem>
         </template>

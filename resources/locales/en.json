@@ -403,5 +403,21 @@
   "Unable to save student production.": "Unable to save student production.",
   "Unable to update the task status.": "Unable to update the task status.",
   "Unlock": "Unlock",
-  "Video In Progress": "Video In Progress"
+  "Video In Progress": "Video In Progress",
+  "Teacher Hours Report": "Teacher Hours Report",
+  "Filter Type": "Filter Type",
+  "Date Range": "Date Range",
+  "From Date": "From Date",
+  "To Date": "To Date",
+  "Select teacher": "Select teacher",
+  "Run": "Run",
+  "Use Date Range for explicit dates.": "Use Date Range for explicit dates.",
+  "Use Month to auto-calculate start and end dates.": "Use Month to auto-calculate start and end dates.",
+  "Selected Rows": "Selected Rows",
+  "Clear Selection": "Clear Selection",
+  "Export Excel": "Export Excel",
+  "Export PDF": "Export PDF",
+  "Unable to load teachers.": "Unable to load teachers.",
+  "Failed to load report.": "Failed to load report.",
+  "Failed to export report.": "Failed to export report."
 }

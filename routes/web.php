@@ -5,6 +5,7 @@ use App\Http\Controllers\Academics\Lessons\ClassRecordController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleDetailController;
 use App\Http\Controllers\Academics\Lessons\DistanceActivityController;
+use App\Http\Controllers\Academics\Reports\TeacherHoursReportController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
 use App\Http\Controllers\Academics\Settings\StudyProgramController;
@@ -406,6 +407,20 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
             Route::post('/detail-students/{detailStudent}/submissions/{media}/destroy', [DistanceActivityController::class, 'deleteStudentSubmission'])
                 ->name('detail-students.submissions.destroy');
         });
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::post('/teacher-hours', [TeacherHoursReportController::class, 'index'])
+            ->name('teacher-hours')
+            ->middleware('can:view teacher hours report');
+
+        Route::post('/teacher-hours/export/excel', [TeacherHoursReportController::class, 'exportExcel'])
+            ->name('teacher-hours.export.excel')
+            ->middleware('can:view teacher hours report');
+
+        Route::post('/teacher-hours/export/pdf', [TeacherHoursReportController::class, 'exportPdf'])
+            ->name('teacher-hours.export.pdf')
+            ->middleware('can:view teacher hours report');
     });
 });
 

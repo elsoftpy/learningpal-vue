@@ -106,6 +106,7 @@ function columnProps(col) {
         sortField: col.sortField,
         style: col.style,
         expander: col.expander ?? col.isExpander,
+        selectionMode: col.selectionMode,
         showFilterMenu: col.showFilterMenu,
         sortable: col.sortable,
     };

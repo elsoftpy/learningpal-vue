@@ -142,5 +142,17 @@
     "scheduled": "scheduled",
     "student": "student",
     "teacher": "teacher",
+    "Teacher Hours Report": "Teacher Hours Report",
+    "Teacher hours report retrieved successfully.": "Teacher hours report retrieved successfully.",
+    "No teacher hours records found for the selected filters.": "No teacher hours records found for the selected filters.",
+    "From": "From",
+    "To": "To",
+    "Teacher": "Teacher",
+    "Course": "Course",
+    "Date": "Date",
+    "Hours": "Hours",
+    "Generated At": "Generated At",
+    "Page": "Page",
+    "Total Hours": "Total Hours",
     "annual_student": "annual student"
 }

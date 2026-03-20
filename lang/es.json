@@ -142,5 +142,17 @@
     "scheduled": "Agendada",
     "student": "estudiante",
     "teacher": "profesor",
+    "Teacher Hours Report": "Reporte de horas del profesor",
+    "Teacher hours report retrieved successfully.": "Reporte de horas del profesor obtenido exitosamente.",
+    "No teacher hours records found for the selected filters.": "No se encontraron registros de horas del profesor para los filtros seleccionados.",
+    "From": "Desde",
+    "To": "Hasta",
+    "Teacher": "Profesor",
+    "Course": "Curso",
+    "Date": "Fecha",
+    "Hours": "Horas",
+    "Generated At": "Generado el",
+    "Page": "Página",
+    "Total Hours": "Total de horas",
     "annual_student": "estudiante anual"
 }

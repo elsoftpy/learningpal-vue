@@ -403,5 +403,20 @@
   "Unable to save student production.": "No se pudo guardar la producción del estudiante.",
   "Unable to update the task status.": "No se pudo actualizar el estado de la tarea.",
   "Unlock": "Desbloqueo",
-  "Video In Progress": "Video en progreso"
+  "Video In Progress": "Video en progreso",
+  "Teacher Hours Report": "Reporte de horas del profesor",
+  "Filter Type": "Tipo de filtro",
+  "Date Range": "Rango de fechas",
+  "From Date": "Fecha desde",
+  "To Date": "Fecha hasta",
+  "Run": "Ejecutar",
+  "Use Date Range for explicit dates.": "Use rango de fechas para fechas explícitas.",
+  "Use Month to auto-calculate start and end dates.": "Use mes para calcular automáticamente fechas de inicio y fin.",
+  "Selected Rows": "Filas seleccionadas",
+  "Clear Selection": "Limpiar selección",
+  "Export Excel": "Exportar Excel",
+  "Export PDF": "Exportar PDF",
+  "Unable to load teachers.": "No se pudieron cargar los profesores.",
+  "Failed to load report.": "No se pudo cargar el reporte.",
+  "Failed to export report.": "No se pudo exportar el reporte."
 }

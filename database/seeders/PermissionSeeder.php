@@ -108,6 +108,7 @@ class PermissionSeeder extends Seeder
             'create class records',
             'edit class records',
             'delete class records',
+            'view teacher hours report',
             'list other teachers',
             'view assigned distance activities',
             'view own distance activities',
@@ -163,6 +164,7 @@ class PermissionSeeder extends Seeder
             /*'delete class schedule details',
             'confirm class reprogramming', */
             'view class records',
+            'view teacher hours report',
             'view own distance activities',
 /*             'create class records',
             'edit class records',
