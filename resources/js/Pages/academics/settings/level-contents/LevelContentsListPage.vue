@@ -7,7 +7,7 @@
         create-permission="create level contents"
         create-route-name="academics.settings.level-contents.create"
         :create-label="$t('Add Level Content')"
-        :global-filter-fields="['description', 'language_level_description', 'language_name']"
+        :global-filter-fields="['content', 'language_level_description', 'language_name']"
         :delete-dialog="actions.deleteDialogConfig"
     >
     </ResourceTableLayout>
@@ -66,10 +66,6 @@ const columns = computed(() => [
         header: $t('ID'),
         sortable: true,
         style: 'width: 5%; min-width: 2%;',
-    }),
-    textColumn({
-        key: 'description',
-        header: $t('Description'),
     }),
     textColumn({
         key: 'language_name',
