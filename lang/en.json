@@ -169,5 +169,12 @@
     "This request has already been processed. No further action is needed.": "This request has already been processed. No further action is needed.",
     "Your request has been registered. We will be in touch shortly.": "Your request has been registered. We will be in touch shortly.",
     "Class reminder": "Class reminder",
-    "Student action notification": "Student action notification"
+    "Student action notification": "Student action notification",
+    "Take attendance": "Take attendance",
+    "Student Attendance": "Student Attendance",
+    "No students found for this course.": "No students found for this course.",
+    "No student attendance records available.": "No student attendance records available.",
+    "Hide": "Hide",
+    "Show": "Show",
+    "The selected student does not belong to this course.": "The selected student does not belong to this course."
 }

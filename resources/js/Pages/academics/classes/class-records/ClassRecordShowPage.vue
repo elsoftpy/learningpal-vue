@@ -46,7 +46,45 @@
 
                     <div class="mt-4 rounded border border-slate-200 p-3">
                         <div class="text-xs text-slate-500">{{ $t('Attendance') }}</div>
-                        <div class="text-sm font-medium">{{ classRecord.attendance_label || '-' }}</div>
+                        <div class="text-sm font-medium">{{ classRecord.attendance_summary || '-' }}</div>
+                    </div>
+
+                    <div class="mt-4 rounded border border-slate-200 p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-sm font-semibold">{{ $t('Student Attendance') }}</div>
+                            <Button
+                                type="button"
+                                text
+                                size="small"
+                                :icon="attendanceListExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                                :label="attendanceListExpanded ? $t('Hide') : $t('Show')"
+                                @click="attendanceListExpanded = !attendanceListExpanded"
+                            />
+                        </div>
+
+                        <div v-if="attendanceListExpanded && !classRecord.student_attendances?.length" class="text-sm text-slate-500">
+                            {{ $t('No student attendance records available.') }}
+                        </div>
+                        <div v-else-if="attendanceListExpanded" class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-left text-xs uppercase tracking-wide text-slate-600">
+                                        <th class="py-2 px-2">{{ $t('Student') }}</th>
+                                        <th class="py-2 px-2">{{ $t('Attendance') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="attendance in classRecord.student_attendances"
+                                        :key="attendance.student_id"
+                                        class="border-t border-slate-200"
+                                    >
+                                        <td class="py-2 px-2">{{ attendance.student_name || '-' }}</td>
+                                        <td class="py-2 px-2">{{ attendance.attendance_label || '-' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="mt-4 rounded border border-slate-200 p-3">
@@ -143,6 +181,7 @@ const { handleApiError } = useApiErrorHandler();
 
 const classRecord = ref({});
 const loading = ref(false);
+const attendanceListExpanded = ref(false);
 const errors = ref({
     general: '',
 });

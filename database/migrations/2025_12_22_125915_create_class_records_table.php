@@ -21,7 +21,6 @@ return new class extends Migration
             $table->dateTime('start_time')->nullable();
             $table->dateTime('end_time')->nullable();
             $table->integer('duration_minutes')->default(0);
-            $table->decimal('attendance', 5, 2)->default(0);
             $table->string('comments')->nullable();
             $table->string('mode')->default('online')->comment('Valid values: online, in-person');
             $table->timestamps();

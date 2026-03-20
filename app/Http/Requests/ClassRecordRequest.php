@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\AttendanceStatusEnum;
+use App\Models\ClassScheduleDetail;
 use App\Services\Utilities\DateTimeService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
@@ -53,7 +54,18 @@ class ClassRecordRequest extends FormRequest
                 'integer', 
                 'min:1',
             ],
-            'attendance' => [
+            'student_attendances' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'student_attendances.*.student_id' => [
+                'required',
+                'integer',
+                'exists:students,id',
+                'distinct',
+            ],
+            'student_attendances.*.attendance' => [
                 'required',
                 Rule::in(AttendanceStatusEnum::values()),
             ],
@@ -125,7 +137,43 @@ class ClassRecordRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            if ((string) $this->input('attendance') !== AttendanceStatusEnum::ABSENT->value) {
+            $classScheduleDetailId = $this->input('class_schedule_detail_id');
+            $studentAttendances = collect($this->input('student_attendances', []));
+
+            if (!$classScheduleDetailId || $studentAttendances->isEmpty()) {
+                return;
+            }
+
+            $classScheduleDetail = ClassScheduleDetail::query()
+                ->with('classSchedule.course.students')
+                ->find($classScheduleDetailId);
+
+            $courseId = $classScheduleDetail?->classSchedule?->course_id;
+
+            if (!$courseId) {
+                return;
+            }
+
+            $validStudentIds = $classScheduleDetail
+                ?->classSchedule
+                ?->course
+                ?->students
+                ?->pluck('id')
+                ?->map(fn ($id) => (int) $id)
+                ?->all() ?? [];
+
+            foreach ($studentAttendances as $index => $item) {
+                $studentId = (int) ($item['student_id'] ?? 0);
+
+                if (!in_array($studentId, $validStudentIds, true)) {
+                    $validator->errors()->add(
+                        "student_attendances.{$index}.student_id",
+                        __('The selected student does not belong to this course.')
+                    );
+                }
+            }
+
+            if ($studentAttendances->every(fn ($item) => (string) ($item['attendance'] ?? '') !== AttendanceStatusEnum::ABSENT->value)) {
                 return;
             }
 
@@ -183,9 +231,28 @@ class ClassRecordRequest extends FormRequest
             $this->merge(['details' => $details]);
         }
 
-        if ($this->has('attendance') && $this->attendance !== null) {
+        if ($this->has('student_attendances') && is_array($this->student_attendances)) {
+            $normalizedAttendances = collect($this->student_attendances)
+                ->map(function ($item) {
+                    if (!is_array($item)) {
+                        return $item;
+                    }
+
+                    if (array_key_exists('attendance', $item) && $item['attendance'] !== null) {
+                        $item['attendance'] = (string) $item['attendance'];
+                    }
+
+                    if (array_key_exists('student_id', $item) && $item['student_id'] !== null) {
+                        $item['student_id'] = (int) $item['student_id'];
+                    }
+
+                    return $item;
+                })
+                ->values()
+                ->all();
+
             $this->merge([
-                'attendance' => (string) $this->attendance,
+                'student_attendances' => $normalizedAttendances,
             ]);
         }
 

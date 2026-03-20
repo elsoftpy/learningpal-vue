@@ -420,5 +420,12 @@
   "Export PDF": "Export PDF",
   "Unable to load teachers.": "Unable to load teachers.",
   "Failed to load report.": "Failed to load report.",
-  "Failed to export report.": "Failed to export report."
+  "Failed to export report.": "Failed to export report.",
+  "Take attendance": "Take attendance",
+  "Student Attendance": "Student Attendance",
+  "No students found for this course.": "No students found for this course.",
+  "No student attendance records available.": "No student attendance records available.",
+  "Hide": "Hide",
+  "Show": "Show",
+  "The selected student does not belong to this course.": "The selected student does not belong to this course."
 }

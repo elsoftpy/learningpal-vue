@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\AttendanceStatusEnum;
 use App\Enums\ClassScheduleStatusEnum;
 use App\Models\ClassRecord;
+use App\Models\ClassRecordAttendance;
 use App\Models\ClassRecordDetail;
 use App\Models\ClassRecordDetailStudents;
 use App\Models\ClassScheduleDetail;
@@ -49,12 +50,6 @@ class ClassRecordSeeder extends Seeder
                 continue;
             }
 
-            $attendance = match ($index % 3) {
-                0 => AttendanceStatusEnum::PRESENT->value,
-                1 => AttendanceStatusEnum::LATE->value,
-                default => AttendanceStatusEnum::ABSENT->value,
-            };
-
             $classRecord = ClassRecord::query()->updateOrCreate(
                 ['class_schedule_detail_id' => $scheduleDetail->id],
                 [
@@ -65,7 +60,6 @@ class ClassRecordSeeder extends Seeder
                     'start_time' => $scheduleDetail->start_time,
                     'end_time' => $scheduleDetail->end_time,
                     'duration_minutes' => $scheduleDetail->estimated_duration_minutes,
-                    'attendance' => $attendance,
                     'comments' => sprintf('Lesson record generated from %s', $scheduleDetail->classSchedule?->name ?? 'schedule'),
                     'mode' => $index % 2 === 0 ? 'online' : 'in-person',
                 ]
@@ -91,9 +85,30 @@ class ClassRecordSeeder extends Seeder
                         'status_date' => $studentStatus === 0 ? null : $scheduleDetail->end_time,
                     ]
                 );
+
+                $attendanceValue = match (($student->id + $index) % 3) {
+                    0 => AttendanceStatusEnum::PRESENT->value,
+                    1 => AttendanceStatusEnum::LATE->value,
+                    default => AttendanceStatusEnum::ABSENT->value,
+                };
+
+                ClassRecordAttendance::query()->updateOrCreate(
+                    [
+                        'class_record_id' => $classRecord->id,
+                        'student_id' => $student->id,
+                    ],
+                    [
+                        'attendance' => $attendanceValue,
+                    ]
+                );
             }
 
             ClassRecordStudent::query()
+                ->where('class_record_id', $classRecord->id)
+                ->whereNotIn('student_id', $studentIds)
+                ->delete();
+
+            ClassRecordAttendance::query()
                 ->where('class_record_id', $classRecord->id)
                 ->whereNotIn('student_id', $studentIds)
                 ->delete();

@@ -81,7 +81,6 @@ import ClassRecordDetailsTable from '@/components/academics/ClassRecordDetailsTa
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
@@ -144,24 +143,6 @@ const detailDeleteDialogConfig = detailActions.deleteDialogConfig;
 const commentsDialogVisible = ref(false);
 const selectedComment = ref('');
 
-const getAttendanceSeverity = (row) => {
-    const rawValue = String(row?.attendance_label).trim().toLowerCase();
-    console.log('Attendance value:', rawValue);
-    if (rawValue === $t('present').toLowerCase()) {
-        return 'success';
-    }
-
-    if (rawValue === $t('absent').toLowerCase()) {
-        return 'danger';
-    }
-
-    if (rawValue === $t('late').toLowerCase()) {
-        return 'warn';
-    }
-
-    return 'secondary';
-};
-
 const columns = computed(() => [
     { 
         key: 'expander',
@@ -215,24 +196,11 @@ const columns = computed(() => [
         emptyValue: '-',
     }),
     textColumn({
-        key: 'attendance_label',
+        key: 'attendance_summary',
         header: $t('Attendance'),
-        sortField: 'attendance',
-        sortable: true,
-        fieldName: 'attendance_label',
+        sortable: false,
+        fieldName: 'attendance_summary',
         emptyValue: '-',
-        body: ({ data }) => {
-            const label = data?.attendance_label || data?.attendance || '';
-
-            if (!label) {
-                return '-';
-            }
-
-            return h(Tag, {
-                value: label,
-                severity: getAttendanceSeverity(data),
-            });
-        },
     }),
     {
         key: 'comment',

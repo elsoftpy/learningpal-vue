@@ -419,5 +419,12 @@
   "Export PDF": "Exportar PDF",
   "Unable to load teachers.": "No se pudieron cargar los profesores.",
   "Failed to load report.": "No se pudo cargar el reporte.",
-  "Failed to export report.": "No se pudo exportar el reporte."
+  "Failed to export report.": "No se pudo exportar el reporte.",
+  "Take attendance": "Tomar asistencia",
+  "Student Attendance": "Asistencia de estudiantes",
+  "No students found for this course.": "No se encontraron estudiantes para este curso.",
+  "No student attendance records available.": "No hay registros de asistencia de estudiantes disponibles.",
+  "Hide": "Ocultar",
+  "Show": "Mostrar",
+  "The selected student does not belong to this course.": "El estudiante seleccionado no pertenece a este curso."
 }

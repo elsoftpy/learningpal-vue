@@ -178,34 +178,26 @@
 
 					<div class="flex flex-col md:flex-row w-full space-y-4 md:space-y-0 md:space-x-2">
 						<div class="flex flex-col w-full md:w-1/3">
-							<label for="attendance" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 								{{ $t('Attendance') }}
 								<span class="text-red-500">*</span>
 							</label>
-							<Select
-								id="attendance"
-								name="attendance"
-								:options="attendanceOptions"
-								option-label="label"
-								option-value="value"
-								:placeholder="$t('Select attendance')"
+							<Button
+								type="button"
+								icon="pi pi-users"
+								:label="$t('Take attendance')"
 								class="w-full"
+								:disabled="!courseStudents.length"
+								@click="studentAttendanceDialogVisible = true"
 							/>
+							<div class="text-xs text-gray-500 mt-2">{{ attendanceStatusSummary }}</div>
 							<Message
-								v-if="$form.attendance?.invalid"
+								v-if="errors?.student_attendances"
 								severity="error"
 								size="small"
 								variant="simple"
 							>
-								{{ $form.attendance?.error?.message }}
-							</Message>
-							<Message
-								v-if="errors?.attendance"
-								severity="error"
-								size="small"
-								variant="simple"
-							>
-								{{ Array.isArray(errors?.attendance) ? errors?.attendance.join(', ') : errors?.attendance }}
+								{{ Array.isArray(errors?.student_attendances) ? errors?.student_attendances.join(', ') : errors?.student_attendances }}
 							</Message>
 						</div>
 
@@ -406,6 +398,44 @@
 				</div>
 
 				<Dialog
+					v-model:visible="studentAttendanceDialogVisible"
+					modal
+					:draggable="false"
+					:header="$t('Student Attendance')"
+					class="w-full max-w-3xl"
+				>
+					<div v-if="!courseStudents.length" class="text-sm text-gray-500">
+						{{ $t('No students found for this course.') }}
+					</div>
+					<div v-else class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+						<div
+							v-for="attendance in studentAttendances"
+							:key="attendance.student_id"
+							class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center border border-gray-200 dark:border-gray-700 rounded-md p-3"
+						>
+							<div class="text-sm font-medium text-gray-800 dark:text-gray-100">
+								{{ attendance.student_name }}
+							</div>
+							<Select
+								v-model="attendance.attendance"
+								:options="attendanceOptions"
+								option-label="label"
+								option-value="value"
+								:placeholder="$t('Select attendance')"
+								class="w-full"
+							/>
+						</div>
+					</div>
+					<template #footer>
+						<Button
+							type="button"
+							:label="$t('Done')"
+							@click="studentAttendanceDialogVisible = false"
+						/>
+					</template>
+				</Dialog>
+
+				<Dialog
 					v-model:visible="notTeacherDialogVisible"
 					modal
 					:draggable="false"
@@ -470,6 +500,9 @@ const selectedClassScheduleDetailId = ref(null);
 const classScheduleDetailsOptions = ref([]);
 const teachersOptions = ref([]);
 const attendanceOptions = ref([]);
+const courseStudents = ref([]);
+const studentAttendances = ref([]);
+const studentAttendanceDialogVisible = ref(false);
 const levelContentsOptions = ref([]);
 const classRecordDetails = ref([]);
 const loadingOptions = ref(false);
@@ -503,7 +536,7 @@ const { errors, isLoading, setErrors } = useFormSubmitter({
 	start_time: '',
 	end_time: '',
 	duration_minutes: '',
-	attendance: '',
+	student_attendances: '',
 	comments: '',
 	general: '',
 });
@@ -538,6 +571,38 @@ const normalizeLinks = (value) => value
 		.filter(Boolean)
 		.join('|')
 	: '';
+
+const defaultAttendanceValue = () => attendanceOptions.value?.[0]?.value || '1.0';
+
+const syncStudentAttendances = (students = [], existingAttendances = []) => {
+	const byStudentId = new Map(
+		existingAttendances.map((item) => [
+			Number(item.student_id),
+			item.attendance !== null && item.attendance !== undefined
+				? String(item.attendance)
+				: defaultAttendanceValue(),
+		])
+	);
+
+	studentAttendances.value = students.map((student) => ({
+		student_id: student.id,
+		student_name: student.name,
+		attendance: byStudentId.get(student.id) || defaultAttendanceValue(),
+	}));
+};
+
+const attendanceStatusSummary = computed(() => {
+	if (!studentAttendances.value.length) {
+		return $t('No students found for this course.');
+	}
+
+	const getCount = (value) => studentAttendances.value.filter((item) => String(item.attendance) === value).length;
+	const presentLabel = attendanceOptions.value.find((item) => item.value === '1.0')?.label || $t('Present');
+	const lateLabel = attendanceOptions.value.find((item) => item.value === '0.5')?.label || $t('Late');
+	const absentLabel = attendanceOptions.value.find((item) => item.value === '0.0')?.label || $t('Absent');
+
+	return `${presentLabel}: ${getCount('1.0')} | ${lateLabel}: ${getCount('0.5')} | ${absentLabel}: ${getCount('0.0')}`;
+});
 
 const onDetailFileChange = (event) => {
 	detailForm.file = event.target?.files?.[0] || null;
@@ -598,6 +663,11 @@ const buildSubmitPayload = (values) => {
 		}
 	});
 
+	studentAttendances.value.forEach((attendance, index) => {
+		payload.append(`student_attendances[${index}][student_id]`, attendance.student_id);
+		payload.append(`student_attendances[${index}][attendance]`, attendance.attendance);
+	});
+
 	buildDetailsPayload().forEach((detail, index) => {
 		Object.entries(detail).forEach(([key, value]) => {
 			if (value !== null && value !== undefined && value !== '') {
@@ -616,11 +686,17 @@ const buildSubmitPayload = (values) => {
 const fetchClassScheduleDetailContext = async (detailId) => {
 	if (!detailId) {
 		levelContentsOptions.value = [];
+		courseStudents.value = [];
+		studentAttendances.value = [];
 		return;
 	}
 
 	const { data } = await axios.post(`/academics/lessons/class-records/class-schedule-details/${detailId}/context`);
 	levelContentsOptions.value = data?.data?.level_contents || [];
+	const students = data?.data?.students || [];
+	const currentAttendances = [...studentAttendances.value];
+	courseStudents.value = students;
+	syncStudentAttendances(students, currentAttendances);
 };
 
 const initialValues = computed(() => {
@@ -633,7 +709,6 @@ const initialValues = computed(() => {
 		start_time: record.start_time || '',
 		end_time: record.end_time || '',
 		duration_minutes: record.duration_minutes || null,
-		attendance: record.attendance || '',
 		comments: record.comments || '',
 	};
 });
@@ -643,10 +718,14 @@ const applyFormData = (data) => {
 	teachersOptions.value = data?.teachers || [];
 	attendanceOptions.value = data?.attendances || [];
 	levelContentsOptions.value = data?.level_contents || [];
+	courseStudents.value = data?.students || [];
 	preferredTeacherId.value = data?.preferred_teacher_id ? Number(data.preferred_teacher_id) : null;
 	lockedClassScheduleDetailId.value = data?.locked_class_schedule_detail_id
 		? Number(data.locked_class_schedule_detail_id)
 		: (paramClassScheduleDetailId.value || null);
+
+	const existingAttendances = data?.class_record_attendances || classRecordData.value?.student_attendances || [];
+	syncStudentAttendances(courseStudents.value, existingAttendances);
 
 	selectedClassScheduleDetailId.value = lockedClassScheduleDetailId.value || classRecordData.value?.class_schedule_detail_id || null;
 };

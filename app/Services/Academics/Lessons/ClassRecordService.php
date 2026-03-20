@@ -3,6 +3,7 @@
 namespace App\Services\Academics\Lessons;
 
 use App\Enums\AttendanceStatusEnum;
+use App\Models\ClassRecordAttendance;
 use App\Models\ClassRecord;
 use App\Models\ClassRecordDetail;
 use App\Models\Course;
@@ -16,7 +17,9 @@ class ClassRecordService
     public function createClassRecord(array $data, array $files = [], array $recordMediaFiles = []): ClassRecord
     {
         $details = $data['details'] ?? [];
+        $studentAttendances = $data['student_attendances'] ?? [];
         unset($data['details']);
+        unset($data['student_attendances']);
 
         $classRecord = ClassRecord::create($data);
 
@@ -25,6 +28,8 @@ class ClassRecordService
         $classRecord->students()->createMany(
             $courseStudents->map(fn ($s) => ['student_id' => $s->id, 'status' => 0])->all()
         );
+
+        $this->syncAttendances($classRecord, $courseStudents, is_array($studentAttendances) ? $studentAttendances : []);
 
         if (is_array($details)) {
             foreach ($details as $index => $detailData) {
@@ -51,7 +56,9 @@ class ClassRecordService
     public function updateClassRecord(ClassRecord $classRecord, array $data, array $files = [], array $recordMediaFiles = []): ClassRecord
     {
         $details = $data['details'] ?? [];
+        $studentAttendances = $data['student_attendances'] ?? [];
         unset($data['details']);
+        unset($data['student_attendances']);
 
         $classRecord->update($data);
 
@@ -64,6 +71,8 @@ class ClassRecordService
                 $newStudents->map(fn ($s) => ['student_id' => $s->id, 'status' => 0])->all()
             );
         }
+
+        $this->syncAttendances($classRecord, $courseStudents, is_array($studentAttendances) ? $studentAttendances : []);
 
         if (is_array($details)) {
             $incomingIds = collect($details)
@@ -125,6 +134,29 @@ class ClassRecordService
         $course = $classRecord->course;
         $courseName = (new CourseService())->getCourseDisplayName($course);
         $classScheduleDetail = $classRecord->classScheduleDetail;
+        $attendances = $classRecord->relationLoaded('attendances')
+            ? $classRecord->attendances
+            : $classRecord->attendances()->with('student.profile')->get();
+
+        $normalizedAttendanceValues = $attendances
+            ->map(fn (ClassRecordAttendance $attendance) => number_format((float) $attendance->attendance, 1, '.', ''));
+
+        $presentCount = $normalizedAttendanceValues->filter(fn (string $value) => $value === AttendanceStatusEnum::PRESENT->value)->count();
+        $lateCount = $normalizedAttendanceValues->filter(fn (string $value) => $value === AttendanceStatusEnum::LATE->value)->count();
+        $absentCount = $normalizedAttendanceValues->filter(fn (string $value) => $value === AttendanceStatusEnum::ABSENT->value)->count();
+        $averageAttendance = $normalizedAttendanceValues->isNotEmpty()
+            ? number_format($normalizedAttendanceValues->sum(fn (string $value) => (float) $value) / $normalizedAttendanceValues->count(), 1, '.', '')
+            : null;
+
+        $attendanceSummary = sprintf(
+            '%s: %d | %s: %d | %s: %d',
+            __('Present'),
+            $presentCount,
+            __('Late'),
+            $lateCount,
+            __('Absent'),
+            $absentCount,
+        );
 
         $detailLabel = null;
         if ($classScheduleDetail?->classSchedule) {
@@ -137,8 +169,9 @@ class ClassRecordService
             'start_time' => $classRecord->start_time instanceof Carbon ? $classRecord->start_time->format('H:i') : null,
             'end_time' => $classRecord->end_time instanceof Carbon ? $classRecord->end_time->format('H:i') : null,
             'duration_minutes' => $classRecord->duration_minutes,
-            'attendance' => number_format((float) $classRecord->attendance, 1, '.', ''),
-            'attendance_label' => AttendanceStatusEnum::label((string) $classRecord->attendance),
+            'attendance' => $averageAttendance,
+            'attendance_label' => $attendanceSummary,
+            'attendance_summary' => $attendanceSummary,
             'course_id' => $course->id,
             'course' => $courseName,
             'teacher_id' => $classRecord->teacher_id,
@@ -150,6 +183,14 @@ class ClassRecordService
             'class_schedule_detail' => $classScheduleDetail ? (new ClassScheduleDetailService())->classScheduleDetailData($classScheduleDetail) : null,
             'comments' => $classRecord->comments,
             'mode' => $classRecord->mode,
+            'student_attendances' => $attendances
+                ->map(fn (ClassRecordAttendance $attendance) => [
+                    'student_id' => $attendance->student_id,
+                    'student_name' => $attendance->student?->profile?->full_name,
+                    'attendance' => number_format((float) $attendance->attendance, 1, '.', ''),
+                    'attendance_label' => AttendanceStatusEnum::label((string) $attendance->attendance),
+                ])
+                ->values(),
             'student_production_media' => $classRecord->getMedia('student-production')
                 ->map(fn ($media) => [
                     'id' => $media->id,
@@ -223,6 +264,35 @@ class ClassRecordService
                 ->addMedia($uploadedFile)
                 ->withCustomProperties(['media_type' => $mediaType])
                 ->toMediaCollection('student-production');
+        }
+    }
+
+    private function syncAttendances(ClassRecord $classRecord, Collection $students, array $studentAttendances): void
+    {
+        $courseStudentIds = $students->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        $incomingByStudent = collect($studentAttendances)
+            ->filter(fn ($item) => is_array($item) && isset($item['student_id']))
+            ->mapWithKeys(function ($item) {
+                $studentId = (int) $item['student_id'];
+                $attendanceValue = number_format((float) ($item['attendance'] ?? AttendanceStatusEnum::ABSENT->value), 1, '.', '');
+
+                return [$studentId => $attendanceValue];
+            });
+
+        foreach ($courseStudentIds as $studentId) {
+            $attendanceValue = $incomingByStudent->get($studentId, AttendanceStatusEnum::ABSENT->value);
+
+            $classRecord->attendances()->updateOrCreate(
+                ['student_id' => $studentId],
+                ['attendance' => $attendanceValue]
+            );
+        }
+
+        if (!empty($courseStudentIds)) {
+            $classRecord->attendances()
+                ->whereNotIn('student_id', $courseStudentIds)
+                ->delete();
         }
     }
 }

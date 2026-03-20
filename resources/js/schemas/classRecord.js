@@ -30,7 +30,6 @@ export const createClassRecordSchema = (t, locale = 'es') => {
             invalid_type_error: t('Duration is required.'),
         }).int({ message: t('Duration must be an integer.') })
             .min(1, { message: t('Duration must be at least 1 minute.') }),
-        attendance: z.string().min(1, { message: t('Attendance is required.') }),
         comments: z.string().max(255, { message: t('Comments are too long.') }).optional().or(z.literal('')),
     });
 };

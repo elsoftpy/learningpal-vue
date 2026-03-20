@@ -169,5 +169,12 @@
     "This request has already been processed. No further action is needed.": "Esta solicitação já foi processada anteriormente. Nenhuma ação adicional é necessária.",
     "Your request has been registered. We will be in touch shortly.": "Sua solicitação foi registrada. Entraremos em contato em breve.",
     "Class reminder": "Lembrete de aula",
-    "Student action notification": "Notificação de ação do aluno"
+    "Student action notification": "Notificação de ação do aluno",
+    "Take attendance": "Registrar presença",
+    "Student Attendance": "Presença dos estudantes",
+    "No students found for this course.": "Nenhum estudante encontrado para este curso.",
+    "No student attendance records available.": "Não há registros de presença dos estudantes disponíveis.",
+    "Hide": "Ocultar",
+    "Show": "Mostrar",
+    "The selected student does not belong to this course.": "O estudante selecionado não pertence a este curso."
 }

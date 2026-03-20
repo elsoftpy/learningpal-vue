@@ -37,13 +37,13 @@ class ClassRecordController extends Controller
         $filters = $this->resolveFilters($request->filters);
         [$sortField, $sortOrder] = $this->resolveSort(
             $request,
-            ['id', 'teacher', 'user', 'course', 'date', 'start_time', 'end_time', 'attendance'],
+            ['id', 'teacher', 'user', 'course', 'date', 'start_time', 'end_time'],
             'date',
             'desc'
         );
 
         $query = ClassRecord::query()
-            ->with(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.media', 'media']);
+            ->with(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.media', 'media', 'attendances.student.profile']);
 
         if ($search) {
             if (str_contains($search, '/')) {
@@ -139,7 +139,7 @@ class ClassRecordController extends Controller
 
     public function classRecordData(Request $request, ClassRecord $classRecord)
     {
-        $classRecord->loadMissing(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.content', 'media']);
+        $classRecord->loadMissing(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.content', 'media', 'attendances.student.profile']);
 
         $lockedClassScheduleDetailId = $request->integer('class_schedule_detail_id') ?: null;
         $data = $this->buildFormData($request, $classRecord, $lockedClassScheduleDetailId);
@@ -160,6 +160,7 @@ class ClassRecordController extends Controller
             data: [
                 'course_id' => $courseId,
                 'level_contents' => $this->levelContentsOptions($courseId),
+                'students' => $this->courseStudentsOptions($courseId),
             ]
         );
     }
@@ -356,15 +357,47 @@ class ClassRecordController extends Controller
             'class_schedule_details' => $this->classScheduleDetailsOptions($selectedClassScheduleDetailId),
             'teachers' => $this->teacherOptions($request, $selectedTeacherId),
             'level_contents' => $this->levelContentsOptions($selectedCourseId),
+            'students' => $this->courseStudentsOptions($selectedCourseId),
             'attendances' => collect(AttendanceStatusEnum::cases())
                 ->map(fn (AttendanceStatusEnum $status) => [
                     'value' => $status->value,
                     'label' => AttendanceStatusEnum::label($status->value),
                 ])
                 ->values(),
+            'class_record_attendances' => $classRecord
+                ? $classRecord->attendances()
+                    ->with('student.profile')
+                    ->get()
+                    ->map(fn ($attendance) => [
+                        'student_id' => $attendance->student_id,
+                        'student_name' => $attendance->student?->profile?->full_name,
+                        'attendance' => number_format((float) $attendance->attendance, 1, '.', ''),
+                        'attendance_label' => AttendanceStatusEnum::label((string) $attendance->attendance),
+                    ])
+                    ->values()
+                : collect([]),
             'locked_class_schedule_detail_id' => $lockedClassScheduleDetailId,
             'preferred_teacher_id' => $preferredTeacherId,
         ];
+    }
+
+    private function courseStudentsOptions(?int $courseId = null): Collection
+    {
+        if (!$courseId) {
+            return collect([]);
+        }
+
+        return Course::query()
+            ->find($courseId)
+            ?->students()
+            ->with('profile')
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($student) => [
+                'id' => $student->id,
+                'name' => $student->profile?->full_name,
+            ])
+            ->values() ?? collect([]);
     }
 
     private function teacherOptions(Request $request, ?int $selectedTeacherId = null): Collection

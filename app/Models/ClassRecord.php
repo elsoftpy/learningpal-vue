@@ -26,7 +26,6 @@ class ClassRecord extends Model implements HasMedia
         'start_time',
         'end_time',
         'duration_minutes',
-        'attendance',
         'comments',
         'mode',
     ];
@@ -37,7 +36,6 @@ class ClassRecord extends Model implements HasMedia
             'date' => 'date',
             'start_time' => 'datetime',
             'end_time' => 'datetime',
-            'attendance' => 'decimal:2',
         ];
     }
 
@@ -49,6 +47,11 @@ class ClassRecord extends Model implements HasMedia
     public function students(): HasMany
     {
         return $this->hasMany(ClassRecordStudent::class);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(ClassRecordAttendance::class);
     }
 
     public function teacher(): BelongsTo
