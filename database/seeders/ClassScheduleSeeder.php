@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Course;
 use App\Models\ClassSchedule;
+use App\Models\Course;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ClassScheduleSeeder extends Seeder
 {
@@ -21,23 +23,35 @@ class ClassScheduleSeeder extends Seeder
             ->orderBy('id')
             ->get();
 
-        $firstLessonDate = CarbonImmutable::now()
-            ->startOfWeek()
-            ->subWeeks(10);
+        if ($courses->isEmpty()) {
+            return;
+        }
 
-        foreach ($courses as $courseIndex => $course) {
-            for ($week = 1; $week <= 10; $week++) {
-                $sessionDate = $firstLessonDate
-                    ->addWeeks($week - 1)
-                    ->addDays($courseIndex % 2);
+        // Class schedules/records are derived data. Recreate them from scratch on each seed run.
+        Schema::disableForeignKeyConstraints();
+        DB::table('class_record_detail_students')->truncate();
+        DB::table('class_record_details')->truncate();
+        DB::table('class_record_students')->truncate();
+        DB::table('class_records')->truncate();
+        DB::table('class_schedule_details')->truncate();
+        DB::table('class_schedules')->truncate();
+        Schema::enableForeignKeyConstraints();
+
+        $firstMonth = CarbonImmutable::now()
+            ->startOfMonth()
+            ->subMonths(2);
+
+        foreach ($courses as $course) {
+            for ($monthOffset = 0; $monthOffset < 3; $monthOffset++) {
+                $monthDate = $firstMonth->addMonths($monthOffset);
 
                 ClassSchedule::query()->updateOrCreate(
                     [
                         'course_id' => $course->id,
-                        'name' => sprintf('%s - W%02d - %s', $course->name, $week, $sessionDate->toDateString()),
+                        'schedule_month' => $monthDate->toDateString(),
                     ],
                     [
-                        'schedule_month' => $sessionDate->startOfMonth()->toDateString(),
+                        'name' => sprintf('%s - %s', $course->name, $monthDate->format('F Y')),
                         'feedback' => null,
                     ]
                 );

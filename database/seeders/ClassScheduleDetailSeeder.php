@@ -6,6 +6,7 @@ use App\Enums\ClassScheduleStatusEnum;
 use App\Models\ClassSchedule;
 use App\Models\ClassScheduleDetail;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Seeder;
 
 class ClassScheduleDetailSeeder extends Seeder
@@ -20,31 +21,74 @@ class ClassScheduleDetailSeeder extends Seeder
             ->orderBy('id')
             ->get();
 
-        $sessionIndex = 0;
+        if ($schedules->isEmpty()) {
+            return;
+        }
+
+        $plannedDetails = collect();
 
         foreach ($schedules as $schedule) {
-            $sessionIndex++;
+            $monthStart = CarbonImmutable::parse($schedule->schedule_month)->startOfMonth();
+            $monthEnd = $monthStart->endOfMonth();
 
-            preg_match('/(\d{4}-\d{2}-\d{2})$/', $schedule->name, $matches);
-            $sessionDate = isset($matches[1])
-                ? CarbonImmutable::parse($matches[1])
-                : CarbonImmutable::parse($schedule->schedule_month)->startOfMonth();
+            $targetWeekday = $schedule->course_id % 2 === 0
+                ? CarbonInterface::TUESDAY
+                : CarbonInterface::MONDAY;
 
-            $startHour = 8 + (($schedule->course_id + $sessionIndex) % 5);
+            $sessionDate = $monthStart;
+            while ($sessionDate->dayOfWeek !== $targetWeekday) {
+                $sessionDate = $sessionDate->addDay();
+            }
+
+            $order = 1;
+            while ($sessionDate->lessThanOrEqualTo($monthEnd)) {
+                $plannedDetails->push([
+                    'class_schedule_id' => $schedule->id,
+                    'course_id' => $schedule->course_id,
+                    'order' => $order,
+                    'session_date' => $sessionDate,
+                    'schedule' => $schedule,
+                ]);
+
+                $sessionDate = $sessionDate->addWeek();
+                $order++;
+            }
+        }
+
+        $plannedDetails = $plannedDetails
+            ->sortBy([
+                ['session_date', 'asc'],
+                ['class_schedule_id', 'asc'],
+                ['order', 'asc'],
+            ])
+            ->values();
+
+        $noRecordCount = (int) round($plannedDetails->count() * 0.2);
+        $noRecordIndexes = collect(range(0, max($noRecordCount - 1, -1)))->flip();
+
+        $keptOrdersBySchedule = [];
+
+        foreach ($plannedDetails as $index => $plannedDetail) {
+            $schedule = $plannedDetail['schedule'];
+            $order = $plannedDetail['order'];
+            $sessionDate = $plannedDetail['session_date'];
+
+            $levelContents = $schedule->course?->languageLevel?->levelContents;
+            $levelContentCount = max($levelContents?->count() ?? 0, 1);
+            $topic = $levelContents?->values()->get($index % $levelContentCount)?->content
+                ?? sprintf('Week %d communication topic', $order);
+
+            $startHour = 8 + (($plannedDetail['course_id'] + $order) % 5);
             $startTime = $sessionDate->setTime($startHour, 0);
             $endTime = $startTime->addMinutes(45);
 
-            $isNoRecordSlot = $sessionIndex % 5 === 0;
-            $isReprogrammed = $isNoRecordSlot && $sessionIndex % 10 === 0;
+            $isNoRecordSlot = $noRecordIndexes->has($index);
+            $isReprogrammed = $isNoRecordSlot && (($index + 1) % 2 === 0);
 
-            $levelContents = $schedule->course?->languageLevel?->levelContents;
-            $topic = $levelContents?->values()->get(($sessionIndex - 1) % max($levelContents->count(), 1))?->content
-                ?? sprintf('Week %d communication topic', $sessionIndex);
-
-            $detail = ClassScheduleDetail::query()->updateOrCreate(
+            ClassScheduleDetail::query()->updateOrCreate(
                 [
-                    'class_schedule_id' => $schedule->id,
-                    'order' => 1,
+                    'class_schedule_id' => $plannedDetail['class_schedule_id'],
+                    'order' => $order,
                 ],
                 [
                     'session_date' => $sessionDate->toDateString(),
@@ -68,9 +112,22 @@ class ClassScheduleDetailSeeder extends Seeder
                 ]
             );
 
+            if (!isset($keptOrdersBySchedule[$plannedDetail['class_schedule_id']])) {
+                $keptOrdersBySchedule[$plannedDetail['class_schedule_id']] = [];
+            }
+
+            $keptOrdersBySchedule[$plannedDetail['class_schedule_id']][] = $order;
+        }
+
+        foreach ($schedules as $schedule) {
+            $keptOrders = $keptOrdersBySchedule[$schedule->id] ?? [];
             ClassScheduleDetail::query()
                 ->where('class_schedule_id', $schedule->id)
-                ->where('id', '!=', $detail->id)
+                ->when(
+                    !empty($keptOrders),
+                    fn ($query) => $query->whereNotIn('order', $keptOrders),
+                    fn ($query) => $query->whereNotNull('id')
+                )
                 ->delete();
         }
     }
