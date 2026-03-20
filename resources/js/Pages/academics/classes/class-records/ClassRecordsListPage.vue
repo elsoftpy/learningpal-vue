@@ -92,6 +92,8 @@ const table = useSettingsTable({
     endpoint: '/academics/lessons/class-records',
     searchFields: ['name'],
     filterConfig: {},
+    initialSortField: 'date',
+    initialSortOrder: -1,
     mapResponse: (response) => ({
         data: response.data?.data?.class_records || [],
         total: response.data?.data?.total || 0,
@@ -170,44 +172,53 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 1%',
     }),
     textColumn({
         key: "teacher",
         header: $t('Teacher'),
         fieldName: 'teacher',
+        sortable: true,
         style: 'min-width:15%',
     }),
     textColumn({
         key: 'user',
         header: $t('User'),
         fieldName: 'user',
+        sortable: true,
     }),
     textColumn({
         key: 'course',
         header: $t('Course'),
         fieldName: 'course',
+        sortable: true,
     }),
     textColumn({
         key: 'date',
         header: $t('Date'),
         fieldName: 'date',
+        sortable: true,
     }),
     textColumn({
         key: 'start_time',
         header: $t('Start'),
         fieldName: 'start_time',
+        sortable: true,
         emptyValue: '-',
     }),
     textColumn({
         key: 'end_time',
         header: $t('End'),
         fieldName: 'end_time',
+        sortable: true,
         emptyValue: '-',
     }),
     textColumn({
         key: 'attendance_label',
         header: $t('Attendance'),
+        sortField: 'attendance',
+        sortable: true,
         fieldName: 'attendance_label',
         emptyValue: '-',
         body: ({ data }) => {

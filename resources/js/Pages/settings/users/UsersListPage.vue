@@ -63,6 +63,8 @@ const profileExpansion = computed(() => {
 const table = useSettingsTable({
     endpoint: '/settings/users',
     searchFields: ['first_name', 'last_name', 'email'],
+    initialSortField: 'id',
+    initialSortOrder: 1,
     filterConfig: {
         full_name: {
             defaultValue: null,
@@ -102,6 +104,7 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 1%',
     }),
     textWithAvatarColumn({
@@ -109,6 +112,7 @@ const columns = computed(() => [
         header: $t('Name'),
         fieldName: 'full_name',
         placeholder: $t('Search by name'),
+        sortable: true,
         style: 'min-width:15%',
     }),
     tagsArrayColumn({
@@ -120,6 +124,7 @@ const columns = computed(() => [
     }),
     statusTagColumn({
         header: $t('Status'),
+        sortable: true,
         style: 'min-width: 10%',
     }),
     resourceViewerColumn({

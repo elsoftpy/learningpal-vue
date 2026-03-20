@@ -61,6 +61,8 @@ const canViewActionsColumn = computed(() =>
 
 const table = useSettingsTable({
     endpoint: '/academics/settings/study-programs',
+    initialSortField: 'id',
+    initialSortOrder: -1,
     mapResponse: (response) => ({
         data: response.data?.data?.study_programs || [],
         total: response.data?.data?.total || 0,
@@ -77,30 +79,36 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 5%; min-width: 2%;',
     }),
     textColumn({
         key: 'title',
         header: $t('Title'),
+        sortable: true,
     }),
     textColumn({
         key: 'language',
         header: $t('Language'),
+        sortable: true,
         formatter: ({ data }) => data?.language_level?.language?.name || '',
     }),
     textColumn({
         key: 'level',
         header: $t('Level'),
+        sortable: true,
         formatter: ({ data }) => data?.language_level?.level || data?.language_level?.description || '',
     }),
     textColumn({
         key: 'weeks_count',
         header: $t('Weeks'),
+        sortable: true,
         formatter: ({ data }) => Array.isArray(data?.weeks) ? data.weeks.length : 0,
     }),
     textColumn({
         key: 'activities_count',
         header: $t('Activities'),
+        sortable: true,
         formatter: ({ data }) => Array.isArray(data?.weeks)
             ? data.weeks.reduce((total, week) => total + (Array.isArray(week?.activities) ? week.activities.length : 0), 0)
             : 0,
@@ -108,6 +116,7 @@ const columns = computed(() => [
     statusTagColumn({
         key: 'status',
         header: $t('Status'),
+        sortable: true,
     }),
     {
         key: 'actions',

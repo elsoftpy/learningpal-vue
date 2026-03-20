@@ -34,6 +34,8 @@ const canViewActionsColumn = computed(() =>
 
 const table = useSettingsTable({
     endpoint: '/academics/settings/courses',
+    initialSortField: 'id',
+    initialSortOrder: 1,
     mapResponse: (response) => ({
         data: response.data?.data?.courses || [],
         total: response.data?.data?.total || 0,
@@ -44,19 +46,23 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 5%; min-width: 2%;',
     }),
     textColumn({
         key: 'name',
         header: $t('Course Name'),
+        sortable: true,
     }),
     textColumn({
         key: 'language_name',
         header: $t('Language'),
+        sortable: true,
     }),
     textColumn({
         key: 'language_level',
         header: $t('Language Level'),
+        sortable: true,
     }),
     linkColumn({
         key: 'chat_room_link',
@@ -65,6 +71,7 @@ const columns = computed(() => [
     statusTagColumn({
         key: 'status',
         header: $t('Status'),
+        sortable: true,
     }),
     {
         key: 'actions',

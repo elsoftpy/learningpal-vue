@@ -32,6 +32,8 @@ const canViewActionsColumn = computed(() =>
 
 const table = useSettingsTable({
     endpoint: '/settings/languages',
+    initialSortField: 'name',
+    initialSortOrder: 1,
     mapResponse: (response) => ({
         data: response.data?.data?.languages || [],
         total: response.data?.data?.total || 0,
@@ -42,11 +44,13 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 5%; min-width: 2%;',
     }),
     textColumn({
         key: 'name',
         header: $t('Name'),
+        sortable: true,
     }),
     {
         key: 'actions',

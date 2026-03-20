@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Settings\Users\ProfileService;
 use App\Services\Settings\Users\UserService;
 use App\Services\Traits\FilterResolverTrait;
+use App\Services\Traits\SortResolverTrait;
 use App\Services\Traits\UserProfileTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 class UserProfileController extends Controller
 {
-    use FilterResolverTrait, UserProfileTrait;
+    use FilterResolverTrait, SortResolverTrait, UserProfileTrait;
     
     public function index(Request $request)
     {
@@ -25,6 +26,7 @@ class UserProfileController extends Controller
         $perPage = (int) $request->per_page;
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
+        [$sortField, $sortOrder] = $this->resolveSort($request, ['id', 'full_name', 'status'], 'id');
 
         $usersQuery = User::query()
             ->with('profile');
@@ -57,6 +59,18 @@ class UserProfileController extends Controller
                     $q->whereDate('birth_date', $birthDateFilter);
                 });
             }
+        }
+
+        if ($sortField === 'full_name') {
+            $usersQuery->orderBy(
+                Profile::query()
+                    ->select('full_name')
+                    ->whereColumn('profiles.id', 'users.profile_id')
+                    ->limit(1),
+                $sortOrder
+            );
+        } else {
+            $usersQuery->orderBy($sortField, $sortOrder);
         }
 
         $paginated = $usersQuery->paginate($perPage, ['*'], 'page', $page);

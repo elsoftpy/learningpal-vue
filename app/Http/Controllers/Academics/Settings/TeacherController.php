@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Academics\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TeacherRequest;
+use App\Models\Profile;
 use App\Models\Teacher;
 use App\Services\Academics\Settings\TeacherService;
 use App\Services\Traits\FilterResolverTrait;
+use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TeacherController extends Controller
 {
-    use FilterResolverTrait;
+    use FilterResolverTrait, SortResolverTrait;
 
     public function index(Request $request)
     {
@@ -21,6 +23,7 @@ class TeacherController extends Controller
         $perPage = (int) $request->per_page;
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
+        [$sortField, $sortOrder] = $this->resolveSort($request, ['id', 'full_name', 'status'], 'full_name');
 
         $teachersQuery = Teacher::query()
             ->with('profile');
@@ -36,6 +39,18 @@ class TeacherController extends Controller
 
         if ($filters) {
             // Apply filters to the query
+        }
+
+        if ($sortField === 'full_name') {
+            $teachersQuery->orderBy(
+                Profile::query()
+                    ->select('full_name')
+                    ->whereColumn('profiles.id', 'teachers.profile_id')
+                    ->limit(1),
+                $sortOrder
+            );
+        } else {
+            $teachersQuery->orderBy($sortField, $sortOrder);
         }
 
         $paginated = $teachersQuery->paginate($perPage, ['*'], 'page', $page);

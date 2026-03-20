@@ -23,6 +23,8 @@ const router = useRouter();
 
 const table = useSettingsTable({
     endpoint: '/academics/lessons/distance-activities',
+    initialSortField: 'id',
+    initialSortOrder: -1,
     mapResponse: (response) => ({
         data: response.data?.data?.distance_activities || [],
         total: response.data?.data?.total || 0,
@@ -48,19 +50,23 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 6rem;',
     }),
     textColumn({
         key: 'teacher_name',
         header: $t('Teacher'),
+        sortable: true,
     }),
     textColumn({
         key: 'course_name',
         header: $t('Course'),
+        sortable: true,
     }),
     textColumn({
         key: 'title',
         header: $t('Distance Activity'),
+        sortable: true,
     }),
     textColumn({
         key: 'comments',

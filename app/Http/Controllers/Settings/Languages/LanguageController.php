@@ -7,12 +7,13 @@ use App\Http\Requests\LanguageRequest;
 use App\Models\Language;
 use App\Services\Settings\Languages\LanguageService;
 use App\Services\Traits\FilterResolverTrait;
+use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 
 class LanguageController extends Controller
 {
-    use FilterResolverTrait;
+    use FilterResolverTrait, SortResolverTrait;
 
     public function index(Request $request)
     {
@@ -20,6 +21,7 @@ class LanguageController extends Controller
         $perPage = (int) $request->per_page;
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
+        [$sortField, $sortOrder] = $this->resolveSort($request, ['id', 'name'], 'name');
 
         $languagesQuery = Language::query();
 
@@ -27,7 +29,9 @@ class LanguageController extends Controller
             $languagesQuery->where('name', 'like', '%' . $search . '%');
         }
 
-        $paginated = $languagesQuery->paginate($perPage, ['*'], 'page', $page);
+        $paginated = $languagesQuery
+            ->orderBy($sortField, $sortOrder)
+            ->paginate($perPage, ['*'], 'page', $page);
 
         $languages = $paginated->getCollection()->map(function (Language $language) {
             return (new LanguageService())->languageData($language);

@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Academics\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LanguageLevelRequest;
+use App\Models\Language;
 use App\Models\LanguageLevel;
 use App\Services\Academics\Settings\LanguageLevelService;
 use App\Services\Traits\FilterResolverTrait;
+use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 
 class LanguageLevelController extends Controller
 {
-    use FilterResolverTrait;
+    use FilterResolverTrait, SortResolverTrait;
 
     public function index(Request $request)
     {
@@ -20,6 +22,11 @@ class LanguageLevelController extends Controller
         $perPage = (int) $request->per_page;
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
+        [$sortField, $sortOrder] = $this->resolveSort(
+            $request,
+            ['id', 'description', 'level', 'language_name', 'status'],
+            'level'
+        );
 
         $languageLevelsQuery = LanguageLevel::query()
             ->with('language');
@@ -36,6 +43,18 @@ class LanguageLevelController extends Controller
             foreach ($filters as $filter) {
                 $languageLevelsQuery->where($filter['field'], $filter['operator'], $filter['value']);
             }
+        }
+
+        if ($sortField === 'language_name') {
+            $languageLevelsQuery->orderBy(
+                Language::query()
+                    ->select('name')
+                    ->whereColumn('languages.id', 'language_levels.language_id')
+                    ->limit(1),
+                $sortOrder
+            );
+        } else {
+            $languageLevelsQuery->orderBy($sortField, $sortOrder);
         }
 
         $paginated = $languageLevelsQuery->paginate($perPage, ['*'], 'page', $page);

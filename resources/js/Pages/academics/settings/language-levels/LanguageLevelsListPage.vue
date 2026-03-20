@@ -31,6 +31,8 @@ const canViewActionsColumn = computed(() =>
 
 const table = useSettingsTable({
     endpoint: '/academics/settings/language-levels',
+    initialSortField: 'level',
+    initialSortOrder: 1,
     mapResponse: (response) => ({
         data: response.data?.data?.language_levels || [],
         total: response.data?.data?.total || 0,
@@ -41,23 +43,28 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 5%; min-width: 2%;',
     }),
     textColumn({
         key: 'description',
         header: $t('Description'),
+        sortable: true,
     }),
     textColumn({
         key: 'level',
         header: $t('Level'),
+        sortable: true,
     }),
     textColumn({
         key: 'language_name',
         header: $t('Name'),
+        sortable: true,
     }),
     statusTagColumn({
         key: 'status',
         header: $t('Status'),
+        sortable: true,
     }),
     {
         key: 'actions',

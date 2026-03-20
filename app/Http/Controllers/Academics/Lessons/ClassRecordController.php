@@ -12,10 +12,13 @@ use App\Models\ClassRecordDetail;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
 use App\Models\LevelContent;
+use App\Models\Profile;
 use App\Models\Teacher;
+use App\Models\User;
 use App\Services\Academics\Lessons\ClassRecordDetailService;
 use App\Services\Academics\Lessons\ClassRecordService;
 use App\Services\Traits\FilterResolverTrait;
+use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -24,7 +27,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ClassRecordController extends Controller
 {
-    use FilterResolverTrait;
+    use FilterResolverTrait, SortResolverTrait;
 
     public function index(Request $request)
     {
@@ -32,6 +35,12 @@ class ClassRecordController extends Controller
         $perPage = $request->per_page;
         $search = $request->search;
         $filters = $this->resolveFilters($request->filters);
+        [$sortField, $sortOrder] = $this->resolveSort(
+            $request,
+            ['id', 'teacher', 'user', 'course', 'date', 'start_time', 'end_time', 'attendance'],
+            'date',
+            'desc'
+        );
 
         $query = ClassRecord::query()
             ->with(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.media', 'media']);
@@ -68,7 +77,41 @@ class ClassRecordController extends Controller
         }
 
         // Pagination
-        $paginated = $query->orderBy('date', 'desc')
+        switch ($sortField) {
+            case 'teacher':
+                $query->orderBy(
+                    Teacher::query()
+                        ->select('profiles.full_name')
+                        ->join('profiles', 'profiles.id', '=', 'teachers.profile_id')
+                        ->whereColumn('teachers.id', 'class_records.teacher_id')
+                        ->limit(1),
+                    $sortOrder
+                );
+                break;
+            case 'user':
+                $query->orderBy(
+                    User::query()
+                        ->select('name')
+                        ->whereColumn('users.id', 'class_records.user_id')
+                        ->limit(1),
+                    $sortOrder
+                );
+                break;
+            case 'course':
+                $query->orderBy(
+                    Course::query()
+                        ->select('name')
+                        ->whereColumn('courses.id', 'class_records.course_id')
+                        ->limit(1),
+                    $sortOrder
+                );
+                break;
+            default:
+                $query->orderBy($sortField, $sortOrder);
+                break;
+        }
+
+        $paginated = $query
             ->paginate($perPage, ['*'], 'page', $page);
 
         $classRecords = $paginated->getCollection()->map(function (ClassRecord $classRecord) {

@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\DistanceActivity;
 use App\Models\DistanceActivityDetail;
 use App\Models\DistanceActivityDetailStudent;
+use App\Models\Course;
+use App\Models\Language;
+use App\Models\Profile;
 use App\Models\StudyProgramWeek;
 use App\Services\Academics\Lessons\DistanceActivityService;
+use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +19,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DistanceActivityController extends Controller
 {
+    use SortResolverTrait;
+
     public function index(Request $request, DistanceActivityService $distanceActivityService)
     {
         $user = $request->user();
@@ -26,6 +32,12 @@ class DistanceActivityController extends Controller
         $page = (int) $request->page;
         $perPage = (int) ($request->per_page ?: 10);
         $search = trim((string) $request->search);
+        [$sortField, $sortOrder] = $this->resolveSort(
+            $request,
+            ['id', 'teacher_name', 'course_name', 'title'],
+            'id',
+            'desc'
+        );
 
         $query = $distanceActivityService->visibleActivitiesQuery($user);
 
@@ -40,14 +52,28 @@ class DistanceActivityController extends Controller
             });
         }
 
+        if ($sortField === 'teacher_name') {
+            $query->orderBy(
+                Profile::query()
+                    ->select('profiles.full_name')
+                    ->join('teachers', 'teachers.profile_id', '=', 'profiles.id')
+                    ->whereColumn('teachers.id', 'distance_activities.teacher_id')
+                    ->limit(1),
+                $sortOrder
+            );
+        } elseif ($sortField === 'course_name') {
+            $query->orderBy(
+                Course::query()
+                    ->select('name')
+                    ->whereColumn('courses.id', 'distance_activities.course_id')
+                    ->limit(1),
+                $sortOrder
+            );
+        } else {
+            $query->orderBy($sortField, $sortOrder);
+        }
+
         $paginated = $query
-            ->orderBy(
-                StudyProgramWeek::query()
-                    ->select('week_number')
-                    ->whereColumn('study_program_weeks.id', 'distance_activities.study_program_week_id')
-                    ->limit(1)
-            )
-            ->orderBy('id')
             ->paginate($perPage, ['*'], 'page', $page);
 
         $items = $paginated->getCollection()

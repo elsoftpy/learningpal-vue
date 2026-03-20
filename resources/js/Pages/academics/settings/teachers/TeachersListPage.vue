@@ -63,6 +63,8 @@ const profileExpansion = computed(() => {
 const table = useSettingsTable({
     endpoint: '/academics/settings/teachers',
     searchFields: ['full_name', 'email'],
+    initialSortField: 'full_name',
+    initialSortOrder: 1,
     filterConfig: {
         full_name: {
             defaultValue: null,
@@ -102,12 +104,14 @@ const columns = computed(() => [
     textColumn({
         key: 'id',
         header: $t('ID'),
+        sortable: true,
         style: 'width: 1%',
     }),
     textColumn({
         key: "full_name",
         header: $t('Name'),
         fieldName: 'full_name',
+        sortable: true,
         style: 'min-width:15%',
     }),
     tagsArrayColumn({
@@ -119,6 +123,7 @@ const columns = computed(() => [
     }),
     statusTagColumn({
         header: $t('Status'),
+        sortable: true,
         style: 'min-width: 10%',
     }),
     {
