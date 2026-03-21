@@ -6,6 +6,7 @@ export const createStudyProgramSchema = (t) => {
         free_content: z.string().nullable().optional(),
         activity_name: z.string().min(1, t('Activity name is required.')),
         type: z.string().min(1, t('Activity type is required.')),
+        links: z.string().nullable().optional(),
         sort_order: z.number().int().min(1, t('Sort order must be at least 1.')),
     }).superRefine((activity, ctx) => {
         const hasLevelContent = activity.level_content_id !== null && activity.level_content_id !== undefined;
@@ -24,6 +25,16 @@ export const createStudyProgramSchema = (t) => {
                 code: z.ZodIssueCode.custom,
                 path: ['free_content'],
                 message: t('Free content is required when no content topic is selected.'),
+            });
+        }
+
+        const hasLinks = typeof activity.links === 'string' && activity.links.trim().length > 0;
+
+        if (activity.type === 'video' && !hasLinks) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['links'],
+                message: t('A video activity requires at least one link.'),
             });
         }
     });

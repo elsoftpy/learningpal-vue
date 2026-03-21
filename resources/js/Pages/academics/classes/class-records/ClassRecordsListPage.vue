@@ -15,6 +15,8 @@
                 :details="data.details"
                 :class-record-id="data.id"
                 :student-production-media="data.student_production_media || []"
+                :allow-student-production-upload="canUploadOwnClassRecordProduction"
+                :show-detail-actions="canManageDetailRows"
                 @edit-detail="handleDetailEdit(data.id, $event)"
                 @delete-detail="handleDetailDelete($event)"
                 @student-production-saved="table.refresh()"
@@ -73,6 +75,7 @@ import { computed, h, ref } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
+import { useAuthStore } from '@/stores/auth';
 import { useI18n } from 'vue-i18n';
 import { textColumn } from '@/components/datatable/columnFactories.js';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
@@ -84,8 +87,21 @@ import Button from 'primevue/button';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
+const auth = useAuthStore();
 const canViewDetailData = computed(() => can('view class records'));
 const canViewActionsColumn = computed(() => can(['edit class records', 'delete class records']));
+const canManageDetailRows = computed(() => can(['edit class records', 'delete class records']));
+const isStudentRole = computed(() => {
+    const roles = Array.isArray(auth.user?.roles) ? auth.user.roles : [];
+    const roleNames = roles
+        .map((role) => (typeof role === 'object' ? role?.name : role))
+        .filter(Boolean);
+
+    return roleNames.includes('student') || roleNames.includes('annual_student');
+});
+const canUploadOwnClassRecordProduction = computed(() => {
+    return can('upload own class record production') && isStudentRole.value;
+});
 
 const table = useSettingsTable({
     endpoint: '/academics/lessons/class-records',

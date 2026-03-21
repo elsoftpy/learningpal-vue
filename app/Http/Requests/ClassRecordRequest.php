@@ -173,7 +173,7 @@ class ClassRecordRequest extends FormRequest
                 }
             }
 
-            if ($studentAttendances->every(fn ($item) => (string) ($item['attendance'] ?? '') !== AttendanceStatusEnum::ABSENT->value)) {
+            if (! $studentAttendances->every(fn ($item) => (string) ($item['attendance'] ?? '') === AttendanceStatusEnum::ABSENT->value)) {
                 return;
             }
 
@@ -208,6 +208,8 @@ class ClassRecordRequest extends FormRequest
     public function prepareForValidation()
     {
         $dateString = $this->date;
+        $startTime = null;
+        $endTime = null;
 
         if ($this->has('details') && is_array($this->details)) {
             $details = collect($this->details)
@@ -279,6 +281,25 @@ class ClassRecordRequest extends FormRequest
 
             $this->merge([
                 'end_time' => $endTime ?? null,
+            ]);
+        }
+
+        if ($startTime && $endTime) {
+            $sessionDuration = Carbon::parse($startTime)->diffInMinutes(Carbon::parse($endTime));
+            $studentAttendances = collect($this->input('student_attendances', []));
+
+            $allAbsent = $studentAttendances->isNotEmpty()
+                && $studentAttendances->every(fn ($item) => (string) ($item['attendance'] ?? '') === AttendanceStatusEnum::ABSENT->value);
+
+            $durationMinutes = $sessionDuration;
+
+            if ($allAbsent) {
+                $graceMinutes = (int) config('academics.class_records.absent_duration_grace_minutes', 10);
+                $durationMinutes = max(1, $sessionDuration - $graceMinutes);
+            }
+
+            $this->merge([
+                'duration_minutes' => $durationMinutes,
             ]);
         }
     }

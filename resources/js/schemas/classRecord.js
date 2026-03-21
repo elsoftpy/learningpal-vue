@@ -25,11 +25,6 @@ export const createClassRecordSchema = (t, locale = 'es') => {
         end_time: z.string()
             .min(1, { message: t('End time is required.') })
             .regex(/^([01]\d|2[0-3]):[0-5]\d$/, { message: t('Use HH:MM format.') }),
-        duration_minutes: z.coerce.number({
-            required_error: t('Duration is required.'),
-            invalid_type_error: t('Duration is required.'),
-        }).int({ message: t('Duration must be an integer.') })
-            .min(1, { message: t('Duration must be at least 1 minute.') }),
         comments: z.string().max(255, { message: t('Comments are too long.') }).optional().or(z.literal('')),
     });
 };

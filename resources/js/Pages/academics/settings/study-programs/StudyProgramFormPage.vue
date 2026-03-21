@@ -306,6 +306,47 @@
                                                 {{ getError(`weeks.${weekIndex}.activities.${activityIndex}.free_content`) }}
                                             </Message>
                                         </div>
+
+                                        <div class="flex flex-col xl:col-span-12">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                {{ $t('Links') }}
+                                                <span v-if="activity.type === 'video'" class="text-red-500">*</span>
+                                            </label>
+                                            <Textarea
+                                                v-model="activity.links"
+                                                rows="2"
+                                                auto-resize
+                                                fluid
+                                                :placeholder="$t('Add one or more links. Use one per line or separate with |')"
+                                                :disabled="!canEditActivities"
+                                            />
+                                            <Message v-if="getError(`weeks.${weekIndex}.activities.${activityIndex}.links`)" severity="error" size="small" variant="simple">
+                                                {{ getError(`weeks.${weekIndex}.activities.${activityIndex}.links`) }}
+                                            </Message>
+                                        </div>
+
+                                        <div class="flex flex-col xl:col-span-12">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                {{ $t('Study Material') }}
+                                            </label>
+                                            <FileUpload
+                                                :id="`study-program-activity-study-material-${week.local_id}-${activity.local_id}`"
+                                                :button-label="$t('Upload study material')"
+                                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpeg,.jpg,.png,.webp"
+                                                :max-file-size="10240000"
+                                                empty-icon="pi pi-file"
+                                                :empty-message="$t('Select a study material file')"
+                                                status-class="px-2 py-1 rounded-full bg-sky-600 text-xs font-semibold text-white"
+                                                :disabled="!canEditActivities"
+                                                @update:modelValue="onActivityStudyMaterialSelect(weekIndex, activityIndex, $event)"
+                                            />
+                                            <Message v-if="getError(`weeks.${weekIndex}.activities.${activityIndex}.study_material`)" severity="error" size="small" variant="simple">
+                                                {{ getError(`weeks.${weekIndex}.activities.${activityIndex}.study_material`) }}
+                                            </Message>
+                                            <span v-if="activity.study_material" class="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                                                {{ activity.study_material.name }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -351,6 +392,7 @@ import Message from 'primevue/message';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import Select from 'primevue/select';
 import Textarea from 'primevue/textarea';
+import FileUpload from '@/components/form/FileUpload.vue';
 
 const { t: $t } = useI18n();
 const route = useRoute();
@@ -377,7 +419,9 @@ const createActivity = (overrides = {}) => ({
     free_content: '',
     activity_name: '',
     type: 'exercise',
+    links: '',
     sort_order: 1,
+    study_material: null,
     ...overrides,
 });
 
@@ -530,9 +574,22 @@ const resetForm = (values) => {
             free_content: activity.free_content ?? '',
             activity_name: activity.activity_name ?? '',
             type: activity.type ?? 'exercise',
+            links: activity.links ?? '',
             sort_order: activity.sort_order ?? index + 1,
+            study_material: null,
         })),
     }));
+};
+
+const onActivityStudyMaterialSelect = (weekIndex, activityIndex, file) => {
+    const week = form.weeks[weekIndex];
+    const activity = week?.activities?.[activityIndex];
+
+    if (!activity) {
+        return;
+    }
+
+    activity.study_material = file || null;
 };
 
 const buildPayload = () => {
@@ -552,6 +609,7 @@ const buildPayload = () => {
                 free_content: activity.free_content?.trim() || null,
                 activity_name: activity.activity_name?.trim() || '',
                 type: activity.type,
+                links: activity.links?.trim() || null,
                 sort_order: Number(activity.sort_order || index + 1),
             })),
         }));
@@ -572,10 +630,51 @@ const buildValidationPayload = () => ({
             free_content: activity.free_content?.trim() || null,
             activity_name: activity.activity_name?.trim() || '',
             type: activity.type,
+            links: activity.links?.trim() || null,
             sort_order: Number(activity.sort_order || index + 1),
         })),
     })),
 });
+
+const buildCreateFormDataPayload = () => {
+    const formData = new FormData();
+
+    formData.append('language_level_id', Number(form.language_level_id));
+    formData.append('title', form.title?.trim() || '');
+    formData.append('status', form.status);
+
+    form.weeks.forEach((week, weekIndex) => {
+        formData.append(`weeks[${weekIndex}][week_number]`, Number(week.week_number));
+        formData.append(`weeks[${weekIndex}][title]`, week.title?.trim() || '');
+        formData.append(`weeks[${weekIndex}][status]`, week.status);
+
+        week.activities.forEach((activity, activityIndex) => {
+            const basePath = `weeks[${weekIndex}][activities][${activityIndex}]`;
+
+            formData.append(`${basePath}[activity_name]`, activity.activity_name?.trim() || '');
+            formData.append(`${basePath}[type]`, activity.type);
+            formData.append(`${basePath}[sort_order]`, Number(activity.sort_order || activityIndex + 1));
+
+            if (activity.level_content_id) {
+                formData.append(`${basePath}[level_content_id]`, Number(activity.level_content_id));
+            }
+
+            if (activity.free_content?.trim()) {
+                formData.append(`${basePath}[free_content]`, activity.free_content.trim());
+            }
+
+            if (activity.links?.trim()) {
+                formData.append(`${basePath}[links]`, activity.links.trim());
+            }
+
+            if (activity.study_material) {
+                formData.append(`${basePath}[study_material]`, activity.study_material);
+            }
+        });
+    });
+
+    return formData;
+};
 
 const mapZodErrors = (issues) => {
     const mappedErrors = {};
@@ -706,12 +805,21 @@ const handleSubmit = async () => {
     isLoading.value = true;
 
     try {
-        const payload = buildPayload();
         const url = isCreate.value
             ? '/academics/settings/study-programs'
             : `/academics/settings/study-programs/${studyProgramId}/edit`;
 
-        await axios.post(url, payload);
+        if (isCreate.value) {
+            const formDataPayload = buildCreateFormDataPayload();
+            await axios.post(url, formDataPayload, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        } else {
+            const payload = buildPayload();
+            await axios.post(url, payload);
+        }
 
         toast.add({
             severity: 'success',

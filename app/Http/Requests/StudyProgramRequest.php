@@ -46,6 +46,13 @@ class StudyProgramRequest extends FormRequest
             'weeks.*.activities.*.free_content' => ['nullable', 'string'],
             'weeks.*.activities.*.activity_name' => ['required', 'string', 'max:255'],
             'weeks.*.activities.*.type' => ['required', 'string', Rule::in(StudyProgramActivityTypeEnum::values())],
+            'weeks.*.activities.*.links' => ['nullable', 'string'],
+            'weeks.*.activities.*.study_material' => [
+                'nullable',
+                'file',
+                'max:10240',
+                'mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,txt,jpeg,jpg,png,webp',
+            ],
             'weeks.*.activities.*.sort_order' => ['nullable', 'integer', 'min:1'],
         ];
     }
@@ -79,6 +86,14 @@ class StudyProgramRequest extends FormRequest
                     if (!$hasLevelContent && !$hasFreeContent) {
                         $validator->errors()->add($field, __('Free content is required when no content topic is selected.'));
                     }
+
+                    $links = $activity['links'] ?? null;
+                    $hasLinks = is_string($links) && trim($links) !== '';
+                    $isVideoActivity = ($activity['type'] ?? null) === StudyProgramActivityTypeEnum::VIDEO->value;
+
+                    if ($isVideoActivity && !$hasLinks) {
+                        $validator->errors()->add("weeks.$weekIndex.activities.$activityIndex.links", __('A video activity requires at least one link.'));
+                    }
                 }
             }
         });
@@ -107,6 +122,13 @@ class StudyProgramRequest extends FormRequest
                         if (is_string($freeContent)) {
                             $freeContent = trim($freeContent);
                             $activity['free_content'] = $freeContent !== '' ? $freeContent : null;
+                        }
+
+                        $links = $activity['links'] ?? null;
+
+                        if (is_string($links)) {
+                            $links = trim($links);
+                            $activity['links'] = $links !== '' ? $links : null;
                         }
 
                         return $activity;

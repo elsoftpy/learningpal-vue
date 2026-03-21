@@ -2,7 +2,7 @@
 
 return [
     'class_records' => [
-        // When attendance is marked absent, duration must be <= (session duration - grace minutes).
+        // Grace minutes to subtract from class record duration only when all students are absent.
         'absent_duration_grace_minutes' => (int) env('CLASS_RECORD_ABSENT_DURATION_GRACE_MINUTES', 10),
     ],
 ];

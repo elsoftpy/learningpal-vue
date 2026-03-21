@@ -240,6 +240,23 @@ class ClassRecordController extends Controller
 
     public function saveStudentProduction(Request $request, ClassRecord $classRecord)
     {
+        if (! $request->user()?->can('upload own class record production')) {
+            return ResponseService::error(
+                message: __('You are not authorized to upload class record production.'),
+                statusCode: 403
+            );
+        }
+
+        $roleNames = $request->user()?->roles?->pluck('name') ?? collect();
+        $isStudentRole = $roleNames->contains('student') || $roleNames->contains('annual_student');
+
+        if (! $isStudentRole) {
+            return ResponseService::error(
+                message: __('Only students can upload class record production.'),
+                statusCode: 403
+            );
+        }
+
         $validated = $request->validate(
             [
                 'student_production_file' => [

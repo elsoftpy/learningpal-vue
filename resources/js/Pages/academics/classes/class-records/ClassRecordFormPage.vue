@@ -200,38 +200,6 @@
 								{{ Array.isArray(errors?.student_attendances) ? errors?.student_attendances.join(', ') : errors?.student_attendances }}
 							</Message>
 						</div>
-
-						<div class="flex flex-col w-full md:w-1/3">
-							<label for="duration_minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-								{{ $t('Duration (minutes)') }}
-								<span class="text-red-500">*</span>
-							</label>
-							<InputText
-								id="duration_minutes"
-								name="duration_minutes"
-								type="number"
-								min="1"
-								class="w-full"
-							/>
-							<Message
-								v-if="$form.duration_minutes?.invalid"
-								severity="error"
-								size="small"
-								variant="simple"
-							>
-								{{ $form.duration_minutes?.error?.message }}
-							</Message>
-							<Message
-								v-if="errors?.duration_minutes"
-								severity="error"
-								size="small"
-								variant="simple"
-							>
-								{{ Array.isArray(errors?.duration_minutes) ? errors?.duration_minutes.join(', ') : errors?.duration_minutes }}
-							</Message>
-						</div>
-
-						<div class="hidden md:block md:w-1/3"></div>
 					</div>
 
 					<div class="flex flex-col w-full">
@@ -535,7 +503,6 @@ const { errors, isLoading, setErrors } = useFormSubmitter({
 	date: '',
 	start_time: '',
 	end_time: '',
-	duration_minutes: '',
 	student_attendances: '',
 	comments: '',
 	general: '',
@@ -708,7 +675,6 @@ const initialValues = computed(() => {
 		date: record.date || '',
 		start_time: record.start_time || '',
 		end_time: record.end_time || '',
-		duration_minutes: record.duration_minutes || null,
 		comments: record.comments || '',
 	};
 });

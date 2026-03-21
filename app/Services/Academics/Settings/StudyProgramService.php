@@ -119,13 +119,16 @@ class StudyProgramService
             ]);
 
             foreach ($weekData['activities'] as $index => $activityData) {
-                $week->activities()->create([
+                $activity = $week->activities()->create([
                     'level_content_id' => $activityData['level_content_id'] ?? null,
                     'free_content' => $activityData['free_content'] ?? null,
                     'activity_name' => $activityData['activity_name'],
                     'type' => $activityData['type'],
+                    'links' => $activityData['links'] ?? null,
                     'sort_order' => $activityData['sort_order'] ?? ($index + 1),
                 ]);
+
+                $this->syncStudyProgramWeekActivityStudyMaterial($activity, $activityData['study_material'] ?? null);
             }
         }
     }
@@ -184,6 +187,8 @@ class StudyProgramService
             'status' => $data['status'],
         ]);
 
+        (new StudyProgramReplicationService())->propagateWeekCreated($week);
+
         return $week->fresh(['studyProgram.languageLevel.language']);
     }
 
@@ -194,6 +199,8 @@ class StudyProgramService
             'title' => $data['title'],
             'status' => $data['status'],
         ]);
+
+        (new StudyProgramReplicationService())->propagateWeekUpdated($week);
 
         return $week->fresh(['studyProgram.languageLevel.language']);
     }
@@ -304,6 +311,7 @@ class StudyProgramService
         ]);
 
         $this->syncStudyProgramWeekActivityStudyMaterial($activity, $studyMaterialFile);
+        (new StudyProgramReplicationService())->propagateWeekActivityCreated($activity);
 
         return $activity->fresh(['studyProgramWeek.studyProgram.languageLevel.language', 'levelContent', 'media']);
     }
@@ -324,6 +332,7 @@ class StudyProgramService
         ]);
 
         $this->syncStudyProgramWeekActivityStudyMaterial($activity, $studyMaterialFile);
+        (new StudyProgramReplicationService())->propagateWeekActivityUpdated($activity);
 
         return $activity->fresh(['studyProgramWeek.studyProgram.languageLevel.language', 'levelContent', 'media']);
     }

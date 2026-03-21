@@ -740,7 +740,7 @@ const parseLinks = (links) => {
     }
 
     return String(links)
-        .split('|')
+        .split(/\r?\n|\|/)
         .map((value) => value.trim())
         .filter(Boolean);
 };

@@ -22,10 +22,18 @@ class StudentService
     {
         $changes = $student->courses()->sync($courseIds);
 
+        $enrollmentService = new DistanceActivityEnrollmentService();
+
+        $detachedCourseIds = array_map('intval', $changes['detached'] ?? []);
+
+        if (! empty($detachedCourseIds)) {
+            $enrollmentService->removeStudentEnrollments($student, $detachedCourseIds);
+        }
+
         $attachedCourseIds = array_map('intval', $changes['attached'] ?? []);
 
         if (! empty($attachedCourseIds)) {
-            (new DistanceActivityEnrollmentService())->syncStudentEnrollments($student, $attachedCourseIds);
+            $enrollmentService->syncStudentEnrollments($student, $attachedCourseIds);
         }
     }
 

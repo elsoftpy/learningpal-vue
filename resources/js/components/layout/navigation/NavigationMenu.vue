@@ -123,6 +123,12 @@
                         <template #items>
                             <PlainMenuItem
                                 v-if="can('view teacher hours report')"
+                                :route="{ name: 'academics.reports.monthly-classes' }"
+                                baseRoute="academics.reports"
+                                :title="$t('Monthly Classes')"
+                            />
+                            <PlainMenuItem
+                                v-if="can('view teacher hours report')"
                                 :route="{ name: 'academics.reports.teacher-hours' }"
                                 baseRoute="academics.reports"
                                 :title="$t('Teacher Hours')"

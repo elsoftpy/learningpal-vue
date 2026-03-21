@@ -10,7 +10,7 @@
                             <th class="py-2 px-2 text-left">{{ $t('Activity') }}</th>
                             <th class="py-2 px-2 text-left">{{ $t('Links') }}</th>
                             <th class="py-2 px-2 text-left">{{ $t('Attachment') }}</th>
-                            <th class="py-2 px-2">{{ $t('Actions') }}</th>
+                            <th v-if="showDetailActions" class="py-2 px-2">{{ $t('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,7 +50,7 @@
                                     :modal-title="$t('Attachment')"
                                 />
                             </td>
-                            <td class="py-2 pr-4">
+                            <td v-if="showDetailActions" class="py-2 pr-4">
                                 <div class="flex space-x-2">
                                     <Button
                                         type="button"
@@ -76,73 +76,78 @@
             </div>
 
             <div class="border-t border-slate-200 dark:border-slate-700 p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-100">{{ $t('Student Production') }}</h4>
-                    <Button
-                        type="button"
-                        icon="pi pi-save"
-                        :label="$t('Save')"
-                        size="small"
-                        severity="success"
-                        :loading="isSaving"
-                        @click="saveStudentProduction"
-                    />
-                </div>
+                <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-100">{{ $t('Student Production') }}</h4>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div class="space-y-2">
+                <div v-if="allowStudentProductionUpload" class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div class="space-y-3">
                         <FileUpload
                             id="class-record-student-production-file"
                             :button-label="$t('Upload file')"
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*"
+                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,image/*"
                             :max-file-size="10240000"
                             empty-icon="pi pi-file"
-                            :empty-message="$t('Select a student production file')"
+                            :empty-message="$t('Select a production file')"
                             status-class="px-2 py-1 rounded-full bg-sky-600 text-xs font-semibold text-white"
                             @update:modelValue="onStudentProductionFileSelect"
                         />
-
-                        <a
-                            v-if="studentProductionPreview"
-                            :href="studentProductionPreview.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="block border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-slate-900"
-                        >
-                            <div class="text-xs text-slate-500 mb-2">
-                                {{ studentProductionFile ? $t('Selected file') : $t('Current file') }}
-                            </div>
-                            <img
-                                v-if="studentProductionPreview.type === 'image'"
-                                :src="studentProductionPreview.url"
-                                :alt="studentProductionPreview.name"
-                                class="max-h-36 w-auto rounded"
-                            />
-                            <div v-else class="flex items-center gap-3">
-                                <IconWrapper
-                                    :name="studentProductionPreview.iconName"
-                                    :class="studentProductionPreview.iconColorClass"
-                                    size="42"
-                                />
-                                <span class="text-sm text-slate-700 dark:text-slate-100 break-all">{{ studentProductionPreview.name }}</span>
-                            </div>
-                        </a>
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-3">
                         <AudioRecorder
                             :label="$t('Record student audio')"
                             @update:modelValue="onStudentProductionAudioSelect"
                             @error="onAudioRecorderError"
                         />
-
-                        <div v-if="existingStudentProductionAudio && !studentProductionAudio" class="space-y-2">
-                            <p class="text-xs text-slate-500">
-                                {{ $t('Current audio') }}: {{ existingStudentProductionAudio.name }}
-                            </p>
-                            <audio :src="existingStudentProductionAudio.url" controls class="w-full" />
-                        </div>
                     </div>
+                </div>
+
+                <div v-if="allowStudentProductionUpload" class="mt-2 flex justify-end">
+                    <Button
+                        type="button"
+                        icon="pi pi-save"
+                        severity="success"
+                        :loading="isSaving"
+                        :disabled="!canSaveStudentProduction"
+                        :label="$t('Save Production')"
+                        @click="saveStudentProduction"
+                    />
+                </div>
+
+                <div v-if="studentProductionItems.length" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <a
+                        v-for="item in studentProductionItems"
+                        :key="item.id"
+                        :href="item.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="block border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-slate-900"
+                    >
+                        <div class="text-xs text-slate-500 mb-2">{{ item.label }}</div>
+
+                        <img
+                            v-if="item.type === 'image'"
+                            :src="item.url"
+                            :alt="item.name"
+                            class="max-h-36 w-auto rounded"
+                        />
+
+                        <div v-else-if="item.type === 'audio'" class="space-y-2">
+                            <div class="text-sm text-slate-700 dark:text-slate-100 break-all">{{ item.name }}</div>
+                            <audio :src="item.url" controls class="w-full" />
+                        </div>
+
+                        <div v-else class="flex items-center gap-3">
+                            <IconWrapper
+                                :name="item.iconName"
+                                :class="item.iconColorClass"
+                                size="42"
+                            />
+                            <span class="text-sm text-slate-700 dark:text-slate-100 break-all">{{ item.name }}</span>
+                        </div>
+                    </a>
+                </div>
+                <div v-else class="text-sm text-slate-500">
+                    {{ $t('No student production files available.') }}
                 </div>
             </div>
         </div>
@@ -150,18 +155,20 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useToast } from 'primevue/usetoast';
+import { computed, ref } from 'vue';
 import axios from 'axios';
+import { useToast } from 'primevue/usetoast';
+import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import IconWrapper from '@/components/common/IconWrapper.vue';
-import ResourceViewerCell from '@/components/datatable/ResourceViewerCell.vue';
 import FileUpload from '@/components/form/FileUpload.vue';
 import AudioRecorder from '@/components/form/AudioRecorder.vue';
+import IconWrapper from '@/components/common/IconWrapper.vue';
+import ResourceViewerCell from '@/components/datatable/ResourceViewerCell.vue';
+import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 
 const { t: $t } = useI18n();
 const toast = useToast();
+const { handleApiError } = useApiErrorHandler();
 
 const props = defineProps({
     details: {
@@ -169,12 +176,20 @@ const props = defineProps({
         default: () => [],
     },
     classRecordId: {
-        type: Number,
-        required: true,
+        type: [Number, String],
+        default: null,
     },
     studentProductionMedia: {
         type: Array,
         default: () => [],
+    },
+    allowStudentProductionUpload: {
+        type: Boolean,
+        default: false,
+    },
+    showDetailActions: {
+        type: Boolean,
+        default: false,
     },
 });
 
@@ -183,29 +198,10 @@ const emit = defineEmits(['delete-detail', 'edit-detail', 'student-production-sa
 const isSaving = ref(false);
 const studentProductionFile = ref(null);
 const studentProductionAudio = ref(null);
-const existingStudentProductionFile = ref(null);
-const existingStudentProductionAudio = ref(null);
-const selectedStudentProductionFileUrl = ref(null);
-
-const canSaveProduction = computed(() => Boolean(studentProductionFile.value || studentProductionAudio.value));
-
-const syncExistingMedia = (mediaList) => {
-    const media = Array.isArray(mediaList) ? mediaList : [];
-    existingStudentProductionFile.value = media.find((item) => item.media_type === 'file') || null;
-    existingStudentProductionAudio.value = media.find((item) => item.media_type === 'audio') || null;
-};
-
-watch(
-    () => props.studentProductionMedia,
-    (value) => {
-        syncExistingMedia(value);
-    },
-    { immediate: true }
-);
 
 const parseLinks = (links) => {
     if (!links) return [];
-    return links.split('|').map((l) => l.trim()).filter(Boolean);
+    return links.split(/\r?\n|\|/).map((l) => l.trim()).filter(Boolean);
 };
 
 const handleEdit = (detail) => {
@@ -216,130 +212,8 @@ const handleDelete = (detail) => {
     emit('delete-detail', detail);
 };
 
-const detectResourceType = (nameOrUrl = '') => {
-    const cleanValue = String(nameOrUrl || '').split('?')[0];
-    const extension = cleanValue.split('.').pop()?.toLowerCase();
-    if (!extension) {
-        return 'unknown';
-    }
-
-    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension)) {
-        return 'image';
-    }
-    if (extension === 'pdf') {
-        return 'pdf';
-    }
-    if (['doc', 'docx'].includes(extension)) {
-        return 'word';
-    }
-    if (['xls', 'xlsx', 'csv'].includes(extension)) {
-        return 'excel';
-    }
-
-    return 'unknown';
-};
-
-const detectResourceTypeFromMimeType = (mimeType = '') => {
-    const normalized = String(mimeType || '').toLowerCase();
-    if (!normalized) {
-        return 'unknown';
-    }
-
-    if (normalized.startsWith('image/')) {
-        return 'image';
-    }
-
-    if (normalized === 'application/pdf') {
-        return 'pdf';
-    }
-
-    if (
-        normalized === 'application/msword'
-        || normalized === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ) {
-        return 'word';
-    }
-
-    if (
-        normalized === 'application/vnd.ms-excel'
-        || normalized === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        || normalized === 'text/csv'
-    ) {
-        return 'excel';
-    }
-
-    return 'unknown';
-};
-
-const iconByType = (type) => {
-    switch (type) {
-        case 'pdf':
-            return 'file-pdf';
-        case 'word':
-            return 'file-doc';
-        case 'excel':
-            return 'file-xls';
-        case 'image':
-            return 'file-image';
-        default:
-            return 'file-lines';
-    }
-};
-
-const fileTypeColorClass = (type) => {
-    switch (type) {
-        case 'pdf':
-            return 'text-red-600';
-        case 'word':
-            return 'text-blue-600';
-        case 'excel':
-            return 'text-green-600';
-        default:
-            return 'text-gray-600';
-    }
-};
-
-const studentProductionPreview = computed(() => {
-    if (studentProductionFile.value && selectedStudentProductionFileUrl.value) {
-        const typeFromName = detectResourceType(studentProductionFile.value.name);
-        const typeFromMime = detectResourceTypeFromMimeType(studentProductionFile.value.type);
-        const type = typeFromName !== 'unknown' ? typeFromName : typeFromMime;
-        return {
-            url: selectedStudentProductionFileUrl.value,
-            name: studentProductionFile.value.name,
-            type,
-            iconName: iconByType(type),
-            iconColorClass: fileTypeColorClass(type),
-        };
-    }
-
-    if (existingStudentProductionFile.value?.url) {
-        const typeFromName = detectResourceType(existingStudentProductionFile.value.name || existingStudentProductionFile.value.url);
-        const typeFromMime = detectResourceTypeFromMimeType(existingStudentProductionFile.value.mime_type);
-        const type = typeFromName !== 'unknown' ? typeFromName : typeFromMime;
-        return {
-            url: existingStudentProductionFile.value.url,
-            name: existingStudentProductionFile.value.name,
-            type,
-            iconName: iconByType(type),
-            iconColorClass: fileTypeColorClass(type),
-        };
-    }
-
-    return null;
-});
-
 const onStudentProductionFileSelect = (file) => {
-    if (selectedStudentProductionFileUrl.value) {
-        URL.revokeObjectURL(selectedStudentProductionFileUrl.value);
-        selectedStudentProductionFileUrl.value = null;
-    }
-
     studentProductionFile.value = file || null;
-
-    if (file) {
-        selectedStudentProductionFileUrl.value = URL.createObjectURL(file);
-    }
 };
 
 const onStudentProductionAudioSelect = (file) => {
@@ -347,26 +221,64 @@ const onStudentProductionAudioSelect = (file) => {
 };
 
 const onAudioRecorderError = (message) => {
-    if (!message) {
-        return;
-    }
-
     toast.add({
-        severity: 'warn',
-        summary: $t('Recorder'),
-        detail: message,
-        life: 5000,
+        severity: 'error',
+        summary: $t('Error'),
+        detail: message || $t('Unable to record audio.'),
+        life: 4000,
     });
 };
 
+const detectResourceType = (nameOrUrl = '') => {
+    const cleanValue = String(nameOrUrl || '').split('?')[0];
+    const extension = cleanValue.split('.').pop()?.toLowerCase();
+    if (!extension) return 'unknown';
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension)) return 'image';
+    if (extension === 'pdf') return 'pdf';
+    if (['doc', 'docx'].includes(extension)) return 'word';
+    if (['xls', 'xlsx', 'csv'].includes(extension)) return 'excel';
+    return 'unknown';
+};
+
+const detectResourceTypeFromMimeType = (mimeType = '') => {
+    const normalized = String(mimeType || '').toLowerCase();
+    if (!normalized) return 'unknown';
+    if (normalized.startsWith('image/')) return 'image';
+    if (normalized === 'application/pdf') return 'pdf';
+    if (normalized === 'application/msword' || normalized === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'word';
+    if (normalized === 'application/vnd.ms-excel' || normalized === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || normalized === 'text/csv') return 'excel';
+    return 'unknown';
+};
+
+const iconByType = (type) => {
+    switch (type) {
+        case 'pdf': return 'file-pdf';
+        case 'word': return 'file-doc';
+        case 'excel': return 'file-xls';
+        case 'image': return 'file-image';
+        default: return 'file-lines';
+    }
+};
+
+const fileTypeColorClass = (type) => {
+    switch (type) {
+        case 'pdf': return 'text-red-600';
+        case 'word': return 'text-blue-600';
+        case 'excel': return 'text-green-600';
+        default: return 'text-gray-600';
+    }
+};
+
+const canSaveStudentProduction = computed(() => {
+    if (!props.allowStudentProductionUpload || !props.classRecordId) {
+        return false;
+    }
+
+    return Boolean(studentProductionFile.value || studentProductionAudio.value);
+});
+
 const saveStudentProduction = async () => {
-    if (!canSaveProduction.value) {
-        toast.add({
-            severity: 'info',
-            summary: $t('No changes'),
-            detail: $t('Select a file and/or record audio before saving.'),
-            life: 3000,
-        });
+    if (!canSaveStudentProduction.value || isSaving.value) {
         return;
     }
 
@@ -374,14 +286,29 @@ const saveStudentProduction = async () => {
 
     try {
         const payload = new FormData();
+
         if (studentProductionFile.value) {
             payload.append('student_production_file', studentProductionFile.value);
         }
+
         if (studentProductionAudio.value) {
             payload.append('student_production_audio', studentProductionAudio.value);
         }
 
-        await axios.post(`/academics/lessons/class-records/${props.classRecordId}/student-production`, payload);
+        const response = await axios.post(
+            `/academics/lessons/class-records/${props.classRecordId}/student-production`,
+            payload,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+
+        studentProductionFile.value = null;
+        studentProductionAudio.value = null;
+
+        emit('student-production-saved', response.data?.data?.class_record || null);
 
         toast.add({
             severity: 'success',
@@ -389,31 +316,43 @@ const saveStudentProduction = async () => {
             detail: $t('Student production saved successfully.'),
             life: 3000,
         });
-
-        studentProductionFile.value = null;
-        studentProductionAudio.value = null;
-        emit('student-production-saved');
     } catch (error) {
-        const validationError = error?.response?.data?.errors;
-        const firstValidationMessage = validationError
-            ? Object.values(validationError)?.[0]?.[0]
-            : null;
-
+        const apiError = handleApiError(error);
         toast.add({
             severity: 'error',
             summary: $t('Error'),
-            detail: firstValidationMessage || error?.response?.data?.message || $t('Could not save student production files.'),
-            life: 5000,
+            detail: apiError?.message || $t('Unable to save student production.'),
+            life: 4000,
         });
     } finally {
         isSaving.value = false;
     }
 };
 
-onBeforeUnmount(() => {
-    if (selectedStudentProductionFileUrl.value) {
-        URL.revokeObjectURL(selectedStudentProductionFileUrl.value);
-    }
+const studentProductionItems = computed(() => {
+    const media = Array.isArray(props.studentProductionMedia) ? props.studentProductionMedia : [];
+
+    return media
+        .filter((item) => item?.url)
+        .map((item) => {
+            const itemType = item.media_type === 'audio'
+                ? 'audio'
+                : (() => {
+                    const typeFromName = detectResourceType(item.name || item.url);
+                    const typeFromMime = detectResourceTypeFromMimeType(item.mime_type);
+                    return typeFromName !== 'unknown' ? typeFromName : typeFromMime;
+                })();
+
+            return {
+                id: item.id,
+                url: item.url,
+                name: item.name || $t('File'),
+                type: itemType,
+                iconName: iconByType(itemType),
+                iconColorClass: fileTypeColorClass(itemType),
+                label: itemType === 'audio' ? $t('Audio') : $t('File'),
+            };
+        });
 });
 </script>
 

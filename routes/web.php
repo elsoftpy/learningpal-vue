@@ -5,6 +5,7 @@ use App\Http\Controllers\Academics\Lessons\ClassRecordController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleDetailController;
 use App\Http\Controllers\Academics\Lessons\DistanceActivityController;
+use App\Http\Controllers\Academics\Reports\MonthlyClassesReportController;
 use App\Http\Controllers\Academics\Reports\TeacherHoursReportController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
@@ -365,7 +366,7 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
 
             Route::post('/{classRecord}/student-production', [ClassRecordController::class, 'saveStudentProduction'])
                 ->name('student-production.save')
-                ->middleware('can:edit class records');
+                ->middleware('can:view class records');
 
             Route::post('/{record}/destroy', [ClassRecordController::class, 'destroy'])
                 ->name('destroy')
@@ -411,6 +412,26 @@ Route::prefix('academics')->name('academics.')->middleware('auth')->group(functi
     });
 
     Route::prefix('reports')->name('reports.')->group(function () {
+        Route::post('/monthly-classes', [MonthlyClassesReportController::class, 'index'])
+            ->name('monthly-classes')
+            ->middleware('can:view teacher hours report');
+
+        Route::post('/monthly-classes/options/months', [MonthlyClassesReportController::class, 'monthOptions'])
+            ->name('monthly-classes.options.months')
+            ->middleware('can:view teacher hours report');
+
+        Route::post('/monthly-classes/options/students', [MonthlyClassesReportController::class, 'studentOptions'])
+            ->name('monthly-classes.options.students')
+            ->middleware('can:view teacher hours report');
+
+        Route::post('/monthly-classes/export/excel', [MonthlyClassesReportController::class, 'exportExcel'])
+            ->name('monthly-classes.export.excel')
+            ->middleware('can:view teacher hours report');
+
+        Route::post('/monthly-classes/export/pdf', [MonthlyClassesReportController::class, 'exportPdf'])
+            ->name('monthly-classes.export.pdf')
+            ->middleware('can:view teacher hours report');
+
         Route::post('/teacher-hours', [TeacherHoursReportController::class, 'index'])
             ->name('teacher-hours')
             ->middleware('can:view teacher hours report');

@@ -38,10 +38,6 @@
                             <div class="text-xs text-slate-500">{{ $t('End') }}</div>
                             <div class="text-sm font-medium">{{ classRecord.end_time || '-' }}</div>
                         </div>
-                        <div class="rounded border border-slate-200 p-3">
-                            <div class="text-xs text-slate-500">{{ $t('Duration (minutes)') }}</div>
-                            <div class="text-sm font-medium">{{ classRecord.duration_minutes ?? '-' }}</div>
-                        </div>
                     </div>
 
                     <div class="mt-4 rounded border border-slate-200 p-3">
@@ -192,7 +188,7 @@ const parseLinks = (links) => {
     }
 
     return String(links)
-        .split('|')
+            .split(/\r?\n|\|/)
         .map((item) => item.trim())
         .filter(Boolean);
 };

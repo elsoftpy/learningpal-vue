@@ -575,6 +575,20 @@ const routes = [
     },
   },
   {
+    path: '/academics/reports/monthly-classes',
+    name: 'academics.reports.monthly-classes',
+    component: () => import('../Pages/academics/reports/MonthlyClassesReportPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'view teacher hours report',
+      module: 'academics',
+      submodule: 'reports',
+      title: 'Monthly Classes Report',
+      headerIcon: 'file-text',
+      crud: 'read',
+    },
+  },
+  {
     path: '/academics/reports/teacher-hours',
     name: 'academics.reports.teacher-hours',
     component: () => import('../Pages/academics/reports/TeacherHoursReportPage.vue'),

@@ -115,6 +115,7 @@ class PermissionSeeder extends Seeder
             'view all distance activities',
             'complete own distance activity tasks',
             'upload own distance activity production',
+            'upload own class record production',
             'reset distance activity completion',
             'delete distance activity submissions',
         ];
@@ -138,6 +139,7 @@ class PermissionSeeder extends Seeder
             'view assigned distance activities',
             'complete own distance activity tasks',
             'upload own distance activity production',
+            'upload own class record production',
         ]);
 
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
@@ -186,6 +188,7 @@ class PermissionSeeder extends Seeder
             'view assigned distance activities',
             'complete own distance activity tasks',
             'upload own distance activity production',
+            'upload own class record production',
             'view assigned distance activities',
             'view own distance activities',
             'complete own distance activity tasks',
