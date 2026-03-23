@@ -126,7 +126,7 @@
                         </Message>
                     </div>
 
-                    <div v-if="can('edit users')" class="flex flex-col w-full md:w-1/6">
+                    <div v-if="can('change user status')" class="flex flex-col w-full md:w-1/6">
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Status') }}
                             <span class="text-red-500">*</span>
@@ -541,6 +541,10 @@ const handleSubmit =  async (formData) => {
 
         if (!can('change roles')) {
             delete values.roles;
+        }
+
+        if (!can('change user status')) {
+            delete values.status;
         }
 
         Object.keys(values).forEach(key => {

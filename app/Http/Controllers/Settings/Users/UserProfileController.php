@@ -98,6 +98,10 @@ class UserProfileController extends Controller
             throw new AuthorizationException(__('You do not have permission to change roles.'));
         }
 
+        if (array_key_exists('status', $userData) && ! $request->user()?->can('change user status')) {
+            throw new AuthorizationException(__('You do not have permission to change user status.'));
+        }
+
         $user = null;
 
         $user = DB::transaction(function () use ($profileData, $userData, $userService) {
@@ -145,6 +149,14 @@ class UserProfileController extends Controller
             }
 
             unset($userData['roles']);
+        }
+
+        if (array_key_exists('status', $userData) && ! $request->user()?->can('change user status')) {
+            if (($userData['status'] ?? null) !== $user->status) {
+                throw new AuthorizationException(__('You do not have permission to change user status.'));
+            }
+
+            unset($userData['status']);
         }
         
         DB::transaction(function () use ($user, $profileData, $userData, $userService) {

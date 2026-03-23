@@ -30,6 +30,7 @@ class PermissionSeeder extends Seeder
             'view users',
             'create users',
             'edit users',
+            'change user status',
             'change roles',
             'delete users',
             'edit own profile',
