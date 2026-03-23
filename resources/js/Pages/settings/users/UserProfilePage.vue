@@ -74,7 +74,7 @@
                         </Message>
                     </div>
 
-                    <div v-if="can('edit users')" class="flex flex-col w-full md:w-2/6">
+                    <div v-if="can('change roles')" class="flex flex-col w-full md:w-2/6">
                         <label for="roles" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Roles') }}
                             <span class="text-red-500">*</span>
@@ -539,6 +539,10 @@ const handleSubmit =  async (formData) => {
     try {
         const formData = new FormData();
 
+        if (!can('change roles')) {
+            delete values.roles;
+        }
+
         Object.keys(values).forEach(key => {
             if (Array.isArray(values[key])) {
                 values[key].forEach((item, index) => {
@@ -615,7 +619,9 @@ onMounted(async () => {
             return response.data;
         });
 
-        await fetchRoles();
+        if (can('change roles')) {
+            await fetchRoles();
+        }
 
         if (crudAction === 'edit' && userId) {
             if (!can('edit users')) {

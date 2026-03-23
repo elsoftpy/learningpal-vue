@@ -12,6 +12,7 @@ use App\Services\Traits\FilterResolverTrait;
 use App\Services\Traits\SortResolverTrait;
 use App\Services\Traits\UserProfileTrait;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +94,10 @@ class UserProfileController extends Controller
         $profileData = $request->except(['name', 'password']);
         $userData = $request->only(['name', 'email', 'password', 'roles', 'status']);
 
+        if (array_key_exists('roles', $userData) && ! $request->user()?->can('change roles')) {
+            throw new AuthorizationException(__('You do not have permission to change roles.'));
+        }
+
         $user = null;
 
         $user = DB::transaction(function () use ($profileData, $userData, $userService) {
@@ -130,6 +135,17 @@ class UserProfileController extends Controller
 
         $profileData = $request->except(['name', 'password']);
         $userData = $request->only(['name', 'email', 'password', 'roles', 'status']);
+
+        if (array_key_exists('roles', $userData) && ! $request->user()?->can('change roles')) {
+            $requestedRoles = collect((array) $userData['roles'])->sort()->values();
+            $currentRoles = $user->getRoleNames()->sort()->values();
+
+            if ($requestedRoles->toArray() !== $currentRoles->toArray()) {
+                throw new AuthorizationException(__('You do not have permission to change roles.'));
+            }
+
+            unset($userData['roles']);
+        }
         
         DB::transaction(function () use ($user, $profileData, $userData, $userService) {
         

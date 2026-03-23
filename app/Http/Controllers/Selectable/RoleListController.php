@@ -14,6 +14,8 @@ class RoleListController extends Controller
      */
     public function __invoke(Request $request)
     {
+        abort_unless($request->user()?->can('change roles'), 403);
+
         $locale = app()->getLocale();
 
         $query = Role::query();
