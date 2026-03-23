@@ -15,12 +15,21 @@ class SendClassEmailCommand extends Command
 {
     protected $signature = 'elsoft:send-class-email {--dry-run : Preview notifications without sending emails} {--detail= : Send notification for a specific class_schedule_detail ID (for testing)}';
 
-    protected $description = 'Send class reminder notifications 30 minutes before class start';
+    protected $description = 'Send class reminder notifications using the configured lead time';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $minutes = (int) config('services.class_notification.reminder_lead_minutes', 70);
+        $this->description = "Send class reminder notifications {$minutes} minutes before class start";
+    }
 
     public function handle(): int
     {
         $dryRun = (bool) $this->option('dry-run');
         $detailId = $this->option('detail');
+        $leadMinutes = (int) config('services.class_notification.reminder_lead_minutes', 70);
 
         if ($detailId) {
             $detail = ClassScheduleDetail::with([
@@ -35,7 +44,7 @@ class SendClassEmailCommand extends Command
             $classes = collect([$detail]);
             $this->info("Testing with ClassScheduleDetail #{$detailId} (status: {$detail->status})");
         } else {
-            $targetStart = now()->startOfMinute()->addMinutes(70);
+            $targetStart = now()->startOfMinute()->addMinutes($leadMinutes);
 
             $classes = ClassScheduleDetail::query()
                 ->with([
