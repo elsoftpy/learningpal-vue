@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UserProfileRequest extends FormRequest
 {
@@ -41,7 +40,7 @@ class UserProfileRequest extends FormRequest
                 'password' => [
                     'nullable', 
                     'string', 
-                    Password::default(), 
+                    'min:6',
                 ],
                 'roles' => [
                     'sometimes',
@@ -89,7 +88,7 @@ class UserProfileRequest extends FormRequest
                 'name.max' => __('Username may not be greater than :max characters.'),
                 'name.unique' => __('This username is already taken.'),
                 'password.string' => __('Password must be a valid string.'),
-                'password.password' => __('Password does not meet the required criteria.'),
+                'password.min' => __('Password must be at least :min characters long.'),
             ]
         );
     }

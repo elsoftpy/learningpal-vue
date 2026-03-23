@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
 class LoginRequest extends FormRequest
 {
@@ -24,7 +23,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'exists:users,name'],
-            'password' => ['required', 'string', Password::default()],
+            'password' => ['required', 'string', 'min:6'],
         ];
     }
 
@@ -36,6 +35,7 @@ class LoginRequest extends FormRequest
             'name.exists' => __('No account found with this name.'),
             'password.required' => __('Password is required.'),
             'password.string' => __('Password must be a valid string.'),
+            'password.min' => __('Password must be at least :min characters long.'),
         ];
     }
 }

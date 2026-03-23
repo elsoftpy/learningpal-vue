@@ -2,7 +2,6 @@
 
 namespace App\Services\Settings\Users;
 
-use App\Enums\StatusEnum;
 use App\Models\User;
 use Transliterator;
 
@@ -39,7 +38,7 @@ class UserService
         
         }
         
-        $userData['status'] = StatusEnum::PENDING->value;
+        $userData['status'] = $userData['status'] ?? 'pending';
 
         $user = $profile->user()->create($userData);
 

@@ -7,7 +7,6 @@ use App\Enums\ProfileTypeEnum;
 use App\Http\Requests\Traits\ProfileValidationTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
@@ -29,7 +28,7 @@ class RegisterRequest extends FormRequest
     {
         return array_merge(
             $this->profileRules(), [
-                'password' => ['required', 'string', Password::default(), 'confirmed'],
+                'password' => ['required', 'string', 'min:6', 'confirmed'],
             ]
         );
     }
@@ -40,6 +39,7 @@ class RegisterRequest extends FormRequest
             $this->profileMessages(), [
                 'password.required' => __('Password is required.'),
                 'password.string' => __('Password must be a valid string.'),
+                'password.min' => __('Password must be at least :min characters long.'),
                 'password.confirmed' => __('Password confirmation does not match.'),
             ]
         );
