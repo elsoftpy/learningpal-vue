@@ -1,0 +1,1 @@
+function a(){return{extractFormData:e=>{if(!e)return{valid:!1,values:{}};const u=e.states?Object.keys(e.states).reduce((t,s)=>(t[s]=e.states[s].value,t),{}):{};return{valid:e.valid||!1,values:u}}}}export{a as u};
