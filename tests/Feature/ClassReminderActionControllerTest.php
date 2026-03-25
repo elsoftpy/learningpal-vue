@@ -129,6 +129,41 @@ class ClassReminderActionControllerTest extends TestCase
         Notification::assertCount(3);
     }
 
+    public function test_upload_task_marks_single_student_course_as_canceled_and_notifies(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('services.class_notification.cc', 'cc@example.com');
+
+        $teacher = Teacher::factory()->create();
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'upload_task',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Request Received'));
+        $this->assertSame(ClassScheduleStatusEnum::CANCELED->value, $detail->fresh()->status);
+        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
+        Notification::assertCount(3);
+    }
+
     public function test_duplicate_execute_request_is_idempotent(): void
     {
         Notification::fake();
