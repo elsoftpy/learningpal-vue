@@ -30,6 +30,7 @@ class SendClassEmailCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
         $detailId = $this->option('detail');
         $leadMinutes = (int) config('services.class_notification.reminder_lead_minutes', 70);
+        $actionExpirationMinutes = (int) config('services.class_notification.action_expiration_minutes', 10);
 
         if ($detailId) {
             $detail = ClassScheduleDetail::with([
@@ -103,10 +104,11 @@ class SendClassEmailCommand extends Command
                 $greeting = '¡Hola '.$profile->full_name.'!';
                 $notifyUrl = URL::temporarySignedRoute(
                     'email.class-reminder.notify',
-                    now()->addMinutes(10),
+                    now()->addMinutes($actionExpirationMinutes),
                     [
                         'detail' => $classDetail->id,
                         'student' => $student->id,
+                        'locale' => app()->getLocale(),
                     ]
                 );
 

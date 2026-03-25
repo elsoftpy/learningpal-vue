@@ -5,10 +5,28 @@
 @section('page-title', __('Request Received'))
 
 @section('body')
+@php
+    $doneStatus = $doneStatus ?? session('done_status');
+@endphp
+
 <div class="w-full max-w-2xl">
     <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-8 text-center">
 
-        @if (session('done_status') === 'already')
+        @if ($doneStatus === 'expired')
+
+            <div class="flex justify-center mb-4 text-amber-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-slate-800 mb-2">
+                {{ __('Link Expired') }}
+            </h2>
+            <p class="text-slate-600">
+                {{ __('This link has expired. Please request a new one if you still need to take action.') }}
+            </p>
+
+        @elseif ($doneStatus === 'already')
 
             <div class="flex justify-center mb-4 text-amber-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

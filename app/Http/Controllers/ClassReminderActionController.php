@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\App;
 use Illuminate\View\View;
 
 class ClassReminderActionController extends Controller
@@ -23,6 +24,8 @@ class ClassReminderActionController extends Controller
      */
     public function showNotifyPage(Request $request, int $detail, int $student): View
     {
+        $this->applyLocaleFromRequest($request);
+
         return $this->showChoicePage($request, $detail, $student);
     }
 
@@ -31,16 +34,22 @@ class ClassReminderActionController extends Controller
      */
     public function confirmPending(Request $request, int $detail, int $student): View
     {
+        $this->applyLocaleFromRequest($request);
+
         return $this->showChoicePage($request, $detail, $student);
     }
 
     public function confirmUploadTask(Request $request, int $detail, int $student): View
     {
+        $this->applyLocaleFromRequest($request);
+
         return $this->showChoicePage($request, $detail, $student);
     }
 
     public function execute(Request $request, string $action, int $detail, int $student): RedirectResponse
     {
+        $this->applyLocaleFromRequest($request);
+
         if (! in_array($action, ['pending', 'upload_task'], true)) {
             abort(404);
         }
@@ -50,6 +59,8 @@ class ClassReminderActionController extends Controller
 
     public function showDonePage(): View
     {
+        $this->applyLocaleFromRequest(request());
+
         return view('email-action.done');
     }
 
@@ -64,13 +75,13 @@ class ClassReminderActionController extends Controller
         $pendingExecuteUrl = URL::temporarySignedRoute(
             'email.class-reminder.execute',
             $expiresAt,
-            ['action' => 'pending', 'detail' => $detailId, 'student' => $studentId]
+            ['action' => 'pending', 'detail' => $detailId, 'student' => $studentId, 'locale' => app()->getLocale()]
         );
 
         $uploadTaskExecuteUrl = URL::temporarySignedRoute(
             'email.class-reminder.execute',
             $expiresAt,
-            ['action' => 'upload_task', 'detail' => $detailId, 'student' => $studentId]
+            ['action' => 'upload_task', 'detail' => $detailId, 'student' => $studentId, 'locale' => app()->getLocale()]
         );
 
         return view('email-action.notify', [
@@ -114,7 +125,7 @@ class ClassReminderActionController extends Controller
         });
 
         if ($alreadyProcessed) {
-            return redirect()->route('email.class-reminder.done')
+            return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
                 ->with('done_status', 'already');
         }
 
@@ -156,8 +167,18 @@ class ClassReminderActionController extends Controller
                 ));
         }
 
-        return redirect()->route('email.class-reminder.done')
+        return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
             ->with('done_status', 'success');
+    }
+
+    private function applyLocaleFromRequest(Request $request): void
+    {
+        $locale = $request->query('locale');
+        $allowedLocales = config('app.available_locales', ['en', 'es', 'pt']);
+
+        if (is_string($locale) && in_array($locale, $allowedLocales, true)) {
+            App::setLocale($locale);
+        }
     }
 
     private function assertStudentBelongsToCourse(int $detailId, int $studentId): void

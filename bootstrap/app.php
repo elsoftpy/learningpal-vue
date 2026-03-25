@@ -3,9 +3,11 @@
 use App\Http\Middleware\InvalidateSessionMiddleware;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\App;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -46,6 +48,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 return ResponseService::unauthorized(
                     message: __('You do not have permission to access this resource.'),
                 );
+            }
+        });
+
+        $exceptions->renderable(function (InvalidSignatureException $e, $request) {
+            if ($request->routeIs('email.class-reminder.*')) {
+                $locale = $request->query('locale');
+                $allowedLocales = config('app.available_locales', ['en', 'es', 'pt']);
+
+                if (is_string($locale) && in_array($locale, $allowedLocales, true)) {
+                    App::setLocale($locale);
+                }
+
+                return response()
+                    ->view('email-action.done', ['doneStatus' => 'expired'], 403);
             }
         });
 

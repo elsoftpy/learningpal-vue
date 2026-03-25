@@ -38,6 +38,7 @@ return [
     'class_notification' => [
         'cc' => env('CLASS_NOTIFICATION_CC', 'iplconfirmaciondeclases@gmail.com'),
         'reminder_lead_minutes' => (int) env('CLASS_REMINDER_LEAD_MINUTES', 70),
+        'action_expiration_minutes' => (int) env('CLASS_REMINDER_ACTION_EXPIRATION_MINUTES', 10),
     ],
 
 ];

@@ -148,7 +148,9 @@ class DistanceActivityController extends Controller
             message: __('Video activity started successfully.'),
             data: [
                 'video_opened_at' => $studentDetail->video_opened_at,
-                'unlock_at' => $studentDetail->video_opened_at?->copy()->addMinutes(DistanceActivityService::VIDEO_COMPLETION_LOCK_MINUTES),
+                'unlock_at' => $studentDetail->video_opened_at?->copy()->addMinutes(
+                    $distanceActivityService->videoCompletionLockMinutes()
+                ),
             ]
         );
     }

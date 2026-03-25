@@ -445,5 +445,20 @@
   "No student attendance records available.": "Não há registros de presença dos estudantes disponíveis.",
   "Hide": "Ocultar",
   "Show": "Mostrar",
-  "The selected student does not belong to this course.": "O estudante selecionado não pertence a este curso."
+  "The selected student does not belong to this course.": "O estudante selecionado não pertence a este curso.",
+  "Class Notification": "Notificação da aula",
+  "Please select one of the following options to let us know:": "Selecione uma das opções abaixo para nos avisar:",
+  "Leave Class Pending": "Deixar aula pendente",
+  "Your class will be marked as pending and rescheduled at a later date.": "Sua aula será marcada como pendente e reagendada para uma data posterior.",
+  "Leave Pending": "Deixar pendente",
+  "Request Class Record Upload": "Solicitar envio do registro da aula",
+  "Your class will be cancelled and the teacher will be asked to upload the class record to the platform.": "Sua aula será cancelada e o professor será solicitado a enviar o registro da aula para a plataforma.",
+  "Upload Task": "Enviar tarefa",
+  "This page prevents automatic security scans from triggering actions on your behalf. Your manual selection is required.": "Esta página impede que verificações automáticas de segurança executem ações em seu nome. Sua seleção manual é necessária.",
+  "Request Received": "Solicitação recebida",
+  "Link Expired": "Link expirado",
+  "This link has expired. Please request a new one if you still need to take action.": "Este link expirou. Solicite um novo se ainda precisar realizar a ação.",
+  "Already Processed": "Já processado",
+  "This request has already been processed. No further action is needed.": "Esta solicitação já foi processada. Nenhuma ação adicional é necessária.",
+  "Your request has been registered. We will be in touch shortly.": "Sua solicitação foi registrada. Entraremos em contato em breve."
 }

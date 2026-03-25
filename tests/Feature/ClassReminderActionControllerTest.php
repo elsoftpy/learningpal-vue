@@ -168,5 +168,31 @@ class ClassReminderActionControllerTest extends TestCase
         Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
         Notification::assertCount(3);
     }
-}
 
+    public function test_expired_signed_route_renders_friendly_page(): void
+    {
+        $teacher = Teacher::factory()->create();
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $expiredUrl = URL::temporarySignedRoute('email.class-reminder.notify', now()->subMinute(), [
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->get($expiredUrl);
+
+        $response->assertStatus(403);
+        $response->assertSee(__('Link Expired'));
+        $response->assertSee(__('This link has expired. Please request a new one if you still need to take action.'));
+    }
+}

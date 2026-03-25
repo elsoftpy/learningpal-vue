@@ -15,8 +15,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DistanceActivityService
 {
-    const VIDEO_COMPLETION_LOCK_MINUTES = 1;
-
     public function canViewAny(User $user): bool
     {
         return $user->can('view all distance activities')
@@ -465,9 +463,10 @@ class DistanceActivityService
                 return __('You must open all previous video activities before completing later tasks.');
             }
 
-            $unlockAt = Carbon::parse($videoOpenedAt)->addMinutes(self::VIDEO_COMPLETION_LOCK_MINUTES);
+            $lockMinutes = $this->videoCompletionLockMinutes();
+            $unlockAt = Carbon::parse($videoOpenedAt)->addMinutes($lockMinutes);
             if (now()->lt($unlockAt)) {
-                return __('You must wait :minutes minutes after opening a previous video before completing later tasks.', ['minutes' => self::VIDEO_COMPLETION_LOCK_MINUTES]);
+                return __('You must wait :minutes minutes after opening a previous video before completing later tasks.', ['minutes' => $lockMinutes]);
             }
         }
 
@@ -486,7 +485,7 @@ class DistanceActivityService
             $unlockAt = $this->videoUnlockAt($studentDetail->video_opened_at);
             if ($unlockAt && now()->lt($unlockAt)) {
                 return __('You must wait :minutes minutes after opening the video before marking this task as completed.', [
-                    'minutes' => self::VIDEO_COMPLETION_LOCK_MINUTES,
+                    'minutes' => $this->videoCompletionLockMinutes(),
                 ]);
             }
         }
@@ -555,7 +554,7 @@ class DistanceActivityService
             $currentUnlockAt = $this->videoUnlockAt($currentStudentDetail->video_opened_at);
             if ($currentUnlockAt?->isFuture()) {
                 return __('You must wait :minutes minutes after opening the video before marking this task as completed.', [
-                    'minutes' => self::VIDEO_COMPLETION_LOCK_MINUTES,
+                    'minutes' => $this->videoCompletionLockMinutes(),
                 ]);
             }
         }
@@ -579,7 +578,7 @@ class DistanceActivityService
             $candidate = $this->videoUnlockAt($previousStudentDetail->video_opened_at);
             if ($candidate->isFuture()) {
                 return __('You must wait :minutes minutes after opening a previous video before completing later tasks.', [
-                    'minutes' => self::VIDEO_COMPLETION_LOCK_MINUTES,
+                    'minutes' => $this->videoCompletionLockMinutes(),
                 ]);
             }
         }
@@ -593,7 +592,12 @@ class DistanceActivityService
             return null;
         }
 
-        return Carbon::parse($videoOpenedAt)->addMinutes(self::VIDEO_COMPLETION_LOCK_MINUTES);
+        return Carbon::parse($videoOpenedAt)->addMinutes($this->videoCompletionLockMinutes());
+    }
+
+    public function videoCompletionLockMinutes(): int
+    {
+        return (int) config('academics.distance_activities.video_completion_lock_minutes', 1);
     }
 
     protected function syncDistanceActivityStudentCompletion(DistanceActivity $activity, int $studentId): void
