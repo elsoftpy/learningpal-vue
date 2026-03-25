@@ -14,9 +14,10 @@ class CourseListController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $query = Course::query();
+        $query = Course::query()->with(['language', 'languageLevel']);
+        $search = trim((string) ($request->input('search') ?? $request->input('params.search', '')));
 
-        if ($request?->search === '') {
+        if ($search === '') {
             return $query->limit(10)->get()->map(function ($course) {
                 return [
                     'id' => $course->id,
@@ -25,13 +26,15 @@ class CourseListController extends Controller
             });
         }
 
-        $query->where('name', 'like', '%'.$request->search.'%')
-            ->orWhereHas('language', function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%');
+        $query->where(function ($query) use ($search) {
+            $query->where('name', 'like', '%'.$search.'%')
+            ->orWhereHas('language', function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%');
             })
-            ->orWhereHas('languageLevel', function ($q) use ($request) {
-                $q->where('level', 'like', '%'.$request->search.'%');
+            ->orWhereHas('languageLevel', function ($q) use ($search) {
+                $q->where('level', 'like', '%'.$search.'%');
             });
+        });
 
         return $query->limit(10)->get()->map(function ($course) {
             return [
