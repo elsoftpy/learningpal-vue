@@ -52,7 +52,7 @@ class ApiRegisterTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
-            'name' => 'JohnDoe',
+            'name' => 'johnd',
             'email' => 'john.doe@example.com',
             'status' => StatusEnum::PENDING->value,
         ]);

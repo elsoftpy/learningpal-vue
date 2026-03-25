@@ -7,13 +7,11 @@ use Transliterator;
 
 class UserService
 {
-    protected function getUsername(string $fullName): string
+    protected function getUsername(array $profileData): string
     {
-        $userName =  str_replace(' ', '', strtolower(trim($fullName)));
+        $userName = $this->buildBaseUsername($profileData);
 
         $existingUserCount = User::where('name', 'like', $userName . '%')->count();
-        
-        $userName = $this->normalizeString($userName);
 
         if ($existingUserCount > 0) {
             $userName .= str_pad($existingUserCount + 1, 3, '0', STR_PAD_LEFT);
@@ -29,12 +27,38 @@ class UserService
         return $transliterator->transliterate($value);
     }
 
+    protected function buildBaseUsername(array $profileData): string
+    {
+        $firstName = trim((string) ($profileData['first_name'] ?? ''));
+        $lastName = trim((string) ($profileData['last_name'] ?? ''));
+
+        if (($profileData['type'] ?? null) === 'person' && $firstName !== '') {
+            $baseUserName = $firstName;
+
+            if ($lastName !== '') {
+                $baseUserName .= mb_substr($lastName, 0, 1);
+            }
+
+            return strtolower(str_replace(' ', '', $this->normalizeString($baseUserName) ?? 'user'));
+        }
+
+        $fullName = trim((string) ($profileData['full_name'] ?? $profileData['company_name'] ?? 'user'));
+
+        return strtolower(str_replace(' ', '', $this->normalizeString($fullName) ?? 'user'));
+    }
+
     public function createUser(array $userData, array $profileData): User
     {
         $profile = (new ProfileService())->firstOrCreateProfile($profileData);
 
         if (empty($userData['name'])) {
-            $userData['name'] = $this->getUsername($profile->full_name ?? 'user');
+            $userData['name'] = $this->getUsername([
+                'type' => $profile->type,
+                'first_name' => $profile->first_name,
+                'last_name' => $profile->last_name,
+                'company_name' => $profile->company_name,
+                'full_name' => $profile->full_name,
+            ]);
         
         }
         

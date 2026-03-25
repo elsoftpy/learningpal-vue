@@ -67,7 +67,7 @@ class RegisterSpaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
-            'name' => 'johndoe',
+            'name' => 'johnd',
             'email' => 'john.doe@example.com',
             'status' => StatusEnum::PENDING->value,
         ]);
@@ -241,5 +241,33 @@ class RegisterSpaTest extends TestCase
         $response->assertJsonValidationErrors(['type']);
 
         $this->assertGuest();
+    }
+
+    public function test_person_registration_appends_numeric_suffix_when_generated_username_already_exists()
+    {
+        User::factory()->create([
+            'name' => 'johnd',
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $response = $this->postJson(route('auth.register'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john.second@example.com',
+            'password' => 'password123!',
+            'password_confirmation' => 'password123!',
+            'phone' => '5556667777',
+            'personal_id' => '999999',
+            'gender' => 'male',
+            'address' => '123 Main St',
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'johnd002',
+            'email' => 'john.second@example.com',
+        ]);
     }
 }
