@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ClassScheduleStatusEnum;
+use App\Models\ClassReminderAction;
 use App\Models\ClassSchedule;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
@@ -127,6 +128,63 @@ class ClassReminderActionControllerTest extends TestCase
         $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
         Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
         Notification::assertCount(3);
+    }
+
+    public function test_each_student_can_submit_an_action_independently_for_the_same_multi_student_course(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('services.class_notification.cc', 'cc@example.com');
+
+        $teacher = Teacher::factory()->create();
+        $studentA = Student::factory()->create();
+        $studentB = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$studentA->id, $studentB->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $studentAUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'pending',
+            'detail' => $detail->id,
+            'student' => $studentA->id,
+        ]);
+
+        $studentBUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'upload_task',
+            'detail' => $detail->id,
+            'student' => $studentB->id,
+        ]);
+
+        $first = $this->followingRedirects()->post($studentAUrl);
+        $second = $this->followingRedirects()->post($studentBUrl);
+
+        $first->assertOk();
+        $first->assertSee(__('Request Received'));
+
+        $second->assertOk();
+        $second->assertSee(__('Request Received'));
+        $second->assertDontSee(__('Already Processed'));
+
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        $this->assertDatabaseHas('class_reminder_actions', [
+            'class_schedule_detail_id' => $detail->id,
+            'student_id' => $studentA->id,
+            'action_type' => 'pending',
+        ]);
+        $this->assertDatabaseHas('class_reminder_actions', [
+            'class_schedule_detail_id' => $detail->id,
+            'student_id' => $studentB->id,
+            'action_type' => 'upload_task',
+        ]);
+        $this->assertSame(2, ClassReminderAction::query()->count());
     }
 
     public function test_upload_task_marks_single_student_course_as_canceled_and_notifies(): void
