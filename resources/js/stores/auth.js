@@ -18,8 +18,13 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     actions: {
-        async ensureCsrf() {
-            if (!this.csrfLoaded) {
+        clearAuthState() {
+            this.user = null;
+            this.isAuthenticated = false;
+        },
+
+        async ensureCsrf(force = false) {
+            if (force || !this.csrfLoaded) {
                 await csrfCookie();
                 this.csrfLoaded = true;
             }
@@ -37,8 +42,7 @@ export const useAuthStore = defineStore('auth', {
 
                 return true;
             } catch (error) {
-                this.user = null;
-                this.isAuthenticated = false;
+                this.clearAuthState();
                 
                 return false;
             } finally {
@@ -60,8 +64,7 @@ export const useAuthStore = defineStore('auth', {
                 return {success: true, user: response.data.data.user};
 
             } catch (error) {
-                this.user = null;
-                this.isAuthenticated = false;
+                this.clearAuthState();
                 
                 throw error;
 
@@ -73,17 +76,28 @@ export const useAuthStore = defineStore('auth', {
         async logout() {
             this.loading = true;
             try {
+                await this.ensureCsrf(true);
                 await logoutRequest();
 
-                this.user = null;
-                this.isAuthenticated = false;
+                this.clearAuthState();
 
             } catch (error) {
+                const status = error?.response?.status;
+
+                // If the session or CSRF token already expired, treat logout as complete
+                // and let the UI continue to the login screen.
+                if (status === 401 || status === 419) {
+                    this.clearAuthState();
+                    this.ready = true;
+                    this.csrfLoaded = false;
+                    return;
+                }
                 
                 throw error;
 
             } finally {
                 this.loading = false;
+                this.csrfLoaded = false;
             }
         },
 
@@ -101,8 +115,7 @@ export const useAuthStore = defineStore('auth', {
                 return {success: true, user: this.user};
                 
             } catch (error) {
-                this.user = null;
-                this.isAuthenticated = false;
+                this.clearAuthState();
 
                 throw error;
             }
