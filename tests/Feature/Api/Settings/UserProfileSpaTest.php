@@ -8,6 +8,7 @@ use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -32,7 +33,7 @@ class UserProfileSpaTest extends TestCase
             'email' => 'jane.smith@example.com',
             'name' => $user->name,
             'roles' => ['student'],
-            'status' => 'disabled',
+            'status' => $user->status,
         ]);
 
         $response->assertStatus(200);
@@ -70,7 +71,7 @@ class UserProfileSpaTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
             'email' => 'jane.smith@example.com',
-            'status' => 'disabled',
+            'status' => $user->status,
         ]);
     }
 
@@ -200,6 +201,58 @@ class UserProfileSpaTest extends TestCase
         ]);
     }
 
+    public function test_admin_user_cannot_create_user_with_non_image_avatar()
+    {
+        $adminUser = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $adminUser->assignRole('admin');
+
+        $this->actingAs($adminUser, 'web');
+
+        $response = $this->post(route('settings.users.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => '987654322',
+            'first_name' => 'Michael',
+            'last_name' => 'Brown',
+            'name' => 'michael.brown',
+            'password' => 'SecurePass123!',
+            'roles' => ['student'],
+            'status' => StatusEnum::ACTIVE->value,
+            'email' => 'michael.avatar@example.com',
+            'avatar' => UploadedFile::fake()->create('avatar.pdf', 10, 'application/pdf'),
+        ]);
+
+        $response->assertInvalid(['avatar']);
+    }
+
+    public function test_admin_user_cannot_create_user_with_invalid_payment_receipt(): void
+    {
+        $adminUser = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $adminUser->assignRole('admin');
+
+        $this->actingAs($adminUser, 'web');
+
+        $response = $this->post(route('settings.users.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => '987654323',
+            'first_name' => 'Michael',
+            'last_name' => 'Brown',
+            'name' => 'michael.brown',
+            'password' => 'SecurePass123!',
+            'roles' => ['student'],
+            'status' => StatusEnum::ACTIVE->value,
+            'email' => 'michael.receipt@example.com',
+            'payment_receipt' => UploadedFile::fake()->create('receipt.zip', 10, 'application/zip'),
+        ]);
+
+        $response->assertInvalid(['payment_receipt']);
+    }
+
     public function test_forbidden_user_cannot_create_user()
     {
         $user = User::factory()->create([
@@ -300,6 +353,56 @@ class UserProfileSpaTest extends TestCase
             'last_name' => 'Williams',
             'email' => 'bob.williams@example.com',
         ]);
+    }
+
+    public function test_user_profile_update_rejects_non_image_avatar_uploads()
+    {
+        $user = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $user->assignRole('admin');
+
+        $this->actingAs($user, 'web');
+
+        $response = $this->post(route('settings.users.profile.update', ['user' => $user->id]), [
+            'type' => $user->profile->type,
+            'personal_id' => $user->profile->personal_id,
+            'first_name' => $user->profile->first_name,
+            'last_name' => $user->profile->last_name,
+            'email' => $user->email,
+            'name' => $user->name,
+            'roles' => ['admin'],
+            'status' => $user->status,
+            'avatar' => UploadedFile::fake()->create('avatar.pdf', 10, 'application/pdf'),
+        ]);
+
+        $response->assertInvalid(['avatar']);
+    }
+
+    public function test_user_profile_update_rejects_invalid_payment_receipt_uploads(): void
+    {
+        $user = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $user->assignRole('admin');
+
+        $this->actingAs($user, 'web');
+
+        $response = $this->post(route('settings.users.profile.update', ['user' => $user->id]), [
+            'type' => $user->profile->type,
+            'personal_id' => $user->profile->personal_id,
+            'first_name' => $user->profile->first_name,
+            'last_name' => $user->profile->last_name,
+            'email' => $user->email,
+            'name' => $user->name,
+            'roles' => ['admin'],
+            'status' => $user->status,
+            'payment_receipt' => UploadedFile::fake()->create('receipt.zip', 10, 'application/zip'),
+        ]);
+
+        $response->assertInvalid(['payment_receipt']);
     }
 
     public function test_user_cannot_edit_another_users_profile()

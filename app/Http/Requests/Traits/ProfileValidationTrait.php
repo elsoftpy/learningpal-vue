@@ -65,6 +65,19 @@ trait ProfileValidationTrait
                 'string', 
                 Rule::in(GenderEnum::values()),
             ],
+            'avatar' => [
+                'nullable',
+                'file',
+                'image',
+                'max:2048',
+                'mimes:jpeg,png,jpg,gif,webp',
+            ],
+            'payment_receipt' => [
+                'nullable',
+                'file',
+                'max:4096',
+                'mimes:jpeg,png,jpg,gif,webp,pdf',
+            ],
         ];
     }
 
@@ -100,6 +113,13 @@ trait ProfileValidationTrait
             'address.max' => __('Address may not be greater than :max characters.'),
             'gender.in' => __('Selected gender is invalid.'),
             'gender.string' => __('Gender must be a valid string.'),
+            'avatar.file' => __('Avatar must be a file.'),
+            'avatar.image' => __('Avatar must be an image.'),
+            'avatar.max' => __('Avatar may not be greater than :max kilobytes.'),
+            'avatar.mimes' => __('Avatar must be a file of type: :values.'),
+            'payment_receipt.file' => __('Payment receipt must be a file.'),
+            'payment_receipt.max' => __('Payment receipt may not be greater than :max kilobytes.'),
+            'payment_receipt.mimes' => __('Payment receipt must be a file of type: :values.'),
         ];
     }
 

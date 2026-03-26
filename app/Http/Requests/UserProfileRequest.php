@@ -62,19 +62,6 @@ class UserProfileRequest extends FormRequest
                     'date',
                     'before:today',
                 ],
-                'avatar' => [
-                    'nullable',
-                    'file',
-                    'image',
-                    'max:2048', // Max size in KB
-                    'mimes:jpeg,png,jpg,gif,webp',
-                ],
-                'payment_receipt' => [
-                    'nullable',
-                    'file',
-                    'max:4096', // Max size in KB
-                    'mimes:jpeg,png,jpg,gif,webp,pdf',
-                ],
             ]
         );
     }

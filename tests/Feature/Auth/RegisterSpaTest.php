@@ -7,6 +7,7 @@ use App\Enums\StatusEnum;
 use App\Models\Profile;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class RegisterSpaTest extends TestCase
@@ -269,5 +270,45 @@ class RegisterSpaTest extends TestCase
             'name' => 'johnd002',
             'email' => 'john.second@example.com',
         ]);
+    }
+
+    public function test_registration_rejects_non_image_avatar_uploads()
+    {
+        $response = $this->post(route('auth.register'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john.avatar@example.com',
+            'password' => 'password123!',
+            'password_confirmation' => 'password123!',
+            'phone' => '1234567890',
+            'personal_id' => '456789',
+            'gender' => 'male',
+            'address' => '123 Main St',
+            'avatar' => UploadedFile::fake()->create('avatar.pdf', 10, 'application/pdf'),
+        ]);
+
+        $response->assertInvalid(['avatar']);
+        $this->assertGuest();
+    }
+
+    public function test_registration_rejects_invalid_payment_receipt_uploads()
+    {
+        $response = $this->post(route('auth.register'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john.receipt@example.com',
+            'password' => 'password123!',
+            'password_confirmation' => 'password123!',
+            'phone' => '1234567890',
+            'personal_id' => '456790',
+            'gender' => 'male',
+            'address' => '123 Main St',
+            'payment_receipt' => UploadedFile::fake()->create('receipt.zip', 10, 'application/zip'),
+        ]);
+
+        $response->assertInvalid(['payment_receipt']);
+        $this->assertGuest();
     }
 }
