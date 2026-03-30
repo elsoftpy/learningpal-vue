@@ -56,8 +56,22 @@ export const useAuthStore = defineStore('auth', {
 
             try {
                 await this.ensureCsrf();
+                let response;
 
-                const response = await loginRequest(credentials);
+                try {
+                    response = await loginRequest(credentials);
+                } catch (error) {
+                    if (error?.response?.status !== 419) {
+                        throw error;
+                    }
+
+                    // When switching between accounts, the browser can keep a stale
+                    // CSRF cookie for a moment. Refresh it once and retry login.
+                    this.csrfLoaded = false;
+                    await this.ensureCsrf(true);
+                    response = await loginRequest(credentials);
+                }
+
                 this.isAuthenticated = true;
                 this.user = response.data.data.user;
 
