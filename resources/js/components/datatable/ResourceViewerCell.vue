@@ -96,7 +96,7 @@ function detectResourceType(url) {
     const extension = url.split('?')[0].split('.').pop()?.toLowerCase();
     if (!extension) return 'unknown';
 
-    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension)) {
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'avif'].includes(extension)) {
         return 'image';
     }
     if (extension === 'pdf') {

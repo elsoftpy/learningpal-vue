@@ -81,6 +81,9 @@
         <small v-if="error" class="text-red-500 mt-1">
             {{ error }}
         </small>
+        <small v-else-if="helperText" class="text-gray-500 mt-1">
+            {{ helperText }}
+        </small>
     </div>
 </template>
 
@@ -146,6 +149,10 @@ const props = defineProps({
         default: 'w-full'
     },
     error: {
+        type: String,
+        default: ''
+    },
+    helperText: {
         type: String,
         default: ''
     },

@@ -7,11 +7,22 @@ use App\Services\Utilities\DateTimeService;
 
 trait UserProfileTrait
 {
+    protected function mediaUrlWithVersion($media): ?string
+    {
+        if (! $media) {
+            return null;
+        }
+
+        return $media->getUrl().'?v='.$media->updated_at?->timestamp;
+    }
+
     public function userData(User $user): array
     {
         $roles = $user->getRoleNames()->toArray();
         $translatedRoles = array_map(fn($role) => ucfirst(__($role)), $roles);
         $profile = $user->profile;
+        $avatar = $profile?->getFirstMedia('avatar');
+        $paymentReceipt = $profile?->getFirstMedia('payment_receipt');
 
         $permissions = $user->getAllPermissions()->pluck('name'); 
 
@@ -36,8 +47,8 @@ trait UserProfileTrait
             'display_status' => ucfirst(__($user->status)),
             'roles' => $roles,
             'display_roles' => $translatedRoles,
-            'avatar_url' => $profile->getFirstMediaUrl('avatar') ?: null,
-            'payment_receipt' => $profile->getFirstMediaUrl('payment_receipt') ?: null,
+            'avatar_url' => $this->mediaUrlWithVersion($avatar),
+            'payment_receipt' => $this->mediaUrlWithVersion($paymentReceipt),
             'permissions' => $permissions,
         ];
     }

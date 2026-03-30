@@ -7,6 +7,15 @@ use App\Services\Utilities\DateTimeService;
 
 class ProfileService
 {
+    protected function mediaUrlWithVersion($media): ?string
+    {
+        if (! $media) {
+            return null;
+        }
+
+        return $media->getUrl().'?v='.$media->updated_at?->timestamp;
+    }
+
     public function getFullName(string $type, ?string $firstName, ?string $lastName, ?string $companyName): string
     {
         if ($type === 'person') {
@@ -86,6 +95,9 @@ class ProfileService
 
     public function profileData(Profile $profile): array
     {
+        $avatar = $profile->getFirstMedia('avatar');
+        $paymentReceipt = $profile->getFirstMedia('payment_receipt');
+
         return [
             'id' => $profile->id,
             'type' => $profile->type,
@@ -100,8 +112,8 @@ class ProfileService
             'address' => $profile->address,
             'gender' => $profile->gender,
             'birth_date' => DateTimeService::formatDate($profile->birth_date),
-            'avatar_url' => $profile->getFirstMediaUrl('avatar') ?: null,
-            'payment_receipt' => $profile->getFirstMediaUrl('payment_receipt') ?: null,
+            'avatar_url' => $this->mediaUrlWithVersion($avatar),
+            'payment_receipt' => $this->mediaUrlWithVersion($paymentReceipt),
         ];
     }
 }

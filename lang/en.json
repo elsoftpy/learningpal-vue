@@ -5,6 +5,8 @@
     "Address may not be greater than :max characters.": "Address may not be greater than :max characters.",
     "Address must be a valid string.": "Address must be a valid string.",
     "An account with this email already exists.": "An account with this email already exists.",
+    "Allowed formats: JPG, JPEG, PNG, GIF, WEBP.": "Allowed formats: JPG, JPEG, PNG, GIF, WEBP.",
+    "Allowed formats: JPG, JPEG, PNG, GIF, WEBP, PDF.": "Allowed formats: JPG, JPEG, PNG, GIF, WEBP, PDF.",
     "Authenticated user retrieved successfully.": "Authenticated user retrieved successfully.",
     "Canceled": "Canceled",
     "Class record created successfully.": "Class record created successfully.",
