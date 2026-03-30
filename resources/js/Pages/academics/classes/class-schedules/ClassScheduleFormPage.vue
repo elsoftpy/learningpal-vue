@@ -223,6 +223,7 @@
                                         <th class="px-3 py-2 text-left">{{ $t('Start') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('End') }}</th>
                                         <th class="px-3 py-2 text-right">{{ $t('Count') }}</th>
+                                        <th class="px-3 py-2 text-left">{{ $t('Status') }}</th>
                                         <th class="px-3 py-2 text-left">{{ $t('Actions') }}</th>
                                     </tr>
                                 </thead>
@@ -235,6 +236,12 @@
                                         <td class="px-3 py-2 text-left">{{ detail.rescheduled_start_time }}</td>
                                         <td class="px-3 py-2 text-left">{{ detail.rescheduled_end_time }}</td>
                                         <td class="px-3 py-2 text-right">{{ detail.reschedule_count }}</td>
+                                        <td class="px-3 py-2 text-left">
+                                            <Tag
+                                                :value="detail.display_status"
+                                                :severity="statusSeverity(detail.status)"
+                                            />
+                                        </td>
                                         <!-- <td class="px-3 py-2 text-right">
                                             <Button
                                                 type="button"
@@ -298,6 +305,7 @@ import MonthInput from '@/components/form/MonthInput.vue';
 import DateInput from '@/components/form/DateInput.vue';
 import Message from 'primevue/message';
 import Button from 'primevue/button';
+import Tag from 'primevue/tag';
 import axios from 'axios';
 import SubmitButton from '@/components/form/SubmitButton.vue';
 import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
@@ -356,8 +364,29 @@ const normalizeDetail = (detail = {}) => ({
     topic: detail.topic ?? '',
     activity: detail.activity ?? '',
     order: detail.order ?? null,
+    status: detail.status ?? 'scheduled',
+    display_status: detail.display_status ?? (detail.status ? $t(detail.status.charAt(0).toUpperCase() + detail.status.slice(1)) : $t('Scheduled')),
     _key: detail._key ?? (detail.id ? `detail-${detail.id}` : generateDetailKey()),
 });
+
+const statusSeverity = (status) => {
+    switch (status) {
+        case 'scheduled':
+            return 'primary';
+        case 'completed':
+            return 'success';
+        case 'pending':
+            return 'warn';
+        case 'ongoing':
+            return 'secondary';
+        case 'reprogramed':
+            return 'info';
+        case 'canceled':
+            return 'danger';
+        default:
+            return 'primary';
+    }
+};
 
 const loadScheduleDetails = (details = []) => {
     if (!Array.isArray(details)) {
