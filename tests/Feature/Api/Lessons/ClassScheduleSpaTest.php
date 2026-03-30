@@ -164,4 +164,5 @@ class ClassScheduleSpaTest extends TestCase
             array_column($response->json('data.class_schedules'), 'name')
         );
     }
+
 }

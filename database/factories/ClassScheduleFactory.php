@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Course;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +21,7 @@ class ClassScheduleFactory extends Factory
         return [
             'course_id' => Course::query()->inRandomOrder()->first()?->id ?? Course::factory(),
             'name' => $this->faker->word(),
-            'schedule_month' => $this->faker->dateTimeBetween('now', '+3 months'),
+            'schedule_month' => Carbon::instance($this->faker->dateTimeBetween('now', '+3 months'))->startOfMonth(),
             'feedback' => $this->faker->optional()->sentence(),
         ];
     }

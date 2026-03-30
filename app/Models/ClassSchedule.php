@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,13 @@ class ClassSchedule extends Model
         return [
             'schedule_month' => 'date',
         ];
+    }
+
+    public function setScheduleMonthAttribute($value): void
+    {
+        $this->attributes['schedule_month'] = $value
+            ? Carbon::parse($value)->startOfMonth()->toDateString()
+            : null;
     }
 
     public function course(): BelongsTo

@@ -76,11 +76,13 @@ class DateTimeService
         if (!$monthYearString) {
             return null;
         }
-        
-        return match(app()->getLocale()) {
+
+        $monthYear = match(app()->getLocale()) {
             'es', 'pt' => Carbon::createFromFormat('m/Y', $monthYearString),
             'en' => Carbon::createFromFormat('m/Y', $monthYearString),
             default => null,
         };
+
+        return $monthYear?->startOfMonth();
     }
 }
