@@ -457,6 +457,7 @@
   "Request Received": "Solicitud recibida",
   "Link Expired": "Enlace vencido",
   "This link has expired. Please request a new one if you still need to take action.": "Este enlace ha vencido. Solicite uno nuevo si todavia necesita realizar la accion.",
+  "You can reschedule a class up to 1 hour before the scheduled time. If you cannot attend, your Teacher will upload an activity for you to complete before the next class.": "Puedes reagendar una clase hasta 1 hora antes del horario programado. Si no puedes asistir, tu Teacher subirá una actividad para que la realices antes de la siguiente clase.",
   "Already Processed": "Ya procesado",
   "This request has already been processed. No further action is needed.": "Esta solicitud ya fue procesada. No se requiere ninguna accion adicional.",
   "Your request has been registered. We will be in touch shortly.": "Su solicitud ha sido registrada. Nos pondremos en contacto en breve."

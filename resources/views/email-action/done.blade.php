@@ -25,6 +25,9 @@
             <p class="text-slate-600">
                 {{ __('This link has expired. Please request a new one if you still need to take action.') }}
             </p>
+            <p class="text-slate-600 mt-3">
+                {{ __('You can reschedule a class up to 1 hour before the scheduled time. If you cannot attend, your Teacher will upload an activity for you to complete before the next class.') }}
+            </p>
 
         @elseif ($doneStatus === 'already')
 
