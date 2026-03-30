@@ -75,6 +75,46 @@ const authStore = useAuthStore(pinia);
 const themeStore = useThemeStore(pinia);
 themeStore.initialize();
 
+let isHandlingAuthFailure = false;
+
+axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const status = error?.response?.status;
+        const requestUrl = error?.config?.url ?? '';
+        const skipAuthRecovery = [
+            '/auth/login',
+            '/auth/logout',
+            '/auth/me',
+            '/sanctum/csrf-cookie',
+        ].some((path) => requestUrl.includes(path));
+
+        if ((status === 401 || status === 419) && !skipAuthRecovery) {
+            authStore.handleSessionExpiry();
+
+            if (!isHandlingAuthFailure) {
+                isHandlingAuthFailure = true;
+                try {
+                    const currentRoute = router.currentRoute.value;
+                    const isLoginRoute = currentRoute?.name === 'login';
+                    const redirectTarget = currentRoute?.fullPath || '/dashboard';
+
+                    if (!isLoginRoute) {
+                        await router.replace({
+                            name: 'login',
+                            query: { redirect: redirectTarget },
+                        });
+                    }
+                } finally {
+                    isHandlingAuthFailure = false;
+                }
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 authStore.checkAuth().finally(() => {
     app.mount('#app');
 });

@@ -23,6 +23,12 @@ export const useAuthStore = defineStore('auth', {
             this.isAuthenticated = false;
         },
 
+        handleSessionExpiry() {
+            this.clearAuthState();
+            this.ready = true;
+            this.csrfLoaded = false;
+        },
+
         async ensureCsrf(force = false) {
             if (force || !this.csrfLoaded) {
                 await csrfCookie();
@@ -101,9 +107,7 @@ export const useAuthStore = defineStore('auth', {
                 // If the session or CSRF token already expired, treat logout as complete
                 // and let the UI continue to the login screen.
                 if (status === 401 || status === 419) {
-                    this.clearAuthState();
-                    this.ready = true;
-                    this.csrfLoaded = false;
+                    this.handleSessionExpiry();
                     return;
                 }
                 
