@@ -629,7 +629,14 @@ const handleSubmit =  async (formData) => {
             life: 3000 
         });
 
-        router.push({ name: 'settings.users.list' });
+        if (crudAction === 'edit.auth-user') {
+            router.push({
+                name: 'settings.users.profile',
+                params: { id: auth.user?.id ?? userId },
+            });
+        } else {
+            router.push({ name: 'settings.users.list' });
+        }
 
     } catch (error) {
         const apiError = handleApiError(error)

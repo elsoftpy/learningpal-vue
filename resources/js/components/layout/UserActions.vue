@@ -1,11 +1,12 @@
 <template>
     <div class="relative" ref="wrap">
         <button 
+            v-if="auth.user"
             @click="show = true"
             class="flex items-center gap-2"
         >
             <span class="md:inline text-slate-900 dark:text-white">
-                {{ auth.user.name }}
+                {{ auth.user?.name }}
             </span>    
             <img
                 :src="avatar"
@@ -18,11 +19,11 @@
 
         <div 
             @mouseleave="show = false" 
-            v-if="show" 
+            v-if="show && auth.user" 
             class="absolute right-0 mt-2 w-48 py-1 bg-blue-200 dark:bg-blue-700 rounded shadow-lg z-50"
         >
             <router-link
-                :to="{ name: 'settings.users.profile', params: { id: auth.user.id } }"
+                :to="{ name: 'settings.users.profile', params: { id: auth.user?.id } }"
                 class="block px-4 py-2 text-sm text-slate-900 dark:text-white hover:bg-blue-300 dark:hover:bg-blue-600"
             >
                 <div class="flex space-x-2 items-center">
@@ -55,14 +56,21 @@ const auth = useAuthStore();
 const router = useRouter();
 const show = ref(false);
 const avatar = computed(() => {
-    return auth.user.avatar_url || defaultAvatar;
+    return auth.user?.avatar_url || defaultAvatar;
 });
 
 console.log('UserActions auth.user:', auth.user);
 
-function logout() {
-    auth.logout().then(() => {
+async function logout() {
+    show.value = false;
+
+    try {
+        await auth.logout();
+    } catch (error) {
+        console.error('Logout failed, clearing client auth state anyway:', error);
+        auth.clearAuthState();
+    } finally {
         router.replace({ name: 'login' });
-    });
+    }
 }
 </script>
