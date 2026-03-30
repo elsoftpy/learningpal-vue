@@ -2,7 +2,6 @@
 
 namespace App\Services\Academics\Lessons;
 
-use App\Enums\ClassScheduleStatusEnum;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
 use App\Services\Academics\Settings\CourseService;
@@ -13,45 +12,31 @@ use Illuminate\Http\Request;
 
 class CalendarService
 {
-    protected function scheduledSessionsQuery(Carbon $startDate, Carbon $endDate): Builder {
-    
+    protected function sessionsQuery(Carbon $startDate, Carbon $endDate): Builder {
         return ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
-            ->whereBetween('session_date', [
-                $startDate->startOfDay(), 
-                $endDate->endOfDay(),
-            ])
-            ->where('status', ClassScheduleStatusEnum::SCHEDULED->value);
-    }
-
-    protected function reprogramedSessionsQuery(Carbon $startDate, Carbon $endDate): Builder {
-    
-        return ClassScheduleDetail::query()
-            ->with(['classSchedule', 'classSchedule.course'])
-            ->whereBetween('rescheduled_date', [
-                $startDate->startOfDay(), 
-                $endDate->endOfDay(),
-            ])
-            ->where('status', ClassScheduleStatusEnum::REPROGRAMED->value);
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('session_date', [
+                    $startDate->startOfDay(),
+                    $endDate->endOfDay(),
+                ])->orWhereBetween('rescheduled_date', [
+                    $startDate->startOfDay(),
+                    $endDate->endOfDay(),
+                ]);
+            });
     }
 
     public function calendarsColorsScheme(Request $request): array
     {
-        $scheduledSessions = $this->scheduledSessionsQuery(
+        $sessions = $this->sessionsQuery(
             $request->start_date,
             $request->end_date
         );
 
-        $reprogramedSessions = $this->reprogramedSessionsQuery(
-            $request->start_date,
-            $request->end_date
-        );
-          
-        $coursesIds = $scheduledSessions->unionAll($reprogramedSessions)
-           ->get()
-           ->pluck('classSchedule.course.id')
-           ->unique()
-           ->toArray();
+        $coursesIds = $sessions->get()
+            ->pluck('classSchedule.course.id')
+            ->unique()
+            ->toArray();
 
         $courses = Course::query()
             ->whereIn('id', $coursesIds)

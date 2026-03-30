@@ -12,51 +12,24 @@
             </div>
           </div>
           <div class="flex flex-col items-center justify-center space-y-3">
+            <div class="flex w-full flex-wrap gap-2">
+              <button
+                v-for="option in sessionStatusOptions"
+                :key="option.value"
+                type="button"
+                class="rounded-full border px-3 py-1 text-xs font-semibold transition"
+                :class="selectedSessionStatus === option.value
+                  ? 'border-blue-600 bg-blue-600 text-white'
+                  : 'border-slate-300 bg-white text-slate-600 hover:border-blue-400 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-300'"
+                @click="toggleSessionStatusFilter(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
             <ScheduleXCalendar class="w-full" :calendar-app="calendarApp" />
             <p v-if="sessionsLoading" class="w-full text-xs text-blue-500">Loading sessions…</p>
             <p v-else-if="sessionsError" class="w-full text-xs text-red-500">{{ sessionsError }}</p>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex w-full bg-slate-50 dark:bg-slate-900 shadow-md rounded-md">
-      <div class="w-full p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('Ongoing and Pending Sessions') }}
-          </div>
-          <button
-            v-if="ongoingAndPendingSessions.length"
-            type="button"
-            class="text-xs text-blue-500 hover:underline"
-            @click="fetchOngoingAndPendingSessions"
-          >
-            {{ $t('Refresh') }}
-          </button>
-        </div>
-        <p v-if="ongoingLoading" class="text-xs text-blue-500">Loading ongoing and pending sessions…</p>
-        <p v-else-if="ongoingError" class="text-xs text-red-500">{{ ongoingError }}</p>
-        <div v-else-if="!ongoingAndPendingSessions.length" class="text-xs text-slate-500">No ongoing and pending sessions.</div>
-        <div v-else class="flex flex-wrap gap-2">
-          <Tag
-            v-for="session in ongoingAndPendingSessions"
-            :key="session.id"
-            class="text-xs"
-            :style="getCourseTagStyle({ courseName: session.display_course, courseId: session.course_id })"
-          >
-            <a 
-              href="#"
-              @click.prevent="toEditPage(session.class_schedule_id, session.id)"
-            >
-              <div class="flex flex-col">
-                <span class="font-semibold">{{ session.display_course ?? 'Ongoing session' }}</span>
-                <span v-if="session.rescheduled_date" class="text-xs">
-                  {{ session.rescheduled_date }} {{ session.rescheduled_start_time }} - {{ session.rescheduled_end_time }}
-                </span>
-              </div>
-            </a>
-          </Tag>
         </div>
       </div>
     </div>
@@ -65,6 +38,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { useI18n } from 'vue-i18n';
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { ScheduleXCalendar } from "@schedule-x/vue";
 import {
@@ -77,13 +51,11 @@ import {
   viewMonthGrid,
 } from "@schedule-x/calendar";
 import { useThemeStore } from '@/stores/theme';
-import { useRouter } from "vue-router"; 
 import "@schedule-x/theme-default/dist/index.css";
 import 'temporal-polyfill/global';
-import Tag from 'primevue/tag';
 import api from '@/axios';
 
-const router = useRouter();
+const { t: $t } = useI18n();
 const appName = import.meta.env.VITE_APP_NAME || 'LearningPal';
 const appVersion = import.meta.env.VITE_APP_VERSION || 'N/A';
 const appLocale = import.meta.env.VITE_APP_LOCALE + '-ES'|| 'en-US';
@@ -113,12 +85,29 @@ const sessionsError = ref('');
 const courseLookupByName = ref({});
 const courseLookupById = ref({});
 const calendarDefinitions = ref({ ...defaultCalendars });
-const ongoingAndPendingSessions = ref([]);
-const ongoingLoading = ref(false);
-const ongoingError = ref('');
+const calendarSessions = ref([]);
+const selectedSessionStatus = ref('all');
 
 let activeSessionsController;
 let calendarAppRef = null;
+
+const sessionStatusOptions = computed(() => ([
+  { value: 'all', label: $t('All') },
+  { value: 'scheduled', label: $t('Scheduled') },
+  { value: 'pending', label: $t('Pending') },
+  { value: 'ongoing', label: $t('Ongoing') },
+  { value: 'reprogramed', label: $t('Reprogramed') },
+  { value: 'completed', label: $t('Completed') },
+  { value: 'canceled', label: $t('Canceled') },
+]));
+
+const filteredCalendarSessions = computed(() => {
+  if (selectedSessionStatus.value === 'all') {
+    return calendarSessions.value;
+  }
+
+  return calendarSessions.value.filter((session) => session.status === selectedSessionStatus.value);
+});
 
 const browserTimeZone = (() => {
   try {
@@ -194,22 +183,6 @@ const resolveCalendarId = ({ courseName, courseId }) => {
   }
 
   return defaultCalendarId;
-};
-
-const getCourseColors = ({ courseName, courseId }) => {
-  const calendarId = resolveCalendarId({ courseName, courseId });
-  return calendarDefinitions.value[calendarId] ?? defaultCalendars[defaultCalendarId];
-};
-
-const getCourseTagStyle = ({ courseName, courseId }) => {
-  const colors = getCourseColors({ courseName, courseId });
-  const palette = (themeStore.isDark ? colors.darkColors : colors.lightColors) || colors.lightColors;
-
-  return {
-    backgroundColor: palette.container,
-    color: palette.onContainer,
-    border: `1px solid ${palette.main}`,
-  };
 };
 
 const normalizeTime = (timeString) => {
@@ -342,9 +315,8 @@ async function fetchSessionsForRange(range, calendarInstance = calendarAppRef) {
       return;
     }
 
-    const sessions = Array.isArray(data.sessions) ? data.sessions : [];
-    const events = sessions.map(sessionToCalendarEvent);
-    calendarInstance.events.set(events);
+    calendarSessions.value = Array.isArray(data.sessions) ? data.sessions : [];
+    applyCalendarEvents(calendarInstance);
   } catch (error) {
     if (controller.signal.aborted) {
       return;
@@ -361,6 +333,15 @@ async function fetchSessionsForRange(range, calendarInstance = calendarAppRef) {
       activeSessionsController = null;
     }
   }
+}
+
+function applyCalendarEvents(calendarInstance = calendarAppRef) {
+  if (!calendarInstance) {
+    return;
+  }
+
+  const events = filteredCalendarSessions.value.map(sessionToCalendarEvent);
+  calendarInstance.events.set(events);
 }
 
 async function fetchCalendarsConfig(range, calendarInstance = calendarAppRef) {
@@ -381,33 +362,8 @@ async function fetchCalendarsConfig(range, calendarInstance = calendarAppRef) {
   }
 }
 
-async function fetchOngoingAndPendingSessions() {
-  ongoingLoading.value = true;
-  ongoingError.value = '';
-
-  try {
-    const { data } = await api.post('/lists/ongoing_and_pending_sessions');
-    ongoingAndPendingSessions.value = Array.isArray(data.ongoing_and_pending_sessions) ? data.ongoing_and_pending_sessions : [];
-  } catch (error) {
-    console.error('Unable to load ongoing and pending sessions', error);
-    ongoingError.value = error?.response?.data?.message ?? 'Unable to load ongoing and pending sessions.';
-  } finally {
-    ongoingLoading.value = false;
-  }
-}
-
-const toEditPage = (scheduleId, detailId) => {
-  if (!scheduleId || !detailId) {
-    return;
-  }
-
-  router.push({
-        name: 'academics.classes.class-schedules.details.edit',
-        params: {
-            scheduleId: scheduleId,
-            detailId: detailId,
-        },
-    });
+function toggleSessionStatusFilter(status) {
+  selectedSessionStatus.value = selectedSessionStatus.value === status ? 'all' : status;
 }
 
 const calendarApp = createCalendar({
@@ -446,8 +402,6 @@ if (initialRange) {
   fetchSessionsForRange(initialRange);
 }
 
-fetchOngoingAndPendingSessions();
-
 defineOptions({
   layout: AppLayout,
 });
@@ -459,6 +413,10 @@ watch(
     else calendarApp.setTheme('light');
   }
 );
+
+watch(selectedSessionStatus, () => {
+  applyCalendarEvents();
+});
 
 onBeforeUnmount(() => {
   abortActiveSessionsRequest();

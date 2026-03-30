@@ -24,50 +24,21 @@ class CalendarController extends Controller
             $assignedCourses = (new TeacherService())->assignedCoursesArray($user->profile->teacher);
         }
 
-        $scheduledSessionsQuery = ClassScheduleDetail::query()
+        $startDate = $request->start_date->copy()->startOfDay();
+        $endDate = $request->end_date->copy()->endOfDay();
+
+        $sessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
-            ->whereBetween('session_date', [
-                $request->start_date->startOfDay(), 
-                $request->end_date->endOfDay(),
-            ])
-            ->where('status', ClassScheduleStatusEnum::SCHEDULED->value)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('session_date', [$startDate, $endDate])
+                    ->orWhereBetween('rescheduled_date', [$startDate, $endDate]);
+            })
             ->when($user->cannot('view all students'), function ($q) use ($assignedCourses) {
                 $q->whereHas('classSchedule', function ($q2) use ($assignedCourses) {
                     $q2->whereIn('course_id', $assignedCourses);
                 });
-            });
-
-        $reprogramedSessionsQuery = ClassScheduleDetail::query()
-            ->with(['classSchedule', 'classSchedule.course'])
-            ->whereBetween('rescheduled_date', [
-                $request->start_date->startOfDay(), 
-                $request->end_date->endOfDay(),
-            ])
-            ->where('status', ClassScheduleStatusEnum::REPROGRAMED->value)
-            ->when($user->cannot('view all students'), function ($q) use ($assignedCourses) {
-                $q->whereHas('classSchedule', function ($q2) use ($assignedCourses) {
-                    $q2->whereIn('course_id', $assignedCourses);
-                });
-            });
-
-        $completedSessionsQuery = ClassScheduleDetail::query()
-            ->with(['classSchedule', 'classSchedule.course'])
-            ->whereBetween('session_date', [
-                $request->start_date->startOfDay(), 
-                $request->end_date->endOfDay(),
-            ])
-            ->where('status', ClassScheduleStatusEnum::COMPLETED->value)
-            ->when($user->cannot('view all students'), function ($q) use ($assignedCourses) {
-                $q->whereHas('classSchedule', function ($q2) use ($assignedCourses) {
-                    $q2->whereIn('course_id', $assignedCourses);
-                });
-            });
-
-        $sessionsQuery = $scheduledSessionsQuery
-            ->unionAll($reprogramedSessionsQuery)
-            ->unionAll($completedSessionsQuery);
-        
-        $sessions = $sessionsQuery->get()
+            })
+            ->get()
             ->map(function (ClassScheduleDetail $detail) {
                 return (new ClassScheduleDetailService())->sessionData($detail);
             });
