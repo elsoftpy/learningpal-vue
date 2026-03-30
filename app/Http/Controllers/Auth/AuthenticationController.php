@@ -20,8 +20,8 @@ class AuthenticationController extends Controller
 
         if (! $authService->loginAttempt($request)) {
             return ResponseService::unauthenticated(
-                message: __('Unauthenticated.'),
-                errors: ['authentication' => [__('Invalid credentials. Please try again.')]]
+                message: __('auth.failed'),
+                errors: ['authentication' => [__('auth.failed')]]
             );
         }
 
