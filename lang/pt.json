@@ -38,6 +38,7 @@
     "First name may not be greater than :max characters.": "Primeiro nome pode não ter mais de :max caracteres.",
     "First name must be a valid string.": "Primeiro nome deve ser uma string válida.",
     "Gender must be a valid string.": "Gênero deve ser uma string válida.",
+    "Great news, you're in!": "Ótima notícia, você já está dentro!",
     "Identity document is required.": "Documento de identidade é obrigatório.",
     "Identity document may not be greater than :max characters.": "Documento de identidade pode não ter mais de :max caracteres.",
     "Identity document must be a valid string.": "Documento de identidade deve ser uma string válida.",
