@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\Settings;
 
+use App\Models\Course;
 use App\Models\Language;
 use App\Models\Profile;
 use App\Models\User;
@@ -106,7 +107,9 @@ class LanguageSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        $language = Language::first() ?? Language::factory()->create();
+        $language = Language::factory()->create([
+            'name' => 'Delete Test Language '.$this->name(),
+        ]);
 
         $user->assignRole('admin');
 
@@ -118,6 +121,36 @@ class LanguageSpaTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('languages', [
+            'id' => $language->id,
+        ]);
+    }
+
+    public function test_admin_user_cannot_delete_language_that_is_in_use(): void
+    {
+        $user = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $language = Language::factory()->create([
+            'name' => 'In Use Test Language '.$this->name(),
+        ]);
+        Course::factory()->create([
+            'language_id' => $language->id,
+        ]);
+
+        $user->assignRole('admin');
+
+        /** @var \App\Models\User $user */
+        $this->actingAs($user, 'web');
+
+        $response = $this->postJson(route('settings.languages.destroy', ['language' => $language->id]));
+
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => __('This language cannot be deleted because it is currently in use.'),
+            ]);
+
+        $this->assertDatabaseHas('languages', [
             'id' => $language->id,
         ]);
     }

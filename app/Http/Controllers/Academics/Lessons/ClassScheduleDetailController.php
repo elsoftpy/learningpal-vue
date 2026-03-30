@@ -7,29 +7,34 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ClassScheduleDetailRequest;
 use App\Models\ClassScheduleDetail;
 use App\Services\Utilities\ResponseService;
-use Illuminate\Support\Facades\DB;
 
 class ClassScheduleDetailController extends Controller
 {
     
     public function update(ClassScheduleDetailRequest $request, ClassScheduleDetail $detail)
     {
-        DB::transaction(function () use ($request, $detail) {
-            $detail->update($request->validated());
+        $validated = $request->validated();
+        $manualStatus = $validated['status'] ?? null;
 
-            if ($request->has('rescheduled_date')) {
-                $detail->reschedule_count = (int) $detail->reschedule_count + 1;
-                $detail->rescheduled_estimated_duration_minutes = $request
-                    ->rescheduled_start_time->diffInMinutes($request->rescheduled_end_time);
-                
-                $detail->status = ClassScheduleStatusEnum::PENDING->value;
-                if ($request->user()->can('confirm class reprogramming')) {
-                    $detail->status = ClassScheduleStatusEnum::REPROGRAMED->value;
-                }
+        $detail->fill($validated);
 
-                $detail->save();
-            }
-        });
+        if (
+            $request->filled('rescheduled_date')
+            && $request->filled('rescheduled_start_time')
+            && $request->filled('rescheduled_end_time')
+        ) {
+            $detail->reschedule_count = (int) $detail->reschedule_count + 1;
+            $detail->rescheduled_estimated_duration_minutes = $request
+                ->rescheduled_start_time->diffInMinutes($request->rescheduled_end_time);
+
+            // Leaving a session pending should keep it visible as pending until a later confirmation flow,
+            // unless a permitted user explicitly selects another status.
+            $detail->status = $manualStatus ?: ClassScheduleStatusEnum::PENDING->value;
+        } elseif ($manualStatus) {
+            $detail->status = $manualStatus;
+        }
+
+        $detail->save();
 
         return ResponseService::success(
             message: __('Class schedule detail updated successfully.'),

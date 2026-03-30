@@ -57,6 +57,33 @@ class ProfileService
         return Profile::where('email', $email)->first();
     }
 
+    public function resolveProfile(array $profileData, bool $canEditExistingProfile = false): Profile
+    {
+        $profileId = $profileData['profile_id'] ?? null;
+
+        if ($profileId) {
+            $profile = Profile::findOrFail($profileId);
+
+            if ($canEditExistingProfile) {
+                $this->updateProfile($profile, $profileData);
+            }
+
+            return $profile;
+        }
+
+        return $this->firstOrCreateProfile($profileData);
+    }
+
+    public function selectionLabel(Profile $profile): string
+    {
+        $displayName = trim((string) ($profile->full_name ?: $profile->company_name ?: __('Unnamed profile')));
+        $identifier = trim((string) ($profile->personal_id ?: $profile->ruc ?: ''));
+
+        return $identifier !== ''
+            ? "{$displayName} - {$identifier}"
+            : $displayName;
+    }
+
     public function profileData(Profile $profile): array
     {
         return [
@@ -73,6 +100,8 @@ class ProfileService
             'address' => $profile->address,
             'gender' => $profile->gender,
             'birth_date' => DateTimeService::formatDate($profile->birth_date),
+            'avatar_url' => $profile->getFirstMediaUrl('avatar') ?: null,
+            'payment_receipt' => $profile->getFirstMediaUrl('payment_receipt') ?: null,
         ];
     }
 }

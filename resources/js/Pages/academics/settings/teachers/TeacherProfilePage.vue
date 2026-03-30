@@ -12,7 +12,10 @@
             :creating="creating" 
             :isPersonProfile="false"
             :errors="errors"
+            :can-edit-selected-profile="canEditSelectedProfile"
+            :selected-profile-option="selectedProfileOption"
             @profile-found="handleProfileFound"
+            @profile-cleared="handleProfileCleared"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -118,6 +121,7 @@ import { createTeacherSchema } from '@/schemas/teacher';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useFormValues } from '@/composables/useFormValues';
 import { useFormSubmitter } from '@/composables/useFormSubmitter'
+import { usePermissions } from '@/composables/usePermissions';
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
@@ -132,11 +136,14 @@ import SubmitButton from '@/components/form/SubmitButton.vue';
 const { locale, t: $t } = useI18n();
 const { handleApiError } = useApiErrorHandler();
 const { extractFormData } = useFormValues();
+const { can } = usePermissions();
 const teacherSchema = computed(() => createTeacherSchema($t, locale.value));
 const resolver = zodResolver(teacherSchema.value);
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const canEditSelectedProfile = computed(() => can(['edit profiles', 'edit teachers']));
+const selectedProfileOption = ref(null);
 
 
 const statusList = ref([]);
@@ -163,6 +170,7 @@ const initialValues = computed(() => {
         let isActive = teacherData.value?.status === 'active' ? true : false;
         
         return {
+            profile_id: data.profile_id || null,
             personal_id: data.personal_id || '',
             first_name: data.first_name || '',
             last_name: data.last_name || '',
@@ -181,6 +189,7 @@ const initialValues = computed(() => {
     if (teacherData.value) {
         
         return {
+            profile_id: teacherData.value.profile_id || null,
             personal_id: teacherData.value.personal_id || '',
             first_name: teacherData.value.first_name || '',
             last_name: teacherData.value.last_name || '',
@@ -195,6 +204,7 @@ const initialValues = computed(() => {
     }  
 
     return {
+        profile_id: null,
         personal_id: '',
         first_name: '',
         last_name: '',
@@ -211,6 +221,7 @@ const initialValues = computed(() => {
 
 
 const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
+    profile_id: '',
     personal_id: '',
     first_name: '', 
     last_name: '',
@@ -225,8 +236,15 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
 });
 
 const handleProfileFound = async (profileData) => {
+    selectedProfileOption.value = {
+        id: profileData.id,
+        label: [profileData.full_name, profileData.personal_id || profileData.ruc].filter(Boolean).join(' - '),
+        profile: profileData,
+    };
+
     teacherData.value = {
-        ...teacherData.value,
+        ...(teacherData.value || {}),
+        profile_id: profileData.id,
         personal_id: profileData.personal_id,
         first_name: profileData.first_name,
         last_name: profileData.last_name,
@@ -234,6 +252,21 @@ const handleProfileFound = async (profileData) => {
         phone: profileData.phone,
         email: profileData.email,
         birth_date: profileData.birth_date,
+    };
+};
+
+const handleProfileCleared = () => {
+    selectedProfileOption.value = null;
+    teacherData.value = {
+        ...(teacherData.value || {}),
+        profile_id: null,
+        personal_id: '',
+        first_name: '',
+        last_name: '',
+        address: '',
+        phone: '',
+        email: '',
+        birth_date: '',
     };
 };
 
@@ -289,6 +322,7 @@ const handleSubmit =  async (formData) => {
     
     // Add type field to values to pass reusabeable validation rules
     values.type = 'person'; // user is always a person
+    values.profile_id = teacherData.value?.profile_id || null;
     values.status = values.isActive ? 'active' : 'disabled';
     delete values.isActive;
 

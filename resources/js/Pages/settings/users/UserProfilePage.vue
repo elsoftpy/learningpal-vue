@@ -13,8 +13,11 @@
             :creating="creating" 
             :isPersonProfile="true"
             :errors="errors"
+            :can-edit-selected-profile="canEditSelectedProfile"
+            :selected-profile-option="selectedProfileOption"
             @update:avatar="onAvatarUpdate"
             @profile-found="handleProfileFound"
+            @profile-cleared="handleProfileCleared"
         >
             <template #model>
                 <div class="flex-col md:flex md:flex-row space-y-2 md:space-x-2">
@@ -152,6 +155,7 @@
                                 :button-label="$t('Payment')"
                                 accept="image/*,application/pdf"
                                 :max-file-size="4096000"
+                                :disabled="profileFieldsLocked"
                                 preview-class="h-16 w-16 rounded-full object-cover"
                                 @update:modelValue="onPaymentReceiptSelect"
 
@@ -301,6 +305,8 @@ const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const canEditSelectedProfile = computed(() => can(['edit profiles', 'edit users']));
+const profileFieldsLocked = computed(() => creating && !!userData.value?.profile_id && !canEditSelectedProfile.value);
 
 
 const statusList = ref([]);
@@ -321,6 +327,7 @@ const from = route.query.from|| null;
 
 const emit = defineEmits(['update:paymentReceipt']);
 const selectedPaymentFile = ref(null);
+const selectedProfileOption = ref(null);
 
 const showNewUser = ref(false);
 
@@ -356,6 +363,7 @@ const initialValues = computed(() => {
         isStudent.value = roleNames.includes('student');
         
         return {
+            profile_id: data.profile_id || null,
             personal_id: data.personal_id || '',
             first_name: data.first_name || '',
             last_name: data.last_name || '',
@@ -375,6 +383,7 @@ const initialValues = computed(() => {
         isStudent.value = roleNames.includes('student');
         
         return {
+            profile_id: auth.user?.profile_id || null,
             personal_id: auth.user?.personal_id || '',
             first_name: auth.user?.first_name || '',
             last_name: auth.user?.last_name || '',
@@ -394,6 +403,7 @@ const initialValues = computed(() => {
         isStudent.value = roleNames.includes('student');
         
         return {
+            profile_id: userData.value.profile_id || null,
             personal_id: userData.value.personal_id || '',
             first_name: userData.value.first_name || '',
             last_name: userData.value.last_name || '',
@@ -409,6 +419,7 @@ const initialValues = computed(() => {
     }
 
     return {
+            profile_id: null,
             personal_id: '',
             first_name: '',
             last_name: '',
@@ -425,6 +436,7 @@ const initialValues = computed(() => {
 
 
 const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
+    profile_id: '',
     personal_id: '',
     first_name: '', 
     last_name: '',
@@ -444,8 +456,15 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
 const handleProfileFound = async (profileData) => {
     if (!profileData) return;
 
+    selectedProfileOption.value = {
+        id: profileData.id,
+        label: [profileData.full_name, profileData.personal_id || profileData.ruc].filter(Boolean).join(' - '),
+        profile: profileData,
+    };
+
     userData.value = {
-        ...userData.value,
+        ...(userData.value || {}),
+        profile_id: profileData.id,
         personal_id: profileData.personal_id,
         first_name: profileData.first_name,
         last_name: profileData.last_name,
@@ -453,6 +472,25 @@ const handleProfileFound = async (profileData) => {
         phone: profileData.phone,
         email: profileData.email,
         birth_date: profileData.birth_date,
+        avatar_url: profileData.avatar_url,
+        payment_receipt: profileData.payment_receipt,
+    };
+}
+
+const handleProfileCleared = () => {
+    selectedProfileOption.value = null;
+    userData.value = {
+        ...(userData.value || {}),
+        profile_id: null,
+        personal_id: '',
+        first_name: '',
+        last_name: '',
+        address: '',
+        phone: '',
+        email: '',
+        birth_date: '',
+        avatar_url: null,
+        payment_receipt: null,
     };
 }
 
@@ -529,6 +567,7 @@ const handleSubmit =  async (formData) => {
     
     // Add type field to values to pass reusabeable validation rules
     values.type = 'person'; // user is always a person
+    values.profile_id = userData.value?.profile_id || null;
 
     if (!valid) {
         return;
@@ -548,6 +587,10 @@ const handleSubmit =  async (formData) => {
         }
 
         Object.keys(values).forEach(key => {
+            if (values[key] === null || values[key] === undefined || values[key] === '') {
+                return;
+            }
+
             if (Array.isArray(values[key])) {
                 values[key].forEach((item, index) => {
                     formData.append(`${key}[${index}]`, item);

@@ -17,6 +17,7 @@ trait UserProfileTrait
 
         return [
             'id' => $user->id,
+            'profile_id' => $profile->id ?? null,
             'name' => $user->name,
             'type' => $profile->type ?? null,
             'personal_id' => $profile->personal_id ?? null,

@@ -47,9 +47,10 @@ class UserService
         return strtolower(str_replace(' ', '', $this->normalizeString($fullName) ?? 'user'));
     }
 
-    public function createUser(array $userData, array $profileData): User
+    public function createUser(array $userData, array $profileData, bool $canEditExistingProfile = false): User
     {
-        $profile = (new ProfileService())->firstOrCreateProfile($profileData);
+        $profileService = new ProfileService();
+        $profile = $profileService->resolveProfile($profileData, $canEditExistingProfile);
 
         if (empty($userData['name'])) {
             $userData['name'] = $this->getUsername([
@@ -70,12 +71,12 @@ class UserService
             $user->assignRole($userData['roles']);
         }
 
-        if (array_key_exists('avatar', $profileData) && $profileData['avatar'] !== null) {
+        if (($canEditExistingProfile || empty($profileData['profile_id'])) && array_key_exists('avatar', $profileData) && $profileData['avatar'] !== null) {
             $profile->addMedia($profileData['avatar'])
                 ->toMediaCollection('avatar');
         }
 
-        if (array_key_exists('payment_receipt', $profileData) && $profileData['payment_receipt'] !== null) {
+        if (($canEditExistingProfile || empty($profileData['profile_id'])) && array_key_exists('payment_receipt', $profileData) && $profileData['payment_receipt'] !== null) {
             $profile->addMedia($profileData['payment_receipt'])
                 ->toMediaCollection('payment_receipt');
         }

@@ -177,6 +177,28 @@
                                     {{ $form.activity?.error?.message }}
                                 </Message>
                             </div>
+                            <div v-if="canEditStatus" class="flex flex-col w-full md:w-1/4">
+                                <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ $t('Status') }}
+                                </label>
+                                <Select
+                                    id="status"
+                                    name="status"
+                                    :options="statusOptions"
+                                    option-label="label"
+                                    option-value="value"
+                                    :placeholder="$t('Select status')"
+                                    class="w-full"
+                                />
+                                <Message
+                                    v-if="$form.status?.invalid"
+                                    severity="error"
+                                    size="small"
+                                    variant="simple"
+                                >
+                                    {{ $form.status?.error?.message }}
+                                </Message>
+                            </div>
                             <div class="flex flex-col w-full md:w-1/4">
                                 <DateInput
                                     id="rescheduled_date"
@@ -264,12 +286,14 @@ import DateInput from '@/components/form/DateInput.vue';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import Button from 'primevue/button';
+import Select from 'primevue/select';
 import SubmitButton from '@/components/form/SubmitButton.vue';
 import ProgressSpinner from 'primevue/progressspinner';
 import { useFormValues } from '@/composables/useFormValues';
 import { useFormSubmitter } from '@/composables/useFormSubmitter';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import { useToast } from 'primevue/usetoast';
+import { usePermissions } from '@/composables/usePermissions';
 
 const { t: $t, locale } = useI18n();
 const route = useRoute();
@@ -277,9 +301,11 @@ const router = useRouter();
 const toast = useToast();
 const { extractFormData } = useFormValues();
 const { handleApiError } = useApiErrorHandler();
+const { can } = usePermissions();
 
 const scheduleId = computed(() => route.params.scheduleId);
 const detailId = computed(() => route.params.detailId);
+const canEditStatus = computed(() => can('change schedule detail status'));
 
 const createEmptyDetail = () => ({
     session_date: '',
@@ -290,6 +316,7 @@ const createEmptyDetail = () => ({
     rescheduled_date: '',
     rescheduled_start_time: '',
     rescheduled_end_time: '',
+    status: '',
 });
 
 const detailData = ref(createEmptyDetail());
@@ -338,10 +365,19 @@ const createDetailSchema = (t) => z.object({
         }
         return /^([01]\d|2[0-3]):[0-5]\d$/.test(val);
     }, { message: t('Use 24h HH:MM format.') }),
+    status: z.string().optional(),
 });
 
 const detailSchema = computed(() => createDetailSchema($t, locale.value));
 const resolver = zodResolver(detailSchema.value);
+const statusOptions = computed(() => ([
+    { value: 'scheduled', label: $t('Scheduled') },
+    { value: 'completed', label: $t('Completed') },
+    { value: 'pending', label: $t('Pending') },
+    { value: 'ongoing', label: $t('Ongoing') },
+    { value: 'reprogramed', label: $t('Reprogramed') },
+    { value: 'canceled', label: $t('Canceled') },
+]));
 
 const initialValues = computed(() => ({
     session_date: detailData.value.session_date,
@@ -352,6 +388,7 @@ const initialValues = computed(() => ({
     rescheduled_date: detailData.value.rescheduled_date,
     rescheduled_start_time: detailData.value.rescheduled_start_time,
     rescheduled_end_time: detailData.value.rescheduled_end_time,
+    status: canEditStatus.value ? detailData.value.status : '',
 }));
 
 const { errors, isLoading, setErrors } = useFormSubmitter({
@@ -363,6 +400,7 @@ const { errors, isLoading, setErrors } = useFormSubmitter({
     rescheduled_date: '',
     rescheduled_start_time: '',
     rescheduled_end_time: '',
+    status: '',
     general: '',
 });
 
@@ -376,6 +414,7 @@ const setDetailData = (detail) => {
         rescheduled_date: detail?.rescheduled_date || '',
         rescheduled_start_time: detail?.rescheduled_start_time || '',
         rescheduled_end_time: detail?.rescheduled_end_time || '',
+        status: detail?.status || '',
     };
     formKey.value += 1;
 };
@@ -430,6 +469,10 @@ const handleSubmit = async (formData) => {
 
     if (!valid) {
         return;
+    }
+
+    if (!canEditStatus.value) {
+        delete values.status;
     }
 
     values.class_schedule_id = scheduleId.value;

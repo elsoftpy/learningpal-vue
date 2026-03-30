@@ -93,6 +93,7 @@ class UserProfileController extends Controller
     {
         $profileData = $request->except(['name', 'password']);
         $userData = $request->only(['name', 'email', 'password', 'roles', 'status']);
+        $canEditExistingProfile = $request->user()?->can('edit profiles') || $request->user()?->can('edit users');
 
         if (array_key_exists('roles', $userData) && ! $request->user()?->can('change roles')) {
             throw new AuthorizationException(__('You do not have permission to change roles.'));
@@ -104,8 +105,8 @@ class UserProfileController extends Controller
 
         $user = null;
 
-        $user = DB::transaction(function () use ($profileData, $userData, $userService) {
-            $user = $userService->createUser($userData, $profileData);
+        $user = DB::transaction(function () use ($profileData, $userData, $userService, $canEditExistingProfile) {
+            $user = $userService->createUser($userData, $profileData, $canEditExistingProfile);
             
             return $user;
         });

@@ -15,6 +15,7 @@
             v-model="localValue"
             v-maska="maskOptions"
             :placeholder="placeholder"
+            :disabled="disabled"
             class="w-full text-right"
         />
     </div>
@@ -47,6 +48,10 @@ const props = defineProps({
         default: null,
     },
     mandatory: {
+        type: Boolean,
+        default: false,
+    },
+    disabled: {
         type: Boolean,
         default: false,
     },

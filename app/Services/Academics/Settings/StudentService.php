@@ -7,9 +7,9 @@ use App\Services\Settings\Users\ProfileService;
 
 class StudentService
 {
-    public function createStudent(array $studentData, array $profileData): Student
+    public function createStudent(array $studentData, array $profileData, bool $canEditExistingProfile = false): Student
     {
-        $profile = (new ProfileService())->firstOrCreateProfile($profileData);
+        $profile = (new ProfileService())->resolveProfile($profileData, $canEditExistingProfile);
 
         $student = $profile->student()->create($studentData);
 
@@ -54,6 +54,7 @@ class StudentService
 
         return [
             'id' => $student->id,
+            'profile_id' => $profile->id ?? null,
             'type' => $profile->type ?? null,
             'personal_id' => $profile->personal_id ?? null,
             'first_name' => $profile->first_name ?? null,

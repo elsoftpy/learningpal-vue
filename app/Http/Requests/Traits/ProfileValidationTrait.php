@@ -12,6 +12,11 @@ trait ProfileValidationTrait
     public function profileRules(): array
     {
         return [
+            'profile_id' => [
+                'nullable',
+                'integer',
+                'exists:profiles,id',
+            ],
             'type' => ['required', Rule::in(ProfileTypeEnum::values())],
             'first_name' => [
                 'nullable', 
@@ -128,5 +133,18 @@ trait ProfileValidationTrait
         return Profile::where('personal_id', $idNumber)
             ->orWhere('ruc', $idNumber)
             ->first();
+    }
+
+    public function profileByReference(?int $profileId, ?string $idNumber): Profile|null
+    {
+        if ($profileId) {
+            return Profile::find($profileId);
+        }
+
+        if (!$idNumber) {
+            return null;
+        }
+
+        return $this->profileByIdNumber($idNumber);
     }
 }

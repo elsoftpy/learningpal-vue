@@ -71,11 +71,12 @@ class TeacherController extends Controller
     {
         $profileData = $request->except(['status']);
         $teacherData = $request->only(['status', 'courses']);
+        $canEditExistingProfile = $request->user()?->can('edit profiles') || $request->user()?->can('edit teachers');
 
         $teacher = null;
 
-        $teacher = DB::transaction(function () use ($profileData, $teacherData, $teacherService) {
-            $teacher = $teacherService->createTeacher($teacherData, $profileData);
+        $teacher = DB::transaction(function () use ($profileData, $teacherData, $teacherService, $canEditExistingProfile) {
+            $teacher = $teacherService->createTeacher($teacherData, $profileData, $canEditExistingProfile);
             
             return $teacher;
         });

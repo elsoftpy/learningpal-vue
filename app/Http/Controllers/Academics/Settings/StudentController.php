@@ -79,11 +79,12 @@ class StudentController extends Controller
     {
         $profileData = $request->except(['status', 'courses']);
         $studentData = $request->only(['status', 'courses']);
+        $canEditExistingProfile = $request->user()?->can('edit profiles') || $request->user()?->can('edit students');
 
         $student = null;
 
-        $student = DB::transaction(function () use ($profileData, $studentData, $studentService) {
-            $student = $studentService->createStudent($studentData, $profileData);
+        $student = DB::transaction(function () use ($profileData, $studentData, $studentService, $canEditExistingProfile) {
+            $student = $studentService->createStudent($studentData, $profileData, $canEditExistingProfile);
             
             return $student;
         });

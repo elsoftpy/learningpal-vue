@@ -12,6 +12,45 @@
                 {{ errors.general }}
             </Message>
             <div class="flex flex-col w-full space-y-4">
+                <div v-if="creating" class="flex flex-col w-full">
+                    <label for="existing_profile" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ $t('Existing Profile') }}
+                    </label>
+                    <Select
+                        id="existing_profile"
+                        :model-value="selectedProfileOption?.id ?? null"
+                        :options="profileOptions"
+                        option-label="label"
+                        option-value="id"
+                        :loading="profilesLoading"
+                        :placeholder="$t('Search by name, personal ID, or RUC')"
+                        filter
+                        :show-clear="true"
+                        :filter-placeholder="$t('Type to search profiles')"
+                        @filter="onProfileFilter"
+                        @change="onProfileChange"
+                        class="w-full"
+                    >
+                        <template #empty>
+                            <div class="p-3 text-center text-gray-500">
+                                {{ $t('No matching profile found. You can create a new one below.') }}
+                            </div>
+                        </template>
+
+                        <template #loader>
+                            <div class="flex items-center justify-center p-3">
+                                <ProgressSpinner style="width: 20px; height: 20px" stroke-width="4" />
+                                <span class="ml-2 text-sm text-gray-600">{{ $t('Loading...') }}</span>
+                            </div>
+                        </template>
+                    </Select>
+                    <small class="mt-1 text-xs text-gray-500">
+                        {{ $t('Select an existing profile to reuse it, or leave this empty and complete the fields below to create a new profile.') }}
+                    </small>
+                    <small v-if="profileFieldsDisabled" class="mt-1 text-xs text-amber-600">
+                        {{ $t('This profile is read-only because you do not have permission to edit existing profile data.') }}
+                    </small>
+                </div>
                 <div class="space-y-4 md:space-y-0 md:flex md:space-x-4">
                     <!-- Avatar -->
                     <div v-if="isPersonProfile" class="flex justify-center w-full md:max-w-16">
@@ -30,9 +69,8 @@
                         <InputText
                             id="personal_id"
                             name="personal_id"
-                            :disabled="!creating"
+                            :disabled="personalIdDisabled"
                             :placeholder="$t('Personal ID')"
-                            @blur="handlePersonalIdBlur"
                         />
                     </div>
                     <!-- First & Last Name -->
@@ -46,6 +84,7 @@
                                 id="first_name"
                                 name="first_name"
                                 :placeholder="$t('Name')"
+                                :disabled="profileFieldsDisabled"
                                 class="w-full"
                             />
                             <Message
@@ -74,6 +113,7 @@
                                 id="last_name"
                                 name="last_name"
                                 :placeholder="$t('Last Name')"
+                                :disabled="profileFieldsDisabled"
                                 class="w-full"
                             />
                             <Message
@@ -105,6 +145,7 @@
                             id="address"
                             name="address"
                             :placeholder="$t('Address')"
+                            :disabled="profileFieldsDisabled"
                         />
                         <Message
                             v-if="form.address?.invalid"
@@ -131,6 +172,7 @@
                             id="phone"
                             name="phone"
                             :placeholder="$t('Phone')"
+                            :disabled="profileFieldsDisabled"
                         />
                         <Message
                             v-if="form.phone?.invalid"
@@ -161,6 +203,7 @@
                             id="email"
                             name="email"
                             :placeholder="$t('Email')"
+                            :disabled="profileFieldsDisabled"
                             class="w-full"
                         />
                         <Message
@@ -188,6 +231,7 @@
                             id="email_alt"
                             name="email_alt"
                             :placeholder="$t('Alternative Email')"
+                            :disabled="profileFieldsDisabled"
                             class="w-full"
                         />
                         <Message
@@ -213,6 +257,7 @@
                             name="birth_date"
                             :label="$t('Birth Date')"
                             :placeholder="$t('Birth Date')"
+                            :disabled="profileFieldsDisabled"
                             @update:unmasked="form.birth_date_unmasked = $event"
                             class="w-full"
                         />
@@ -240,6 +285,7 @@
                             :button-label="$t('Select Avatar')"
                             accept="image/*"
                             :max-file-size="2000000"
+                            :disabled="profileFieldsDisabled"
                             preview-class="h-16 w-16 rounded-full object-cover"
                             @update:modelValue="onAvatarSelect"
                         />
@@ -252,18 +298,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import defaultAvatar from '@/images/default-avatar.png'
 import PageContainer from '@/components/layout/pages/PageContainer.vue'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import ProgressSpinner from 'primevue/progressspinner'
 import FileUpload from '@/components/form/FileUpload.vue'
 import DateInput from '@/components/form/DateInput.vue'
 import Message from 'primevue/message'
-import { useProfileCheck } from '@/composables/useProfileCheck'
+import axios from 'axios'
 
 const { t: $t } = useI18n()
-const { checkProfile, isChecking } = useProfileCheck()
 
 const props = defineProps({
     form: {
@@ -287,16 +334,34 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    canEditSelectedProfile: {
+        type: Boolean,
+        default: false,
+    },
+    profileType: {
+        type: String,
+        default: 'person',
+    },
+    selectedProfileOption: {
+        type: Object,
+        default: null,
+    },
 });
 
 const emit = defineEmits([
     'update:avatar',
     'profile-found',
+    'profile-cleared',
 ])
 
 const selectedFile = ref(null)
+const profileOptions = ref([])
+const profilesLoading = ref(false)
+let profilesDebounceTimer = null
 
 const avatar = computed(() => props.avatarUrl || defaultAvatar)
+const profileFieldsDisabled = computed(() => props.creating && props.selectedProfileOption?.id && !props.canEditSelectedProfile)
+const personalIdDisabled = computed(() => !props.creating || profileFieldsDisabled.value)
 
 const onAvatarSelect = (file) => {
     if (!file ) {
@@ -313,20 +378,57 @@ const onAvatarClear = () => {
     emit('update:avatar', null)
 }
 
-const handlePersonalIdBlur = async () => {
-    const personalId = props.form.personal_id?.value
+const fetchProfiles = async (query = '') => {
+    profilesLoading.value = true
 
-    if (!personalId || !props.creating) {
+    try {
+        const response = await axios.post('/lists/profiles', {
+            params: {
+                search: query,
+                type: props.profileType,
+            },
+        })
+
+        const fetchedOptions = response.data.data || response.data || []
+
+        if (props.selectedProfileOption?.id && !fetchedOptions.some((profile) => profile.id === props.selectedProfileOption.id)) {
+            fetchedOptions.unshift(props.selectedProfileOption)
+        }
+
+        profileOptions.value = fetchedOptions
+    } catch (error) {
+        console.error('Error fetching profiles:', error)
+        profileOptions.value = []
+    } finally {
+        profilesLoading.value = false
+    }
+}
+
+const onProfileFilter = (event) => {
+    clearTimeout(profilesDebounceTimer)
+    profilesDebounceTimer = setTimeout(() => {
+        fetchProfiles(event.value || '')
+    }, 300)
+}
+
+const onProfileChange = (event) => {
+    const profileId = event.value
+
+    if (!profileId) {
+        emit('profile-cleared')
         return
     }
 
-    const profileData = await checkProfile(personalId, {
-        showToast: true,
-        showErrorToast: false,
-    })
+    const option = profileOptions.value.find((profile) => profile.id === profileId)
 
-    if (profileData) {
-        emit('profile-found', profileData)
+    if (option?.profile) {
+        emit('profile-found', option.profile)
     }
 }
+
+onMounted(() => {
+    if (props.creating) {
+        fetchProfiles()
+    }
+})
 </script>

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ClassScheduleStatusEnum;
 use App\Services\Utilities\DateTimeService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ClassScheduleDetailRequest extends FormRequest
 {
@@ -22,6 +24,8 @@ class ClassScheduleDetailRequest extends FormRequest
      */
     public function rules(): array
     {
+        $canEditStatus = (bool) $this->user()?->can('change schedule detail status');
+
         return [
             'session_date' => [
                 'required', 
@@ -58,7 +62,12 @@ class ClassScheduleDetailRequest extends FormRequest
                 'nullable', 
                 'date', 
                 'after:rescheduled_start_time',
-            ]
+            ],
+            'status' => Rule::when(
+                $canEditStatus,
+                ['nullable', 'string', Rule::in(ClassScheduleStatusEnum::values())],
+                ['prohibited']
+            ),
         ];
     }
 

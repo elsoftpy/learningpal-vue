@@ -20,6 +20,7 @@ use App\Http\Controllers\LevelContentController;
 use App\Http\Controllers\Selectable\CourseListController;
 use App\Http\Controllers\Selectable\LanguageLanguageLevelListController;
 use App\Http\Controllers\Selectable\LanguageListController;
+use App\Http\Controllers\Selectable\ProfileListController;
 use App\Http\Controllers\Selectable\RoleListController;
 use App\Http\Controllers\Selectable\StatusListController;
 use App\Http\Controllers\Settings\Languages\LanguageController;
@@ -52,6 +53,9 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
     
     Route::post('/roles', RoleListController::class)
         ->name('roles');
+
+    Route::post('/profiles', ProfileListController::class)
+        ->name('profiles');
 
     Route::post('/languages', LanguageListController::class)
         ->name('languages');

@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Builder;
 class TeacherService
 {
 
-    public function createTeacher(array $teacherData, array $profileData): Teacher
+    public function createTeacher(array $teacherData, array $profileData, bool $canEditExistingProfile = false): Teacher
     {
-        $profile = (new ProfileService())->firstOrCreateProfile($profileData);
+        $profile = (new ProfileService())->resolveProfile($profileData, $canEditExistingProfile);
 
         $teacher = $profile->teacher()->create($teacherData);
 
@@ -56,6 +56,7 @@ class TeacherService
 
         return [
             'id' => $teacher->id,
+            'profile_id' => $profile->id ?? null,
             'type' => $profile->type ?? null,
             'personal_id' => $profile->personal_id ?? null,
             'first_name' => $profile->first_name ?? null,

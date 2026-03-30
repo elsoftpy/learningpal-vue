@@ -15,8 +15,9 @@ class RoleListTest extends TestCase
     {
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
-            ]
-        );
+        ]);
+
+        $user->assignRole('admin');
 
         /** @var \App\Models\User $user */
         $this->actingAs($user);
@@ -39,8 +40,9 @@ class RoleListTest extends TestCase
 
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
-            ]
-        );
+        ]);
+
+        $user->assignRole('admin');
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
@@ -59,8 +61,9 @@ class RoleListTest extends TestCase
 
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
-            ]
-        );
+        ]);
+
+        $user->assignRole('admin');
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
@@ -79,8 +82,9 @@ class RoleListTest extends TestCase
 
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
-            ]
-        );
+        ]);
+
+        $user->assignRole('admin');
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');
@@ -100,8 +104,9 @@ class RoleListTest extends TestCase
 
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
-            ]
-        );
+        ]);
+
+        $user->assignRole('admin');
 
         /** @var \App\Models\User $user */
         $this->actingAs($user, 'web');

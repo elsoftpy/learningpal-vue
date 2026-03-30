@@ -11,6 +11,7 @@
             :show-cancel-button="false"
             :multiple="false"
             :max-file-size="maxFileSize"
+            :disabled="disabled"
             @select="onFileSelect"
             @clear="onFileClear"
             :class="containerClass"
@@ -65,6 +66,7 @@
                                 @click="onRemove(index, removeFileCallback)"
                                 text
                                 rounded
+                                :disabled="disabled"
                                 severity="danger"
                                 size="small"
                                 :aria-label="$t('Remove file')"
@@ -146,6 +148,10 @@ const props = defineProps({
     error: {
         type: String,
         default: ''
+    },
+    disabled: {
+        type: Boolean,
+        default: false
     }
 })
 

@@ -9,6 +9,7 @@ use App\Services\Settings\Languages\LanguageService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class LanguageController extends Controller
@@ -90,7 +91,14 @@ class LanguageController extends Controller
 
     public function destroy(Language $language)
     {
-        $language->delete();
+        try {
+            $language->delete();
+        } catch (QueryException $exception) {
+            return ResponseService::error(
+                message: __('This language cannot be deleted because it is currently in use.'),
+                statusCode: 422,
+            );
+        }
 
         return ResponseService::success(
             message: 'Language deleted successfully.',
