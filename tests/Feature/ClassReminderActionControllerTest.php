@@ -302,6 +302,44 @@ class ClassReminderActionControllerTest extends TestCase
         Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class, 1);
     }
 
+    public function test_execute_deduplicates_string_recipients_without_using_eloquent_unique(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'teacher@example.com');
+        config()->set('services.class_notification.cc', 'teacher@example.com');
+
+        $teacherProfile = Profile::factory()->create([
+            'full_name' => 'Docente Uno',
+            'email' => 'teacher@example.com',
+        ]);
+        $teacher = Teacher::factory()->create(['profile_id' => $teacherProfile->id]);
+
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'pending',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Request Received'));
+        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class, 1);
+    }
+
     public function test_expired_signed_route_renders_friendly_page(): void
     {
         $teacher = Teacher::factory()->create();

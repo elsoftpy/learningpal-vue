@@ -145,8 +145,11 @@ class ClassReminderActionController extends Controller
         $teacherName = $teacherNames->isNotEmpty() ? $teacherNames->join(', ') : 'Docente';
         $classTime = ($detail->rescheduled_start_time ?? $detail->start_time)?->format('H:i') ?? '--:--';
 
-        $teacherRecipients = $course->teachers
-            ->map(fn ($teacher): ?string => $teacher->profile ? $this->resolveProfileEmail($teacher->profile) : null)
+        $teacherRecipients = collect(
+            $course->teachers
+                ->map(fn ($teacher): ?string => $teacher->profile ? $this->resolveProfileEmail($teacher->profile) : null)
+                ->all()
+        )
             ->filter()
             ->values();
 
