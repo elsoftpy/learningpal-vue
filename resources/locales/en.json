@@ -462,5 +462,22 @@
   "Already Processed": "Already Processed",
   "This request has already been processed. No further action is needed.": "This request has already been processed. No further action is needed.",
   "Your request has been registered. We will be in touch shortly.": "Your request has been registered. We will be in touch shortly."
+  ,"A video activity requires at least one link.": "A video activity requires at least one link."
+  ,"Absent": "Absent"
+  ,"Allowed formats: JPG, JPEG, PNG, GIF, WEBP, PDF.": "Allowed formats: JPG, JPEG, PNG, GIF, WEBP, PDF."
+  ,"Allowed formats: JPG, JPEG, PNG, GIF, WEBP.": "Allowed formats: JPG, JPEG, PNG, GIF, WEBP."
+  ,"Canceled": "Canceled"
+  ,"Completed": "Completed"
+  ,"Disabled": "Disabled"
+  ,"Free content is required when no content topic is selected.": "Free content is required when no content topic is selected."
+  ,"Free content must be empty when content topic is selected.": "Free content must be empty when content topic is selected."
+  ,"Great news, you're in!": "Great news, you're in!"
+  ,"Hours": "Hours"
+  ,"Late": "Late"
+  ,"Ongoing": "Ongoing"
+  ,"Present": "Present"
+  ,"Reprogramed": "Reprogramed"
+  ,"Scheduled": "Scheduled"
+  ,"Total Hours": "Total Hours"
   ,"We'll notify you as soon as your account becomes active": "We'll notify you as soon as your account becomes active"
 }

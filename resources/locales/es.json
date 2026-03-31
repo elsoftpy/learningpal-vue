@@ -461,5 +461,22 @@
   "Already Processed": "Ya procesado",
   "This request has already been processed. No further action is needed.": "Esta solicitud ya fue procesada. No se requiere ninguna accion adicional.",
   "Your request has been registered. We will be in touch shortly.": "Su solicitud ha sido registrada. Nos pondremos en contacto en breve."
+  ,"A video activity requires at least one link.": "Una actividad de video requiere al menos un enlace."
+  ,"Absent": "Ausente"
+  ,"Allowed formats: JPG, JPEG, PNG, GIF, WEBP, PDF.": "Formatos permitidos: JPG, JPEG, PNG, GIF, WEBP, PDF."
+  ,"Allowed formats: JPG, JPEG, PNG, GIF, WEBP.": "Formatos permitidos: JPG, JPEG, PNG, GIF, WEBP."
+  ,"Canceled": "Cancelado"
+  ,"Completed": "Completado"
+  ,"Disabled": "Deshabilitado"
+  ,"Free content is required when no content topic is selected.": "El contenido libre es obligatorio cuando no se selecciona un tema de contenido."
+  ,"Free content must be empty when content topic is selected.": "El contenido libre debe estar vacio cuando se selecciona un tema de contenido."
+  ,"Great news, you're in!": "¡Buenas noticias, ya estás dentro!"
+  ,"Hours": "Horas"
+  ,"Late": "Tarde"
+  ,"Ongoing": "En curso"
+  ,"Present": "Presente"
+  ,"Reprogramed": "Reprogramado"
+  ,"Scheduled": "Programado"
+  ,"Total Hours": "Total de horas"
   ,"We'll notify you as soon as your account becomes active": "Le avisaremos en cuanto su cuenta se active"
 }
