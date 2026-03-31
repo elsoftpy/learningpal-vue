@@ -26,12 +26,18 @@ class CalendarService
             });
     }
 
-    public function calendarsColorsScheme(Request $request): array
+    public function calendarsColorsScheme(Request $request, ?array $visibleCourseIds = null): array
     {
         $sessions = $this->sessionsQuery(
             $request->start_date,
             $request->end_date
         );
+
+        if ($visibleCourseIds !== null) {
+            $sessions->whereHas('classSchedule', function ($query) use ($visibleCourseIds) {
+                $query->whereIn('course_id', $visibleCourseIds);
+            });
+        }
 
         $coursesIds = $sessions->get()
             ->pluck('classSchedule.course.id')

@@ -9,7 +9,6 @@ use App\Models\ClassScheduleDetail;
 use App\Models\Course;
 use App\Services\Academics\Lessons\CalendarService;
 use App\Services\Academics\Lessons\ClassScheduleDetailService;
-use App\Services\Academics\Settings\CourseService;
 use App\Services\Academics\Settings\TeacherService;
 use Illuminate\Http\Request;
 
@@ -18,11 +17,7 @@ class CalendarController extends Controller
     public function calendarSessions(CalendarSessionRequest $request)
     {
         $user = $request->user();
-        
-        $assignedCourses = [];
-        if ($user->profile?->teacher) {
-            $assignedCourses = (new TeacherService())->assignedCoursesArray($user->profile->teacher);
-        }
+        $visibleCourseIds = $this->resolveVisibleCourseIds($request);
 
         $startDate = $request->start_date->copy()->startOfDay();
         $endDate = $request->end_date->copy()->endOfDay();
@@ -33,9 +28,9 @@ class CalendarController extends Controller
                 $query->whereBetween('session_date', [$startDate, $endDate])
                     ->orWhereBetween('rescheduled_date', [$startDate, $endDate]);
             })
-            ->when($user->cannot('view all students'), function ($q) use ($assignedCourses) {
-                $q->whereHas('classSchedule', function ($q2) use ($assignedCourses) {
-                    $q2->whereIn('course_id', $assignedCourses);
+            ->when($visibleCourseIds !== null, function ($q) use ($visibleCourseIds) {
+                $q->whereHas('classSchedule', function ($q2) use ($visibleCourseIds) {
+                    $q2->whereIn('course_id', $visibleCourseIds);
                 });
             })
             ->get()
@@ -51,7 +46,7 @@ class CalendarController extends Controller
     public function scheduledCalendarCourses(CalendarSessionRequest $request)
     {
         $calendarService = new CalendarService();
-        $calendars = $calendarService->calendarsColorsScheme($request);
+        $calendars = $calendarService->calendarsColorsScheme($request, $this->resolveVisibleCourseIds($request));
 
         return response()->json([
             'calendars' => $calendars,
@@ -60,12 +55,19 @@ class CalendarController extends Controller
 
     public function ongoingAndPendingSessions(Request $request)
     {
+        $visibleCourseIds = $this->resolveVisibleCourseIds($request);
+
         $ongoingAndPendingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
             ->whereIn('status', [
                 ClassScheduleStatusEnum::ONGOING->value, 
                 ClassScheduleStatusEnum::PENDING->value
             ])
+            ->when($visibleCourseIds !== null, function ($query) use ($visibleCourseIds) {
+                $query->whereHas('classSchedule', function ($q) use ($visibleCourseIds) {
+                    $q->whereIn('course_id', $visibleCourseIds);
+                });
+            })
             ->get()
             ->map(function (ClassScheduleDetail $detail) {
                 return (new ClassScheduleDetailService())->sessionData($detail);
@@ -76,5 +78,22 @@ class CalendarController extends Controller
         ]);
     }
 
-    
+    private function resolveVisibleCourseIds(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user?->can('view all students')) {
+            return null;
+        }
+
+        if ($user?->profile?->teacher) {
+            return (new TeacherService())->assignedCoursesArray($user->profile->teacher);
+        }
+
+        if ($user?->profile?->student) {
+            return $user->profile->student->courses()->pluck('courses.id')->all();
+        }
+
+        return [];
+    }
 }
