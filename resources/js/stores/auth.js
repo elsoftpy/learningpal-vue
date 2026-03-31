@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', {
         user: null,
         isAuthenticated: false,
         loading: false,
+        isLoggingOut: false,
         csrfLoaded: false,
         ready: false,
     }),
@@ -95,6 +96,7 @@ export const useAuthStore = defineStore('auth', {
         
         async logout() {
             this.loading = true;
+            this.isLoggingOut = true;
             try {
                 await this.ensureCsrf(true);
                 await logoutRequest();
@@ -115,6 +117,7 @@ export const useAuthStore = defineStore('auth', {
 
             } finally {
                 this.loading = false;
+                this.isLoggingOut = false;
                 this.csrfLoaded = false;
             }
         },

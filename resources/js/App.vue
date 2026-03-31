@@ -13,6 +13,29 @@
     </div>
   </div>
 
+  <div
+    v-if="authStore.isLoggingOut"
+    class="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/45 backdrop-blur-sm"
+  >
+    <div class="rounded-2xl bg-white px-8 py-6 shadow-2xl ring-1 ring-slate-200">
+      <div class="flex items-center gap-4">
+        <ProgressSpinner
+          style="width: 42px; height: 42px"
+          strokeWidth="4"
+          animationDuration="0.8s"
+        />
+        <div>
+          <p class="text-base font-semibold text-slate-900">
+            {{ $t('Logging out...') }}
+          </p>
+          <p class="text-sm text-slate-500">
+            {{ $t('Please wait') }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <component v-else :is="layout">
     <router-view v-slot="{ Component }">
       <Transition name="fade" mode="out-in">
