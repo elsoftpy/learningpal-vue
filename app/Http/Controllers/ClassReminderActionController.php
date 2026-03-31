@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\App;
 use Illuminate\View\View;
+use function filter_var;
 
 class ClassReminderActionController extends Controller
 {
@@ -150,8 +151,8 @@ class ClassReminderActionController extends Controller
             ->values();
 
         $recipients = $teacherRecipients
-            ->push(config('mail.from.address'))
-            ->push(config('services.class_notification.cc'))
+            ->push($this->sanitizeEmail(config('mail.from.address')))
+            ->push($this->sanitizeEmail(config('services.class_notification.cc')))
             ->filter()
             ->unique()
             ->values();
@@ -196,6 +197,23 @@ class ClassReminderActionController extends Controller
 
     private function resolveProfileEmail(Profile $profile): ?string
     {
-        return $profile->email_alt ?: ($profile->user?->email ?: $profile->email);
+        return $this->sanitizeEmail($profile->email_alt)
+            ?: $this->sanitizeEmail($profile->user?->email)
+            ?: $this->sanitizeEmail($profile->email);
+    }
+
+    private function sanitizeEmail(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $email = trim($value);
+
+        if ($email === '' || in_array(strtolower($email), ['undefined', 'null'], true)) {
+            return null;
+        }
+
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
     }
 }

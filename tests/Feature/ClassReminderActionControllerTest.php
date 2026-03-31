@@ -262,6 +262,46 @@ class ClassReminderActionControllerTest extends TestCase
         Notification::assertCount(3);
     }
 
+    public function test_execute_skips_invalid_email_recipients_without_crashing(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'undefined');
+        config()->set('services.class_notification.cc', 'not-an-email');
+
+        $teacherProfile = Profile::factory()->create([
+            'full_name' => 'Docente Uno',
+            'email' => 'undefined',
+            'email_alt' => 'teacher@example.com',
+        ]);
+        $teacher = Teacher::factory()->create(['profile_id' => $teacherProfile->id]);
+
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'pending',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Request Received'));
+        $this->assertSame(ClassScheduleStatusEnum::PENDING->value, $detail->fresh()->status);
+        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class, 1);
+    }
+
     public function test_expired_signed_route_renders_friendly_page(): void
     {
         $teacher = Teacher::factory()->create();

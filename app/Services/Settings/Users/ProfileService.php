@@ -108,6 +108,7 @@ class ProfileService
             'company_name' => $profile->company_name,
             'ruc' => $profile->ruc,
             'email' => $profile->email,
+            'email_alt' => $profile->email_alt,
             'phone' => $profile->phone,
             'address' => $profile->address,
             'gender' => $profile->gender,

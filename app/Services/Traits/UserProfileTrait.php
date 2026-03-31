@@ -43,6 +43,7 @@ trait UserProfileTrait
             'birth_date' => DateTimeService::formatDate($profile->birth_date),
             'full_name' => $profile->full_name ?? null,
             'email' => $user->email,
+            'email_alt' => $profile->email_alt ?? null,
             'status' => $user->status,
             'display_status' => ucfirst(__($user->status)),
             'roles' => $roles,

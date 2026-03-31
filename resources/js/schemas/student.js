@@ -8,6 +8,10 @@ export const createStudentSchema = (t, locale) => {
     last_name: z.string().min(1, t('Last Name is required')),
     email: z.email(t('Invalid email address'))
       .min(1, t('Email is required')),
+    email_alt: z.union([
+      z.literal(''),
+      z.email(t('Invalid email address')),
+    ]).optional(),
     phone: z.string().optional(),
     address: z.string().optional(),
     birth_date: z.string()

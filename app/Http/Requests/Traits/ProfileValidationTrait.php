@@ -55,6 +55,13 @@ trait ProfileValidationTrait
                 'max:255', 
                 Rule::unique('profiles', 'email')->ignore($this->profile?->id),
             ],
+            'email_alt' => [
+                'nullable',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('profiles', 'email_alt')->ignore($this->profile?->id),
+            ],
             'phone' => [
                 'nullable', 
                 'string', 
@@ -111,6 +118,10 @@ trait ProfileValidationTrait
             'email.email' => __('Please provide a valid email address.'),
             'email.max' => __('Email may not be greater than :max characters.'),
             'email.unique' => __('An account with this email already exists.'),
+            'email_alt.string' => __('Alternative email must be a valid string.'),
+            'email_alt.email' => __('Please provide a valid alternative email address.'),
+            'email_alt.max' => __('Alternative email may not be greater than :max characters.'),
+            'email_alt.unique' => __('This alternative email is already in use.'),
             'phone.required' => __('Phone number is required.'),
             'phone.string' => __('Phone number must be a valid string.'),
             'phone.max' => __('Phone number may not be greater than :max characters.'),
@@ -146,5 +157,34 @@ trait ProfileValidationTrait
         }
 
         return $this->profileByIdNumber($idNumber);
+    }
+
+    protected function normalizeOptionalProfileFields(): void
+    {
+        $normalized = [];
+
+        foreach (['email_alt', 'phone', 'address'] as $field) {
+            if (! $this->exists($field)) {
+                continue;
+            }
+
+            $value = $this->input($field);
+
+            if (! is_string($value)) {
+                $normalized[$field] = $value;
+                continue;
+            }
+
+            $cleanValue = trim($value);
+
+            $normalized[$field] = match (strtolower($cleanValue)) {
+                '', 'undefined', 'null' => null,
+                default => $cleanValue,
+            };
+        }
+
+        if ($normalized !== []) {
+            $this->merge($normalized);
+        }
     }
 }

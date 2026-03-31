@@ -82,6 +82,8 @@ class UserProfileRequest extends FormRequest
 
     public function prepareForValidation()
     {
+        $this->normalizeOptionalProfileFields();
+
         if ($this->has('birth_date') && $this->birth_date) {
             $birthDate = DateTimeService::dateFromLocalizedString($this->birth_date);
         }

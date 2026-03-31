@@ -72,6 +72,7 @@ class StudentService
                     }) ?? null,
             'full_name' => $profile->full_name ?? null,
             'email' => $profile->email,
+            'email_alt' => $profile->email_alt ?? null,
             'status' => $student->status,
             'display_status' => ucfirst(__($student->status)),
             'courses' => $coursesData,

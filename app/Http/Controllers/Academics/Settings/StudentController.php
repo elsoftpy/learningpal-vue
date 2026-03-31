@@ -77,8 +77,9 @@ class StudentController extends Controller
 
     public function store(StudentRequest $request, StudentService $studentService)
     {
-        $profileData = $request->except(['status', 'courses']);
-        $studentData = $request->only(['status', 'courses']);
+        $validated = $request->validated();
+        $profileData = collect($validated)->except(['status', 'courses', 'profile'])->all();
+        $studentData = collect($validated)->only(['status', 'courses'])->all();
         $canEditExistingProfile = $request->user()?->can('edit profiles') || $request->user()?->can('edit students');
 
         $student = null;
@@ -108,8 +109,9 @@ class StudentController extends Controller
 
     public function update(StudentRequest $request, Student $student, StudentService $studentService)
     {
-        $profileData = $request->except(['status', 'courses']);
-        $studentData = $request->only(['status', 'courses']);
+        $validated = $request->validated();
+        $profileData = collect($validated)->except(['status', 'courses', 'profile'])->all();
+        $studentData = collect($validated)->only(['status', 'courses'])->all();
         
         DB::transaction(function () use ($student, $profileData, $studentData, $studentService) {
         

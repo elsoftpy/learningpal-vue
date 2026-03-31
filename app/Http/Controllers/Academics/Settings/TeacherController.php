@@ -69,8 +69,9 @@ class TeacherController extends Controller
 
     public function store(TeacherRequest $request, TeacherService $teacherService)
     {
-        $profileData = $request->except(['status']);
-        $teacherData = $request->only(['status', 'courses']);
+        $validated = $request->validated();
+        $profileData = collect($validated)->except(['status', 'courses', 'profile'])->all();
+        $teacherData = collect($validated)->only(['status', 'courses'])->all();
         $canEditExistingProfile = $request->user()?->can('edit profiles') || $request->user()?->can('edit teachers');
 
         $teacher = null;
@@ -100,8 +101,9 @@ class TeacherController extends Controller
 
     public function update(TeacherRequest $request, Teacher $teacher, TeacherService $teacherService)
     {
-        $profileData = $request->except(['status']);
-        $teacherData = $request->only(['status']);
+        $validated = $request->validated();
+        $profileData = collect($validated)->except(['status', 'courses', 'profile'])->all();
+        $teacherData = collect($validated)->only(['status'])->all();
         $teacher->courses()->sync($request->courses ?? []);
         
         DB::transaction(function () use ($teacher, $profileData, $teacherData, $teacherService) {

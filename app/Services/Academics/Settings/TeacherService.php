@@ -74,6 +74,7 @@ class TeacherService
                     }) ?? null,
             'full_name' => $profile->full_name ?? null,
             'email' => $profile->email,
+            'email_alt' => $profile->email_alt ?? null,
             'status' => $teacher->status,
             'display_status' => ucfirst(__($teacher->status)),
             'courses' => $coursesData,

@@ -177,6 +177,7 @@ const initialValues = computed(() => {
             address: data.address || '',
             phone: data.phone || '',
             email: data.email || '',
+            email_alt: data.email_alt || '',
             birth_date: data.birth_date || '',
             name: data.name || '',
             password: data.password || '',
@@ -196,6 +197,7 @@ const initialValues = computed(() => {
             address: teacherData.value.address || '',
             phone: teacherData.value.phone || '',
             email: teacherData.value.email || '',
+            email_alt: teacherData.value.email_alt || '',
             birth_date: teacherData.value.birth_date || '',
             courses: [],
             status: '',
@@ -211,6 +213,7 @@ const initialValues = computed(() => {
         address: '',
         phone: '',
         email: '',
+        email_alt: '',
         birth_date: '',
         courses: [],
         display_courses: [],
@@ -228,6 +231,7 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
     address: '',
     phone: '',
     email: '',
+    email_alt: '',
     birth_date: '',
     courses: '',
     payment_receipt: '',
@@ -251,6 +255,7 @@ const handleProfileFound = async (profileData) => {
         address: profileData.address,
         phone: profileData.phone,
         email: profileData.email,
+        email_alt: profileData.email_alt,
         birth_date: profileData.birth_date,
     };
 };
@@ -266,6 +271,7 @@ const handleProfileCleared = () => {
         address: '',
         phone: '',
         email: '',
+        email_alt: '',
         birth_date: '',
     };
 };

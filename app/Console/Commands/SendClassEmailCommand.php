@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use function filter_var;
 
 class SendClassEmailCommand extends Command
 {
@@ -90,7 +91,9 @@ class SendClassEmailCommand extends Command
             foreach ($students as $student) {
                 $profile = $student->profile;
                 $user = $profile?->user;
-                $email = $profile?->email_alt ?: ($user?->email ?: $profile?->email);
+                $email = $this->sanitizeEmail($profile?->email_alt)
+                    ?: $this->sanitizeEmail($user?->email)
+                    ?: $this->sanitizeEmail($profile?->email);
 
                 if (! $profile || ! $email || ! $classTime) {
                     $skipped++;
@@ -169,5 +172,20 @@ class SendClassEmailCommand extends Command
         $this->info($summary);
 
         return self::SUCCESS;
+    }
+
+    private function sanitizeEmail(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $email = trim($value);
+
+        if ($email === '' || in_array(strtolower($email), ['undefined', 'null'], true)) {
+            return null;
+        }
+
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
     }
 }
