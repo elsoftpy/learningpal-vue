@@ -4,6 +4,7 @@
             v-if="auth.user"
             @click="show = true"
             class="flex items-center gap-2"
+            :disabled="isLoggingOut"
         >
             <span class="md:inline text-slate-900 dark:text-white">
                 {{ auth.user?.name }}
@@ -25,6 +26,7 @@
             <router-link
                 :to="{ name: 'settings.users.profile', params: { id: auth.user?.id } }"
                 class="block px-4 py-2 text-sm text-slate-900 dark:text-white hover:bg-blue-300 dark:hover:bg-blue-600"
+                :class="{ 'pointer-events-none opacity-60': isLoggingOut }"
             >
                 <div class="flex space-x-2 items-center">
                     <svg class="w-5 h-5 text-slate-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -33,12 +35,33 @@
                     <span>{{ $t('Profile') }}</span>
                 </div>
             </router-link>
-            <button @click="logout" class="w-full px-4 py-2 text-sm text-slate-900 dark:text-white hover:bg-blue-300 dark:hover:bg-blue-600">
+            <button
+                @click="logout"
+                :disabled="isLoggingOut"
+                class="w-full px-4 py-2 text-sm text-slate-900 dark:text-white hover:bg-blue-300 dark:hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
+            >
                 <div class="flex space-x-2 items-center">
-                    <svg class="w-5 h-5 text-slate-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                        v-if="!isLoggingOut"
+                        class="w-5 h-5 text-slate-900 dark:text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                     </svg>
-                    <span>{{ $t('Log out') }}</span>
+                    <svg
+                        v-else
+                        class="w-5 h-5 animate-spin text-slate-900 dark:text-white"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    <span>{{ isLoggingOut ? $t('Logging out...') : $t('Log out') }}</span>
                 </div>
             </button>
         </div>
@@ -55,6 +78,7 @@ import defaultAvatar from '@/images/default-avatar.png';
 const auth = useAuthStore();
 const router = useRouter();
 const show = ref(false);
+const isLoggingOut = ref(false);
 const avatar = computed(() => {
     return auth.user?.avatar_url || defaultAvatar;
 });
@@ -62,6 +86,11 @@ const avatar = computed(() => {
 console.log('UserActions auth.user:', auth.user);
 
 async function logout() {
+    if (isLoggingOut.value) {
+        return;
+    }
+
+    isLoggingOut.value = true;
     show.value = false;
 
     try {
@@ -70,6 +99,7 @@ async function logout() {
         console.error('Logout failed, clearing client auth state anyway:', error);
         auth.clearAuthState();
     } finally {
+        isLoggingOut.value = false;
         router.replace({ name: 'login' });
     }
 }
