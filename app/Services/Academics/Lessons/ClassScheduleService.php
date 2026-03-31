@@ -31,10 +31,28 @@ class ClassScheduleService
 
     public function updateClassSchedule(ClassSchedule $classSchedule, array $data): ClassSchedule
     {
-        // We don't handle details update here
+        $details = $data['details'] ?? null;
         unset($data['details']);
 
         $classSchedule->update($data);
+
+        if (is_array($details)) {
+            $nextOrder = ((int) $classSchedule->details()->max('order')) + 1;
+
+            foreach ($details as $detailData) {
+                if (! empty($detailData['id'])) {
+                    continue;
+                }
+
+                if (isset($detailData['start_time']) && isset($detailData['end_time'])) {
+                    $estimatedDuration = $detailData['start_time']->diffInMinutes($detailData['end_time']);
+                    $detailData['estimated_duration_minutes'] = $estimatedDuration;
+                }
+
+                $detailData['order'] = $detailData['order'] ?? $nextOrder++;
+                $classSchedule->details()->create($detailData);
+            }
+        }
 
         return $classSchedule;
     }

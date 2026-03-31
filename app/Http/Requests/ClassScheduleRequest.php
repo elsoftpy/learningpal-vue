@@ -41,6 +41,11 @@ class ClassScheduleRequest extends FormRequest
                 'array', 
                 'min:1',
             ],
+            'details.*.id' => [
+                'nullable',
+                'integer',
+                'exists:class_schedule_details,id',
+            ],
             'details.*.session_date' => [
                 'required', 
                 'date',
