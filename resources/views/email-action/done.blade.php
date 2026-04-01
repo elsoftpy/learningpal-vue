@@ -7,6 +7,7 @@
 @section('body')
 @php
     $doneStatus = $doneStatus ?? session('done_status');
+    $actionContext = $actionContext ?? session('action_context');
 @endphp
 
 <div class="w-full max-w-2xl">
@@ -42,6 +43,15 @@
             <p class="text-slate-600">
                 {{ __('This request has already been processed. No further action is needed.') }}
             </p>
+            @if ($actionContext)
+                <p class="text-slate-600 mt-3">
+                    {{ __('This link belongs to :student for :course at :time.', [
+                        'student' => $actionContext['student_name'],
+                        'course' => $actionContext['course_name'],
+                        'time' => $actionContext['class_time'],
+                    ]) }}
+                </p>
+            @endif
 
         @else
 
@@ -56,7 +66,39 @@
             <p class="text-slate-600">
                 {{ __('Your request has been registered. We will be in touch shortly.') }}
             </p>
+            @if ($actionContext)
+                <p class="text-slate-600 mt-3">
+                    {{ __('Registered for :student in :course at :time.', [
+                        'student' => $actionContext['student_name'],
+                        'course' => $actionContext['course_name'],
+                        'time' => $actionContext['class_time'],
+                    ]) }}
+                </p>
+            @endif
 
+        @endif
+
+        @if ($actionContext)
+            <div class="mt-6 rounded-lg bg-slate-50 border border-slate-200 p-4 text-left">
+                <dl class="grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+                    <div>
+                        <dt class="font-medium text-slate-500">{{ __('Student') }}</dt>
+                        <dd class="mt-1 text-base text-slate-900">{{ $actionContext['student_name'] }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">{{ __('Course') }}</dt>
+                        <dd class="mt-1 text-base text-slate-900">{{ $actionContext['course_name'] }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">{{ __('Teacher') }}</dt>
+                        <dd class="mt-1 text-base text-slate-900">{{ $actionContext['teacher_name'] }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">{{ __('Class Time') }}</dt>
+                        <dd class="mt-1 text-base text-slate-900">{{ $actionContext['class_time'] }}</dd>
+                    </div>
+                </dl>
+            </div>
         @endif
 
     </div>

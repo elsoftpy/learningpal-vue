@@ -6,6 +6,29 @@
 
 @section('body')
 <div class="w-full max-w-2xl space-y-4">
+    <div class="bg-blue-50 border border-blue-100 rounded-lg p-5">
+        <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">
+            {{ __('Reminder Details') }}
+        </p>
+        <dl class="mt-3 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+            <div>
+                <dt class="font-medium text-slate-500">{{ __('Student') }}</dt>
+                <dd class="mt-1 text-base text-slate-900">{{ $actionContext['student_name'] }}</dd>
+            </div>
+            <div>
+                <dt class="font-medium text-slate-500">{{ __('Course') }}</dt>
+                <dd class="mt-1 text-base text-slate-900">{{ $actionContext['course_name'] }}</dd>
+            </div>
+            <div>
+                <dt class="font-medium text-slate-500">{{ __('Teacher') }}</dt>
+                <dd class="mt-1 text-base text-slate-900">{{ $actionContext['teacher_name'] }}</dd>
+            </div>
+            <div>
+                <dt class="font-medium text-slate-500">{{ __('Class Time') }}</dt>
+                <dd class="mt-1 text-base text-slate-900">{{ $actionContext['class_time'] }}</dd>
+            </div>
+        </dl>
+    </div>
 
     <p class="text-slate-700 text-base">
         {{ __('Please select one of the following options to let us know:') }}

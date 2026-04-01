@@ -67,7 +67,7 @@ class ClassReminderActionController extends Controller
 
     private function showChoicePage(Request $request, int $detailId, int $studentId): View
     {
-        $this->assertStudentBelongsToCourse($detailId, $studentId);
+        $detail = $this->findAuthorizedDetail($detailId, $studentId);
 
         $expiresAt = $request->query('expires')
             ? Carbon::createFromTimestamp((int) $request->query('expires'))
@@ -88,23 +88,14 @@ class ClassReminderActionController extends Controller
         return view('email-action.notify', [
             'pendingExecuteUrl' => $pendingExecuteUrl,
             'uploadTaskExecuteUrl' => $uploadTaskExecuteUrl,
+            'actionContext' => $this->buildActionContext($detail, $studentId),
         ]);
     }
 
     private function processAction(int $detailId, int $studentId, string $actionType): RedirectResponse
     {
-        $detail = ClassScheduleDetail::query()
-            ->with([
-                'classSchedule.course.students.profile.user',
-                'classSchedule.course.teachers.profile.user',
-            ])
-            ->findOrFail($detailId);
-
+        $detail = $this->findAuthorizedDetail($detailId, $studentId);
         $course = $detail->classSchedule?->course;
-
-        if (! $course || ! $course->students->contains('id', $studentId)) {
-            abort(403, 'No tienes permisos para realizar esta acción.');
-        }
 
         $alreadyProcessed = false;
 
@@ -127,7 +118,8 @@ class ClassReminderActionController extends Controller
 
         if ($alreadyProcessed) {
             return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
-                ->with('done_status', 'already');
+                ->with('done_status', 'already')
+                ->with('action_context', $this->buildActionContext($detail, $studentId));
         }
 
         if ($course->students->count() === 1) {
@@ -172,7 +164,8 @@ class ClassReminderActionController extends Controller
         }
 
         return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
-            ->with('done_status', 'success');
+            ->with('done_status', 'success')
+            ->with('action_context', $this->buildActionContext($detail, $studentId));
     }
 
     private function applyLocaleFromRequest(Request $request): void
@@ -187,8 +180,16 @@ class ClassReminderActionController extends Controller
 
     private function assertStudentBelongsToCourse(int $detailId, int $studentId): void
     {
+        $this->findAuthorizedDetail($detailId, $studentId);
+    }
+
+    private function findAuthorizedDetail(int $detailId, int $studentId): ClassScheduleDetail
+    {
         $detail = ClassScheduleDetail::query()
-            ->with(['classSchedule.course.students'])
+            ->with([
+                'classSchedule.course.students.profile.user',
+                'classSchedule.course.teachers.profile.user',
+            ])
             ->findOrFail($detailId);
 
         $course = $detail->classSchedule?->course;
@@ -196,6 +197,25 @@ class ClassReminderActionController extends Controller
         if (! $course || ! $course->students->contains('id', $studentId)) {
             abort(403, 'No tienes permisos para realizar esta acción.');
         }
+
+        return $detail;
+    }
+
+    private function buildActionContext(ClassScheduleDetail $detail, int $studentId): array
+    {
+        $course = $detail->classSchedule?->course;
+        $student = $course?->students->find($studentId);
+        $teacherNames = $course?->teachers
+            ?->map(fn ($teacher): string => $teacher->profile?->full_name ?? '')
+            ->filter()
+            ->values() ?? collect();
+
+        return [
+            'student_name' => $student?->profile?->full_name ?: __('Student'),
+            'course_name' => $course?->name ?: __('Course'),
+            'teacher_name' => $teacherNames->isNotEmpty() ? $teacherNames->join(', ') : __('Teacher'),
+            'class_time' => ($detail->rescheduled_start_time ?? $detail->start_time)?->format('d/m/Y H:i') ?: '--',
+        ];
     }
 
     private function resolveProfileEmail(Profile $profile): ?string

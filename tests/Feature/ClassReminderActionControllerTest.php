@@ -47,6 +47,8 @@ class ClassReminderActionControllerTest extends TestCase
         $response->assertOk();
         $response->assertSee(__('Leave Pending'));
         $response->assertSee(__('Upload Task'));
+        $response->assertSee((string) $student->profile->full_name);
+        $response->assertSee((string) $course->name);
         $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
         Notification::assertNothingSent();
     }
@@ -256,6 +258,8 @@ class ClassReminderActionControllerTest extends TestCase
 
         $second->assertOk();
         $second->assertSee(__('Already Processed'));
+        $second->assertSee((string) $student->profile->full_name);
+        $second->assertSee((string) $course->name);
 
         $this->assertSame(ClassScheduleStatusEnum::PENDING->value, $detail->fresh()->status);
         Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
