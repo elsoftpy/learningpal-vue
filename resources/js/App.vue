@@ -21,7 +21,7 @@
           IPL LearningPal
         </p>
         <p class="app-boot-subtitle">
-          {{ $t('Loading') }}...
+          {{ $t('Preparing your workspace') }}
         </p>
       </div>
 
