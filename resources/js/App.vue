@@ -165,10 +165,9 @@ watch(
   width: 10rem;
   height: 10rem;
   border-radius: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(191, 219, 254, 0.5);
+  background: #ffffff;
   box-shadow: 0 25px 80px rgba(15, 23, 42, 0.34);
-  backdrop-filter: blur(12px);
   animation: appBootRise 1.2s ease-out forwards, appBootDrift 4.2s ease-in-out infinite 1.2s;
 }
 
@@ -177,7 +176,7 @@ watch(
   position: absolute;
   inset: -0.9rem;
   border-radius: 2.7rem;
-  border: 1px solid rgba(191, 219, 254, 0.24);
+  border: 1px solid rgba(191, 219, 254, 0.34);
   animation: appBootPulse 2.4s ease-out infinite;
 }
 

@@ -11,8 +11,8 @@
             --boot-bg: #1e3a8a;
             --boot-bg-deep: #172554;
             --boot-accent: rgba(147, 197, 253, 0.22);
-            --boot-surface: rgba(255, 255, 255, 0.16);
-            --boot-border: rgba(255, 255, 255, 0.22);
+            --boot-surface: #ffffff;
+            --boot-border: rgba(191, 219, 254, 0.5);
             --boot-text: rgba(255, 255, 255, 0.96);
             --boot-subtle: rgba(219, 234, 254, 0.78);
         }
@@ -98,7 +98,6 @@
             border: 1px solid var(--boot-border);
             background: var(--boot-surface);
             box-shadow: 0 25px 80px rgba(15, 23, 42, 0.34);
-            backdrop-filter: blur(12px);
             animation: bootRise 1.2s ease-out forwards, bootDrift 4.2s ease-in-out infinite 1.2s;
         }
 
@@ -107,7 +106,7 @@
             position: absolute;
             inset: -0.9rem;
             border-radius: 2.7rem;
-            border: 1px solid rgba(191, 219, 254, 0.24);
+            border: 1px solid rgba(191, 219, 254, 0.34);
             animation: bootPulse 2.4s ease-out infinite;
         }
 
