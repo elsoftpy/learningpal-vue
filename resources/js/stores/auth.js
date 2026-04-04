@@ -76,7 +76,15 @@ export const useAuthStore = defineStore('auth', {
                     // CSRF cookie for a moment. Refresh it once and retry login.
                     this.csrfLoaded = false;
                     await this.ensureCsrf(true);
-                    response = await loginRequest(credentials);
+                    try {
+                        response = await loginRequest(credentials);
+                    } catch (retryError) {
+                        if (retryError?.response?.status === 419) {
+                            retryError.__staleSession = true;
+                        }
+
+                        throw retryError;
+                    }
                 }
 
                 this.isAuthenticated = true;

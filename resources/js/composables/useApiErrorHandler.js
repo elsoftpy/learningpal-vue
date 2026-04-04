@@ -14,6 +14,14 @@ export const useApiErrorHandler = () => {
     // Clear previous errors
     clearApiErrors()
 
+    if (error?.__authRedirectHandled || error?.__staleSession) {
+      return {
+        type: 'auth_redirect',
+        message: '',
+        silent: true
+      }
+    }
+
     // Log error in development
     if (showConsole) {
       console.error('API Error:', error)
@@ -36,6 +44,13 @@ export const useApiErrorHandler = () => {
             }
           }
           break
+
+        case 419:
+          return {
+            type: 'auth_redirect',
+            message: '',
+            silent: true
+          }
 
         case 401:
           return {

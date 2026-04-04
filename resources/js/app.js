@@ -90,6 +90,7 @@ axios.interceptors.response.use(
         ].some((path) => requestUrl.includes(path));
 
         if ((status === 401 || status === 419) && !skipAuthRecovery) {
+            error.__authRedirectHandled = true;
             authStore.handleSessionExpiry();
 
             if (!isHandlingAuthFailure) {

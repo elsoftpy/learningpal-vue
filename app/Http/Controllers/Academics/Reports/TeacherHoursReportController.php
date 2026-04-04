@@ -8,6 +8,7 @@ use App\Http\Requests\TeacherHoursReportRequest;
 use App\Models\ClassRecord;
 use App\Models\Course;
 use App\Models\Teacher;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Utilities\ResponseService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -27,7 +28,7 @@ class TeacherHoursReportController extends Controller
 
         [$startDate, $endDate, $filterType] = $this->resolveDateRange($request);
 
-        $teacher = $this->resolveTeacher((int) $request->input('teacher_id'));
+        $teacher = $this->resolveTeacher($request, (int) $request->input('teacher_id'));
         $reportQuery = $this->buildReportQuery($request, $startDate, $endDate);
 
         switch ($sortField) {
@@ -110,7 +111,7 @@ class TeacherHoursReportController extends Controller
     public function exportExcel(TeacherHoursReportRequest $request)
     {
         [$startDate, $endDate] = $this->resolveDateRange($request);
-        $teacher = $this->resolveTeacher((int) $request->input('teacher_id'));
+        $teacher = $this->resolveTeacher($request, (int) $request->input('teacher_id'));
         $rows = $this->buildExportRows($request, $startDate, $endDate);
 
         if ($rows->isEmpty()) {
@@ -131,7 +132,7 @@ class TeacherHoursReportController extends Controller
     public function exportPdf(TeacherHoursReportRequest $request)
     {
         [$startDate, $endDate] = $this->resolveDateRange($request);
-        $teacher = $this->resolveTeacher((int) $request->input('teacher_id'));
+        $teacher = $this->resolveTeacher($request, (int) $request->input('teacher_id'));
         $rows = $this->buildExportRows($request, $startDate, $endDate);
 
         if ($rows->isEmpty()) {
@@ -182,11 +183,19 @@ class TeacherHoursReportController extends Controller
         ];
     }
 
-    private function resolveTeacher(int $teacherId): Teacher
+    private function resolveTeacher(TeacherHoursReportRequest $request, int $teacherId): Teacher
     {
-        return Teacher::query()
-            ->with('profile')
+        $teacher = Teacher::query()
+            ->with(['profile', 'courses'])
             ->findOrFail($teacherId);
+
+        (new CourseVisibilityService())->authorizeAnyVisibleCourse(
+            $request->user(),
+            $teacher->courses->pluck('id'),
+            'The selected teacher is not available.'
+        );
+
+        return $teacher;
     }
 
     private function buildReportQuery(TeacherHoursReportRequest $request, string $startDate, string $endDate): Builder
@@ -196,6 +205,8 @@ class TeacherHoursReportController extends Controller
             ->where('teacher_id', (int) $request->input('teacher_id'))
             ->where('mode', 'online')
             ->whereBetween('date', [$startDate, $endDate]);
+
+        (new CourseVisibilityService())->applyCourseScope($query, $request->user());
 
         $selectedIds = collect($request->input('selected_row_ids', []))
             ->map(fn ($id) => (int) $id)

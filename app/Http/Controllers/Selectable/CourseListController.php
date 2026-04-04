@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Selectable;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Academics\Settings\CourseService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class CourseListController extends Controller
@@ -15,6 +17,7 @@ class CourseListController extends Controller
     public function __invoke(Request $request)
     {
         $query = Course::query()->with(['language', 'languageLevel']);
+        (new CourseVisibilityService())->applyCourseScope($query, $request->user(), 'id');
         $search = trim((string) ($request->input('search') ?? $request->input('params.search', '')));
 
         if ($search === '') {
@@ -26,7 +29,7 @@ class CourseListController extends Controller
             });
         }
 
-        $query->where(function ($query) use ($search) {
+        $query->where(function (Builder $query) use ($search) {
             $query->where('name', 'like', '%'.$search.'%')
             ->orWhereHas('language', function ($q) use ($search) {
                 $q->where('name', 'like', '%'.$search.'%');

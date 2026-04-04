@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Selectable;
 use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\LanguageLevel;
+use App\Services\Authorization\CourseVisibilityService;
 use Illuminate\Http\Request;
 
 class LanguageLanguageLevelListController extends Controller
@@ -16,11 +17,14 @@ class LanguageLanguageLevelListController extends Controller
     {
         $languageId = $request->language_id;
 
-        return LanguageLevel::query()
+        $query = LanguageLevel::query()
             ->select('id', 'description', 'level')
             ->where('language_id', $languageId)
-            ->where('status', StatusEnum::ACTIVE->value)
-            ->get()
+            ->where('status', StatusEnum::ACTIVE->value);
+
+        (new CourseVisibilityService())->applyLanguageLevelScope($query, $request->user(), 'id');
+
+        return $query->get()
             ->map(function (LanguageLevel $level) {
                 return [
                     'id' => $level->id,

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Course;
+use App\Services\Authorization\CourseVisibilityService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -40,6 +41,20 @@ class MonthlyClassesReportRequest extends FormRequest
             $studentId = $this->input('student_id');
 
             if (! $courseId || ! $studentId) {
+                if (! $courseId) {
+                    return;
+                }
+            }
+
+            if (!(new CourseVisibilityService())->canAccessCourseId($this->user(), $courseId)) {
+                $validator->errors()->add(
+                    'course_id',
+                    __('The selected course is not available.')
+                );
+                return;
+            }
+
+            if (! $studentId) {
                 return;
             }
 

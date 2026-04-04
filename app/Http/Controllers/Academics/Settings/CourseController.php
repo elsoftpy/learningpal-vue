@@ -8,9 +8,11 @@ use App\Models\Course;
 use App\Models\Language;
 use App\Models\LanguageLevel;
 use App\Services\Academics\Settings\CourseService;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
@@ -19,6 +21,7 @@ class CourseController extends Controller
 
     public function index(Request $request)
     {
+        $visibility = new CourseVisibilityService();
         $page = $request->page;
         $perPage = $request->per_page;
         $search = $request->search;
@@ -32,14 +35,18 @@ class CourseController extends Controller
         $coursesQuery = Course::query()
             ->with(['language', 'languageLevel']);
 
+        $visibility->applyCourseScope($coursesQuery, $request->user(), 'id');
+
         if ($search) {
-            $coursesQuery->where('name', 'like', '%' . $search . '%')
-                ->orWhereHas('language', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
-                })
-                ->orWhereHas('languageLevel', function ($q) use ($search) {
-                    $q->where('level', 'like', '%' . $search . '%');
-                });
+            $coursesQuery->where(function (Builder $query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhereHas('language', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('languageLevel', function ($q) use ($search) {
+                        $q->where('level', 'like', '%' . $search . '%');
+                    });
+            });
         }
 
         if ($filters) {
@@ -88,6 +95,8 @@ class CourseController extends Controller
 
     public function courseData(Course $course, CourseService $courseService)
     {
+        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $course->id);
+
         $courseData = $courseService->courseData($course);
 
         return ResponseService::success(
@@ -113,6 +122,8 @@ class CourseController extends Controller
 
     public function update(CourseRequest $request, Course $course, CourseService $courseService)
     {
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), $course->id);
+
         $course->update($request->validated());
 
         $courseData = $courseService->courseData($course);
@@ -127,6 +138,8 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
+        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $course->id);
+
         $course->delete();
 
         return ResponseService::success(

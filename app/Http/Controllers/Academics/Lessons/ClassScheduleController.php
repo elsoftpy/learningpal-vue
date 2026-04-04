@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Academics\Lessons;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClassScheduleRequest;
 use App\Models\ClassSchedule;
-use App\Models\ClassScheduleDetail;
 use App\Services\Academics\Lessons\ClassScheduleService;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class ClassScheduleController extends Controller
@@ -18,6 +19,7 @@ class ClassScheduleController extends Controller
 
     public function index(Request $request)
     {
+        $visibility = new CourseVisibilityService();
         $page = $request->page;
         $perPage = $request->per_page;
         $search = $request->search;
@@ -37,6 +39,8 @@ class ClassScheduleController extends Controller
         $query = ClassSchedule::query()
             ->with(['course', 'details']);
 
+        $visibility->applyCourseScope($query, $request->user());
+
         if ($search) {
             if (str_contains($search, '/')) {
                 $searchArray = explode('/', $search);
@@ -47,10 +51,12 @@ class ClassScheduleController extends Controller
                 }
             }
 
-            $query->where('name', 'like', '%' . $search . '%')
-                ->orWhere('schedule_month', 'like', '%' . $search . '%')
-                ->orWhereHas('course', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
+            $query->where(function (Builder $query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('schedule_month', 'like', '%' . $search . '%')
+                    ->orWhereHas('course', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
                 });
         }
 
@@ -81,6 +87,8 @@ class ClassScheduleController extends Controller
 
     public function classScheduleData(Request $request, ClassSchedule $classSchedule, ClassScheduleService $classScheduleService)
     {
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classSchedule->course_id);
+
         $classScheduleData = $classScheduleService->classScheduleData(
             $classSchedule,
             $request->user()?->can('view schedule feedback') ?? false
@@ -110,6 +118,8 @@ class ClassScheduleController extends Controller
         ClassSchedule $classSchedule,
         ClassScheduleService $classScheduleService
     ) {
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classSchedule->course_id);
+
         $updateClassSchedule = $classScheduleService->updateClassSchedule($classSchedule, $request->validated());
 
         return ResponseService::success(
@@ -126,6 +136,8 @@ class ClassScheduleController extends Controller
         ClassSchedule $classSchedule,
         ClassScheduleService $classScheduleService
     ) {
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classSchedule->course_id);
+
         $validated = $request->validate([
             'feedback' => [
                 'nullable',
@@ -177,10 +189,13 @@ class ClassScheduleController extends Controller
 
     public function destroy(ClassSchedule $classSchedule)
     {
+        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $classSchedule->course_id);
+
         $classSchedule->details()->delete();
         $classSchedule->delete();
         return ResponseService::success(
             message: __('Class schedule deleted successfully.')
         );
     }
+
 }

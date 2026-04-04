@@ -8,6 +8,7 @@ use App\Models\DistanceActivityDetailStudent;
 use App\Models\DistanceActivityStudent;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Authorization\CourseVisibilityService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -35,6 +36,8 @@ class DistanceActivityService
                 'details.students.student.profile.user',
                 'details.students.media',
             ]);
+
+        (new CourseVisibilityService())->applyCourseScope($query, $user);
 
         $student = $this->resolveStudent($user);
 

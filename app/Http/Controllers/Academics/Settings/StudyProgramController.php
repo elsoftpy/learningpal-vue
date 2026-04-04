@@ -9,9 +9,11 @@ use App\Models\LanguageLevel;
 use App\Models\StudyProgram;
 use App\Models\StudyProgramWeekActivity;
 use App\Services\Academics\Settings\StudyProgramService;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Traits\FilterResolverTrait;
 use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class StudyProgramController extends Controller
@@ -20,6 +22,7 @@ class StudyProgramController extends Controller
 
     public function index(Request $request, StudyProgramService $studyProgramService)
     {
+        $visibility = new CourseVisibilityService();
         $page = (int) $request->page;
         $perPage = (int) $request->per_page;
         $search = $request->search;
@@ -35,15 +38,19 @@ class StudyProgramController extends Controller
             ->with(['languageLevel.language', 'weeks.activities'])
             ->withCount('weeks');
 
+        $visibility->applyLanguageLevelScope($studyProgramsQuery, $request->user());
+
         if ($search) {
-            $studyProgramsQuery->where('title', 'like', '%'.$search.'%')
-                ->orWhereHas('languageLevel', function ($query) use ($search) {
-                    $query->where('description', 'like', '%'.$search.'%')
-                        ->orWhere('level', 'like', '%'.$search.'%')
-                        ->orWhereHas('language', function ($languageQuery) use ($search) {
-                            $languageQuery->where('name', 'like', '%'.$search.'%');
-                        });
-                });
+            $studyProgramsQuery->where(function (Builder $studyProgramQuery) use ($search) {
+                $studyProgramQuery->where('title', 'like', '%'.$search.'%')
+                    ->orWhereHas('languageLevel', function ($query) use ($search) {
+                        $query->where('description', 'like', '%'.$search.'%')
+                            ->orWhere('level', 'like', '%'.$search.'%')
+                            ->orWhereHas('language', function ($languageQuery) use ($search) {
+                                $languageQuery->where('name', 'like', '%'.$search.'%');
+                            });
+                    });
+            });
         }
 
         if ($filters) {
@@ -105,6 +112,11 @@ class StudyProgramController extends Controller
 
     public function store(StudyProgramRequest $request, StudyProgramService $studyProgramService)
     {
+        (new CourseVisibilityService())->authorizeLanguageLevelId(
+            $request->user(),
+            (int) $request->validated('language_level_id')
+        );
+
         $studyProgram = $studyProgramService->createStudyProgram($request->validated());
 
         return ResponseService::success(
@@ -117,6 +129,8 @@ class StudyProgramController extends Controller
 
     public function studyProgramData(StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
+        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
+
         return ResponseService::success(
             data: [
                 'study_program' => $studyProgramService->studyProgramData($studyProgram),
@@ -126,6 +140,12 @@ class StudyProgramController extends Controller
 
     public function update(StudyProgramRequest $request, StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
+        (new CourseVisibilityService())->authorizeLanguageLevelId($request->user(), $studyProgram->language_level_id);
+        (new CourseVisibilityService())->authorizeLanguageLevelId(
+            $request->user(),
+            (int) $request->validated('language_level_id')
+        );
+
         $studyProgram = $studyProgramService->updateStudyProgram($studyProgram, $request->validated());
 
         return ResponseService::success(
@@ -138,6 +158,8 @@ class StudyProgramController extends Controller
 
     public function destroy(StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
+        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
+
         $studyProgramService->deleteStudyProgram($studyProgram);
 
         return ResponseService::success(

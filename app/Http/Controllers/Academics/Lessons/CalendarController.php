@@ -6,18 +6,16 @@ use App\Enums\ClassScheduleStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CalendarSessionRequest;
 use App\Models\ClassScheduleDetail;
-use App\Models\Course;
 use App\Services\Academics\Lessons\CalendarService;
 use App\Services\Academics\Lessons\ClassScheduleDetailService;
-use App\Services\Academics\Settings\TeacherService;
+use App\Services\Authorization\CourseVisibilityService;
 use Illuminate\Http\Request;
 
 class CalendarController extends Controller
 {
     public function calendarSessions(CalendarSessionRequest $request)
     {
-        $user = $request->user();
-        $visibleCourseIds = $this->resolveVisibleCourseIds($request);
+        $visibleCourseIds = (new CourseVisibilityService())->visibleCourseIdsForUser($request->user());
 
         $startDate = $request->start_date->copy()->startOfDay();
         $endDate = $request->end_date->copy()->endOfDay();
@@ -46,7 +44,10 @@ class CalendarController extends Controller
     public function scheduledCalendarCourses(CalendarSessionRequest $request)
     {
         $calendarService = new CalendarService();
-        $calendars = $calendarService->calendarsColorsScheme($request, $this->resolveVisibleCourseIds($request));
+        $calendars = $calendarService->calendarsColorsScheme(
+            $request,
+            (new CourseVisibilityService())->visibleCourseIdsForUser($request->user())
+        );
 
         return response()->json([
             'calendars' => $calendars,
@@ -55,7 +56,7 @@ class CalendarController extends Controller
 
     public function ongoingAndPendingSessions(Request $request)
     {
-        $visibleCourseIds = $this->resolveVisibleCourseIds($request);
+        $visibleCourseIds = (new CourseVisibilityService())->visibleCourseIdsForUser($request->user());
 
         $ongoingAndPendingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
@@ -78,22 +79,4 @@ class CalendarController extends Controller
         ]);
     }
 
-    private function resolveVisibleCourseIds(Request $request): ?array
-    {
-        $user = $request->user();
-
-        if ($user?->can('view all students')) {
-            return null;
-        }
-
-        if ($user?->profile?->teacher) {
-            return (new TeacherService())->assignedCoursesArray($user->profile->teacher);
-        }
-
-        if ($user?->profile?->student) {
-            return $user->profile->student->courses()->pluck('courses.id')->all();
-        }
-
-        return [];
-    }
 }

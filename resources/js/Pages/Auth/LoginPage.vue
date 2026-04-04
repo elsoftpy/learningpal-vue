@@ -191,6 +191,10 @@ const handleLogin = async ({valid, values}) => {
     router.push(redirectTo)
   } catch (error) {
     const apiError = handleApiError(error)
+
+    if (apiError?.silent) {
+      return
+    }
     
     if (apiError?.type === 'validation' && apiError.errors) {
       setErrors(apiError.errors)

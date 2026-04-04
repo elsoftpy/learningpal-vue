@@ -6,6 +6,7 @@ use App\Exports\MonthlyClassesReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MonthlyClassesReportRequest;
 use App\Services\Academics\Reports\MonthlyClassesReportService;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Utilities\ResponseService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -50,6 +51,8 @@ class MonthlyClassesReportController extends Controller
             'course_id' => ['required', 'integer', 'exists:courses,id'],
         ]);
 
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), (int) $validated['course_id']);
+
         return ResponseService::success(
             message: __('Monthly report months retrieved successfully.'),
             data: [
@@ -64,6 +67,8 @@ class MonthlyClassesReportController extends Controller
             'course_id' => ['required', 'integer', 'exists:courses,id'],
             'month' => ['nullable', 'date_format:Y-m'],
         ]);
+
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), (int) $validated['course_id']);
 
         return ResponseService::success(
             message: __('Monthly report students retrieved successfully.'),

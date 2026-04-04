@@ -6,6 +6,7 @@ use App\Enums\ClassScheduleStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClassScheduleDetailRequest;
 use App\Models\ClassScheduleDetail;
+use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Utilities\ResponseService;
 
 class ClassScheduleDetailController extends Controller
@@ -13,6 +14,8 @@ class ClassScheduleDetailController extends Controller
     
     public function update(ClassScheduleDetailRequest $request, ClassScheduleDetail $detail)
     {
+        (new CourseVisibilityService())->authorizeCourseId($request->user(), $detail->classSchedule?->course_id);
+
         $validated = $request->validated();
         $manualStatus = $validated['status'] ?? null;
 
@@ -43,6 +46,8 @@ class ClassScheduleDetailController extends Controller
 
     public function destroy(ClassScheduleDetail $detail)
     {
+        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $detail->classSchedule?->course_id);
+
         $detail->delete();
 
         return ResponseService::success(
