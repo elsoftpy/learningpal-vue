@@ -20,6 +20,7 @@ class PermissionSeeder extends Seeder
             'show academic menu',
             'show academic settings menu',
             'show academic classes menu',
+            'show reports menu',
         ];
 
         foreach ($menuPermissions as $permission) {
@@ -112,6 +113,7 @@ class PermissionSeeder extends Seeder
             'create class records',
             'edit class records',
             'delete class records',
+            'view monthly classes report',
             'view teacher hours report',
             'list other teachers',
             'view assigned distance activities',
@@ -170,7 +172,6 @@ class PermissionSeeder extends Seeder
             /*'delete class schedule details',
             'confirm class reprogramming', */
             'view class records',
-            'view teacher hours report',
             'view own distance activities',
 /*             'create class records',
             'edit class records',

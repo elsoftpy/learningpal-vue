@@ -580,7 +580,7 @@ const routes = [
     component: () => import('../Pages/academics/reports/MonthlyClassesReportPage.vue'),
     meta: {
       requiresAuth: true,
-      permission: 'view teacher hours report',
+      permission: 'view monthly classes report',
       module: 'academics',
       submodule: 'reports',
       title: 'Monthly Classes Report',

@@ -115,14 +115,14 @@
                     </SubmoduleMenuItem>
 
                     <SubmoduleMenuItem
-                        v-if="can('view teacher hours report')"
+                        v-if="can('show reports menu')"
                         submodule="reports"
                         :submoduleName="$t('Reports')"
                         icon="chart-line"
                     >
                         <template #items>
                             <PlainMenuItem
-                                v-if="can('view teacher hours report')"
+                                v-if="can('view monthly classes report')"
                                 :route="{ name: 'academics.reports.monthly-classes' }"
                                 baseRoute="academics.reports"
                                 :title="$t('Monthly Classes')"
