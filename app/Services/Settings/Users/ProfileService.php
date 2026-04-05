@@ -40,7 +40,13 @@ class ProfileService
 
     public function firstOrCreateProfile(array $profileData): Profile
     {
-        $profile = $this->findByEmail($profileData['email']);
+        $email = $profileData['email'] ?? null;
+
+        if (! is_string($email) || trim($email) === '') {
+            throw new \InvalidArgumentException(__('Email is required.'));
+        }
+
+        $profile = $this->findByEmail($email);
         if (!$profile) {
             $profile = $this->createProfile($profileData);
         }

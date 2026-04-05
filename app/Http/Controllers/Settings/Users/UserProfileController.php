@@ -92,7 +92,7 @@ class UserProfileController extends Controller
     public function store(UserProfileRequest $request, UserService $userService)
     {
         $validated = $request->validated();
-        $profileData = collect($validated)->except(['name', 'email', 'password', 'roles', 'status', 'profile'])->all();
+        $profileData = collect($validated)->except(['name', 'password', 'roles', 'status', 'profile'])->all();
         $userData = collect($validated)->only(['name', 'email', 'password', 'roles', 'status'])->all();
         $canEditExistingProfile = $request->user()?->can('edit profiles') || $request->user()?->can('edit users');
 
@@ -140,7 +140,7 @@ class UserProfileController extends Controller
         }
 
         $validated = $request->validated();
-        $profileData = collect($validated)->except(['name', 'email', 'password', 'roles', 'status', 'profile'])->all();
+        $profileData = collect($validated)->except(['name', 'password', 'roles', 'status', 'profile'])->all();
         $userData = collect($validated)->only(['name', 'email', 'password', 'roles', 'status'])->all();
 
         if (array_key_exists('roles', $userData) && ! $request->user()?->can('change roles')) {
