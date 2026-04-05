@@ -68,6 +68,17 @@ class ClassReminderActionController extends Controller
     private function showChoicePage(Request $request, int $detailId, int $studentId): View
     {
         $detail = $this->findAuthorizedDetail($detailId, $studentId);
+        $course = $detail->classSchedule?->course;
+        $existingAction = $course && $course->students->count() > 1
+            ? $this->existingActionForDetail($detail->id)
+            : null;
+
+        if ($existingAction) {
+            return view('email-action.done', [
+                'doneStatus' => 'already',
+                'actionContext' => $this->buildActionContext($detail, $studentId, $existingAction),
+            ]);
+        }
 
         $expiresAt = $request->query('expires')
             ? Carbon::createFromTimestamp((int) $request->query('expires'))
@@ -96,12 +107,21 @@ class ClassReminderActionController extends Controller
     {
         $detail = $this->findAuthorizedDetail($detailId, $studentId);
         $course = $detail->classSchedule?->course;
+        $existingAction = null;
+        $createdAction = null;
+        $isMultiStudentCourse = $course?->students->count() > 1;
 
-        $alreadyProcessed = false;
+        DB::transaction(function () use ($detail, $studentId, $actionType, $isMultiStudentCourse, &$existingAction, &$createdAction): void {
+            $existingAction = $isMultiStudentCourse
+                ? $this->existingActionForDetail($detail->id, true)
+                : null;
 
-        DB::transaction(function () use ($detail, $studentId, $actionType, &$alreadyProcessed): void {
+            if ($existingAction) {
+                return;
+            }
+
             try {
-                ClassReminderAction::query()->create([
+                $createdAction = ClassReminderAction::query()->create([
                     'class_schedule_detail_id' => $detail->id,
                     'student_id' => $studentId,
                     'action_type' => $actionType,
@@ -113,21 +133,21 @@ class ClassReminderActionController extends Controller
                 if (! $alreadyProcessed) {
                     throw $exception;
                 }
+
+                $existingAction = $this->existingActionForDetail($detail->id, true);
             }
         });
 
-        if ($alreadyProcessed) {
+        if ($existingAction) {
             return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
                 ->with('done_status', 'already')
-                ->with('action_context', $this->buildActionContext($detail, $studentId));
+                ->with('action_context', $this->buildActionContext($detail, $studentId, $existingAction));
         }
 
-        if ($course->students->count() === 1) {
-            $detail->status = $actionType === 'pending'
-                ? ClassScheduleStatusEnum::PENDING->value
-                : ClassScheduleStatusEnum::CANCELED->value;
-            $detail->save();
-        }
+        $detail->status = $actionType === 'pending'
+            ? ClassScheduleStatusEnum::PENDING->value
+            : ClassScheduleStatusEnum::CANCELED->value;
+        $detail->save();
 
         $teacherNames = $course->teachers
             ->map(fn ($teacher): string => $teacher->profile?->full_name ?? '')
@@ -165,7 +185,7 @@ class ClassReminderActionController extends Controller
 
         return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
             ->with('done_status', 'success')
-            ->with('action_context', $this->buildActionContext($detail, $studentId));
+            ->with('action_context', $this->buildActionContext($detail, $studentId, $createdAction));
     }
 
     private function applyLocaleFromRequest(Request $request): void
@@ -201,7 +221,7 @@ class ClassReminderActionController extends Controller
         return $detail;
     }
 
-    private function buildActionContext(ClassScheduleDetail $detail, int $studentId): array
+    private function buildActionContext(ClassScheduleDetail $detail, int $studentId, ?ClassReminderAction $action = null): array
     {
         $course = $detail->classSchedule?->course;
         $student = $course?->students->find($studentId);
@@ -209,13 +229,40 @@ class ClassReminderActionController extends Controller
             ?->map(fn ($teacher): string => $teacher->profile?->full_name ?? '')
             ->filter()
             ->values() ?? collect();
+        $actionStudent = $action?->student_id ? $course?->students->find($action->student_id) : null;
 
         return [
             'student_name' => $student?->profile?->full_name ?: __('Student'),
             'course_name' => $course?->name ?: __('Course'),
             'teacher_name' => $teacherNames->isNotEmpty() ? $teacherNames->join(', ') : __('Teacher'),
             'class_time' => ($detail->rescheduled_start_time ?? $detail->start_time)?->format('d/m/Y H:i') ?: '--',
+            'processed_by_student_name' => $actionStudent?->profile?->full_name,
+            'action_type' => $action?->action_type,
+            'action_label' => $this->actionLabel($action?->action_type),
         ];
+    }
+
+    private function existingActionForDetail(int $detailId, bool $lockForUpdate = false): ?ClassReminderAction
+    {
+        $query = ClassReminderAction::query()
+            ->where('class_schedule_detail_id', $detailId)
+            ->orderBy('processed_at')
+            ->orderBy('id');
+
+        if ($lockForUpdate) {
+            $query->lockForUpdate();
+        }
+
+        return $query->first();
+    }
+
+    private function actionLabel(?string $actionType): ?string
+    {
+        return match ($actionType) {
+            'pending' => __('Leave Session Pending For Reschedule'),
+            'upload_task' => __('Request Class Record Upload'),
+            default => null,
+        };
     }
 
     private function resolveProfileEmail(Profile $profile): ?string

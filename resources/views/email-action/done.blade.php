@@ -40,9 +40,24 @@
             <h2 class="text-xl font-semibold text-slate-800 mb-2">
                 {{ __('Already Processed') }}
             </h2>
-            <p class="text-slate-600">
-                {{ __('This request has already been processed. No further action is needed.') }}
-            </p>
+            @if (!empty($actionContext['processed_by_student_name']))
+                <p class="text-slate-600">
+                    {{ __('This request has already been processed by :student. No further action is needed.', [
+                        'student' => $actionContext['processed_by_student_name'],
+                    ]) }}
+                </p>
+            @else
+                <p class="text-slate-600">
+                    {{ __('This request has already been processed. No further action is needed.') }}
+                </p>
+            @endif
+            @if (!empty($actionContext['action_label']))
+                <p class="text-slate-600 mt-3">
+                    {{ __('Selected action: :action', [
+                        'action' => $actionContext['action_label'],
+                    ]) }}
+                </p>
+            @endif
             @if ($actionContext)
                 <p class="text-slate-600 mt-3">
                     {{ __('This link belongs to :student for :course at :time.', [
