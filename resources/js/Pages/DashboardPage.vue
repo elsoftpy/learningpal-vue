@@ -33,6 +33,66 @@
         </div>
       </div>
     </div>
+
+    <div
+      v-if="activeEventPopover"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4"
+      @click.self="closeEventPopover"
+    >
+      <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="mb-3 flex items-start justify-between gap-3">
+          <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
+            {{ activeEventPopover.title }}
+          </h3>
+          <button
+            type="button"
+            class="rounded-md px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            @click="closeEventPopover"
+          >
+            {{ $t('Close') }}
+          </button>
+        </div>
+
+        <div class="space-y-3 text-sm text-slate-700 dark:text-slate-200">
+          <p v-if="activeEventPopover.displayDate" class="flex items-start gap-2">
+            <span class="font-semibold white-space: nowrap">{{ $t('Event Date') }}:</span>
+            <span>{{ activeEventPopover.displayDate }}</span>
+          </p>
+          <p v-if="activeEventPopover.displayTime" class="flex items-start gap-2">
+            <span class="font-semibold white-space: nowrap">{{ $t('Event Time') }}:</span>
+            <span>{{ activeEventPopover.displayTime }}</span>
+          </p>
+          <p v-if="activeEventPopover.statusLabel" class="flex items-start gap-2">
+            <span class="font-semibold white-space: nowrap">{{ $t('Event Status') }}:</span>
+            <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              {{ activeEventPopover.statusLabel }}
+            </span>
+          </p>
+          <p v-if="activeEventPopover.description" class="flex flex-col gap-1">
+            <span class="font-semibold">{{ $t('Event Description') }}:</span>
+            <span class="whitespace-pre-wrap wrap-break-word rounded bg-slate-50 p-2 text-xs dark:bg-slate-800">{{ activeEventPopover.description }}</span>
+          </p>
+        </div>
+
+        <div class="mt-5 flex justify-end">
+          <a
+            v-if="activeEventPopover.chatRoomUrl"
+            :href="activeEventPopover.chatRoomUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+          >
+            {{ $t('Join Event') }}
+          </a>
+          <span
+            v-else
+            class="text-xs text-slate-500 dark:text-slate-400"
+          >
+            {{ $t('No event link available') }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -87,6 +147,7 @@ const courseLookupById = ref({});
 const calendarDefinitions = ref({ ...defaultCalendars });
 const calendarSessions = ref([]);
 const selectedSessionStatus = ref('all');
+const activeEventPopover = ref(null);
 
 let activeSessionsController;
 let calendarAppRef = null;
@@ -190,6 +251,25 @@ const normalizeTime = (timeString) => {
   return timeString.length === 5 ? `${timeString}:00` : timeString;
 };
 
+const assignConcurrentStartOffsets = (sessions = []) => {
+  const bucketCounts = new Map();
+
+  return sessions.map((session) => {
+    const eventDate = session.rescheduled_date ?? session.date ?? '';
+    const startTimeValue = session.rescheduled_start_time ?? session.start_time;
+    const normalizedStart = normalizeTime(startTimeValue) ?? '';
+    const bucketKey = `${eventDate}|${normalizedStart}`;
+    const currentOffset = bucketCounts.get(bucketKey) ?? 0;
+
+    bucketCounts.set(bucketKey, currentOffset + 1);
+
+    return {
+      ...session,
+      _layoutStartOffsetSeconds: currentOffset,
+    };
+  });
+};
+
 const formatDisplayTime = (timeString) => {
   const normalized = normalizeTime(timeString);
   if (!normalized) return '';
@@ -198,7 +278,45 @@ const formatDisplayTime = (timeString) => {
 };
 
 const APP_TIMEZONE = import.meta.env.VITE_APP_TIMEZONE || 'UTC';
-console.log('APP_TIMEZONE:', APP_TIMEZONE); // Add this line to debug
+
+const formatDisplayDate = (dateString) => {
+  if (!dateString) return '';
+
+  try {
+    const date = new Date(`${dateString}T00:00:00`);
+    return new Intl.DateTimeFormat(appLocale || 'en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: APP_TIMEZONE,
+    }).format(date);
+  } catch (error) {
+    console.warn('Unable to format event date label.', error);
+    return dateString;
+  }
+};
+
+const closeEventPopover = () => {
+  activeEventPopover.value = null;
+};
+
+const openEventPopover = (eventData) => {
+  if (!eventData) {
+    closeEventPopover();
+    return;
+  }
+
+  activeEventPopover.value = {
+    id: eventData.id,
+    title: eventData.title ?? 'Class session',
+    displayDate: eventData.displayDate ?? '',
+    displayTime: eventData.displayTime ?? '',
+    statusLabel: eventData.statusLabel ?? '',
+    description: eventData.sessionDescription ?? '',
+    chatRoomUrl: eventData.chatRoomUrl ?? '',
+  };
+};
 
 const buildZonedDateTime = (dateString, timeString) => {
   if (!dateString) {
@@ -209,12 +327,8 @@ const buildZonedDateTime = (dateString, timeString) => {
     const plainDate = Temporal.PlainDate.from(dateString);
     const plainTime = Temporal.PlainTime.from(normalizeTime(timeString) ?? '00:00:00');
     const dateTime = plainDate.toPlainDateTime(plainTime);
-    
-    console.log('Converting:', { dateString, timeString, timezone: APP_TIMEZONE }); // Debug
-    const result = dateTime.toZonedDateTime(APP_TIMEZONE);
-    console.log('Result:', result.toString()); // Debug
-    
-    return result;
+
+    return dateTime.toZonedDateTime(APP_TIMEZONE);
   } catch (error) {
     console.error('Unable to build zoned date time for session', { dateString, timeString, error });
     return null;
@@ -226,10 +340,20 @@ const sessionToCalendarEvent = (session) => {
   const startTimeValue = session.rescheduled_start_time ?? session.start_time;
   const endTimeValue = session.rescheduled_end_time ?? session.end_time;
 
-  const start = buildZonedDateTime(eventDate, startTimeValue) ?? buildZonedDateTime(eventDate, null);
-  const end = endTimeValue
+  let start = buildZonedDateTime(eventDate, startTimeValue) ?? buildZonedDateTime(eventDate, null);
+  let end = endTimeValue
     ? buildZonedDateTime(eventDate, endTimeValue) ?? start
     : start;
+
+  const startOffsetSeconds = Number.isInteger(session._layoutStartOffsetSeconds)
+    ? session._layoutStartOffsetSeconds
+    : 0;
+
+  // Keep visual times unchanged while avoiding exact tie-cases that can stack events.
+  if (start && startOffsetSeconds > 0) {
+    start = start.add({ seconds: startOffsetSeconds });
+    end = end?.add({ seconds: startOffsetSeconds }) ?? end;
+  }
 
   const displayStartTime = formatDisplayTime(startTimeValue);
   const displayEndTime = formatDisplayTime(endTimeValue);
@@ -241,20 +365,16 @@ const sessionToCalendarEvent = (session) => {
   const statusLabel = session.display_status ?? '';
 
   const customContent = `
-  ${session.chat_room_url 
-    ? `<a href="${session.chat_room_url}" target="_blank" rel="noopener noreferrer">` 
-    : ''}
     <div class="sx-event-content">
       <div class="sx-event-row">
         <strong class="sx-event-time" title="${eventTitle}">${eventTitle}</strong>
         <div class="sx-event-text" title="${displayTime} ${statusLabel}">
-          ${displayTime} 
+          ${displayTime}
           ${statusLabel ? `<span class="sx-event-status">${statusLabel}</span>` : ''}
         </div>
       </div>
     </div>
-  ${session.chat_room_url ? `</a>` : ''}
-`.trim();
+  `.trim();
 
   return {
     id: session.id,
@@ -263,6 +383,10 @@ const sessionToCalendarEvent = (session) => {
     start,
     end,
     description: [displayTime, statusLabel, session.description].filter(Boolean).join(' • '),
+    displayDate: formatDisplayDate(eventDate),
+    displayTime,
+    statusLabel,
+    sessionDescription: session.description ?? '',
     chatRoomUrl: session.chat_room_url,
     _customContent: {
       monthGrid: customContent,
@@ -340,7 +464,8 @@ function applyCalendarEvents(calendarInstance = calendarAppRef) {
     return;
   }
 
-  const events = filteredCalendarSessions.value.map(sessionToCalendarEvent);
+  const layoutAwareSessions = assignConcurrentStartOffsets(filteredCalendarSessions.value);
+  const events = layoutAwareSessions.map(sessionToCalendarEvent);
   calendarInstance.events.set(events);
 }
 
@@ -378,15 +503,22 @@ const calendarApp = createCalendar({
     createViewDay(),
     createViewWeek(),
   ],
+  monthGridOptions: {
+    nEventsPerDay: 15,
+  },
+  weekOptions: {
+    gridHeight: 3200,
+    gridStep: 15,
+    eventWidth: 100,
+    eventOverlap: false,
+  },
   calendars: defaultCalendars,
   callbacks: {
-    onEventClick(info) {
-      if (!info.event?.chatRoomUrl) {
-        return;
-      }
-      window.open(info.event.chatRoomUrl, '_blank', 'noopener');
+    onEventClick(event) {
+      openEventPopover(event?.event ?? event);
     },
     onRangeUpdate(range) {
+      closeEventPopover();
       fetchCalendarsConfig(range);
       fetchSessionsForRange(range);
     },
@@ -415,10 +547,12 @@ watch(
 );
 
 watch(selectedSessionStatus, () => {
+  closeEventPopover();
   applyCalendarEvents();
 });
 
 onBeforeUnmount(() => {
+  closeEventPopover();
   abortActiveSessionsRequest();
 });
 </script>
@@ -451,6 +585,7 @@ onBeforeUnmount(() => {
 /* Month grid event - ensure container has width constraints */
 :deep(.sx__month-grid-event) {
   overflow: hidden !important;
+  cursor: pointer !important;
 }
 
 :deep(.sx__month-grid-event > div) {
@@ -494,45 +629,75 @@ onBeforeUnmount(() => {
   font-size: 0.75rem !important;
 }
 
-/* Fix for week/day view time grid events - minimum height */
+/* Fix for week/day view time grid events in dense schedules */
 :deep(.sx__time-grid-event) {
-  min-height: 3rem !important;
+  padding: 2px 4px !important;
+  box-sizing: border-box !important;
+  overflow: auto !important;
+  cursor: pointer !important;
 }
 
 :deep(.sx__time-grid-event-inner) {
-  min-height: 3rem !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  overflow: visible !important;
+}
+
+:deep(.sx__time-grid-event a) {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
 }
 
 /* Truncate long event titles with ellipsis */
 :deep(.sx__time-grid-event .sx-event-time) {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
   display: block !important;
   max-width: 100% !important;
+  word-break: break-word !important;
 }
 
-/* Keep event time/status text on one line */
+/* Keep event details readable for short-duration events */
 :deep(.sx__time-grid-event .sx-event-text) {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  font-size: 0.75rem !important;
-  line-height: 1.2 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  font-size: 0.7rem !important;
+  line-height: 1.15 !important;
+  word-break: break-word !important;
 }
 
 :deep(.sx-event-content) {
-  padding: 4px 8px !important;
+  padding: 2px 4px !important;
   overflow: hidden !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 :deep(.sx-event-row) {
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 1px !important;
   overflow: hidden !important;
+  width: 100% !important;
+}
+
+:deep(.sx__time-grid-event .sx-event-time) {
+  font-size: 0.72rem !important;
+  line-height: 1.15 !important;
+}
+
+:deep(.sx__time-grid-event .sx-event-status) {
+  display: inline-block !important;
+  margin-left: 0.25rem !important;
+}
+
+:deep(.sx__time-grid-event.is-event-overlap) {
+  box-shadow: none !important;
 }
 </style>
