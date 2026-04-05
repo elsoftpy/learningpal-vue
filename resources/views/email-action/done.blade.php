@@ -78,9 +78,15 @@
             <h2 class="text-xl font-semibold text-slate-800 mb-2">
                 {{ __('Request Received') }}
             </h2>
-            <p class="text-slate-600">
-                {{ __('Your request has been registered. We will be in touch shortly.') }}
-            </p>
+            @if (($actionContext['action_type'] ?? null) === 'upload_task')
+                <p class="text-slate-600">
+                    {{ __('Your Teacher will upload an activity for you to complete before the next class.') }}
+                </p>
+            @else
+                <p class="text-slate-600">
+                    {{ __('Your request has been registered. We will be in touch shortly.') }}
+                </p>
+            @endif
             @if ($actionContext)
                 <p class="text-slate-600 mt-3">
                     {{ __('Registered for :student in :course at :time.', [

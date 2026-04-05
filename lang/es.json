@@ -193,6 +193,7 @@
     "This request has already been processed. No further action is needed.": "Esta solicitud ya fue procesada anteriormente. No se requiere ninguna acción adicional.",
     "This link belongs to :student for :course at :time.": "Este enlace corresponde a :student para :course a las :time.",
     "Your request has been registered. We will be in touch shortly.": "Tu solicitud fue registrada. Nos pondremos en contacto contigo pronto.",
+    "Your Teacher will upload an activity for you to complete before the next class.": "Tu teacher te subira una actividad para que la realices antes de la siguiente clase.",
     "Registered for :student in :course at :time.": "Registrado para :student en :course a las :time.",
     "Class reminder": "Recordatorio de clase",
     "Student action notification": "Notificación de acción del estudiante",
