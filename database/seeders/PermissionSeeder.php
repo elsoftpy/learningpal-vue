@@ -172,6 +172,7 @@ class PermissionSeeder extends Seeder
             /*'delete class schedule details',
             'confirm class reprogramming', */
             'view class records',
+            'create class records',
             'view own distance activities',
 /*             'create class records',
             'edit class records',
