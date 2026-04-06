@@ -366,6 +366,47 @@ const createDetailSchema = (t) => z.object({
         return /^([01]\d|2[0-3]):[0-5]\d$/.test(val);
     }, { message: t('Use 24h HH:MM format.') }),
     status: z.string().optional(),
+}).superRefine((data, ctx) => {
+    const hasAnyRescheduleValue = Boolean(data.rescheduled_date || data.rescheduled_start_time || data.rescheduled_end_time);
+    const requiresReschedule = data.status === 'reprogramed' || hasAnyRescheduleValue;
+
+    // Check if user is trying to reschedule a cancelled session
+    if (hasAnyRescheduleValue && data.status === 'canceled') {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['status'],
+            message: t('Cannot reschedule a cancelled session. Please change the status first.'),
+        });
+        return;
+    }
+
+    if (!requiresReschedule) {
+        return;
+    }
+
+    if (!data.rescheduled_date) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['rescheduled_date'],
+            message: t('Rescheduled date is required.'),
+        });
+    }
+
+    if (!data.rescheduled_start_time) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['rescheduled_start_time'],
+            message: t('Rescheduled start time is required.'),
+        });
+    }
+
+    if (!data.rescheduled_end_time) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['rescheduled_end_time'],
+            message: t('Rescheduled end time is required.'),
+        });
+    }
 });
 
 const detailSchema = computed(() => createDetailSchema($t, locale.value));
@@ -469,6 +510,13 @@ const handleSubmit = async (formData) => {
 
     if (!valid) {
         return;
+    }
+
+    // Auto-set status to reprogramed if reschedule data is being entered and status is not explicitly set
+    const hasRescheduleData = Boolean(values.rescheduled_date || values.rescheduled_start_time || values.rescheduled_end_time);
+    if (hasRescheduleData && (!values.status || values.status === detailData.value.status)) {
+        // If no previous status or status hasn't changed from original, auto-set to reprogramed
+        values.status = 'reprogramed';
     }
 
     if (!canEditStatus.value) {

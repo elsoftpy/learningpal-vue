@@ -21,18 +21,17 @@ class ClassScheduleDetailController extends Controller
 
         $detail->fill($validated);
 
-        if (
-            $request->filled('rescheduled_date')
+        $hasRescheduleData = $request->filled('rescheduled_date')
             && $request->filled('rescheduled_start_time')
-            && $request->filled('rescheduled_end_time')
-        ) {
+            && $request->filled('rescheduled_end_time');
+
+        if ($hasRescheduleData) {
             $detail->reschedule_count = (int) $detail->reschedule_count + 1;
             $detail->rescheduled_estimated_duration_minutes = $request
                 ->rescheduled_start_time->diffInMinutes($request->rescheduled_end_time);
 
-            // Leaving a session pending should keep it visible as pending until a later confirmation flow,
-            // unless a permitted user explicitly selects another status.
-            $detail->status = $manualStatus ?: ClassScheduleStatusEnum::PENDING->value;
+            // If reschedule data is provided, mark session as reprogramed unless explicitly set to another status.
+            $detail->status = $manualStatus ?: ClassScheduleStatusEnum::REPROGRAMED->value;
         } elseif ($manualStatus) {
             $detail->status = $manualStatus;
         }
