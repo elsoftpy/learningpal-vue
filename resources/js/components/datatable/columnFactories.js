@@ -3,6 +3,7 @@ import InputText from 'primevue/inputtext';
 import Tag from 'primevue/tag';
 import DateInput from '@/components/form/DateInput.vue';
 import ResourceViewerCell from '@/components/datatable/ResourceViewerCell.vue';
+import defaultAvatar from '@/images/default-avatar.png';
 
 /**
  * Helper factories to keep DataTable column configs declarative.
@@ -273,9 +274,12 @@ function createAvatarNameRenderer({ fieldName, avatarField }) {
     return ({ data }) =>
         h('div', { class: 'flex items-center space-x-2' }, [
             h('img', {
-                src: data?.[avatarField],
+                src: data?.[avatarField] || defaultAvatar,
                 alt: data?.[fieldName] || '',
                 class: 'w-10 h-10 rounded-full object-cover',
+                onError: (event) => {
+                    event.target.src = defaultAvatar;
+                },
             }),
             h('span', null, data?.[fieldName] ?? ''),
         ]);
