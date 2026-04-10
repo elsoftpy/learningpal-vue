@@ -8,6 +8,8 @@ import {
     fetchUser,
 } from '../api/auth';
 
+let pendingAuthCheck = null;
+
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         user: null,
@@ -38,24 +40,33 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async checkAuth() {
-            this.loading = true;
-            try {
-                await this.ensureCsrf();
-
-                const response = await fetchUser();
-
-                this.user = response.data.data.user;
-                this.isAuthenticated = true;
-
-                return true;
-            } catch (error) {
-                this.clearAuthState();
-                
-                return false;
-            } finally {
-                this.loading = false;
-                this.ready = true;
+            if (pendingAuthCheck) {
+                return pendingAuthCheck;
             }
+
+            pendingAuthCheck = (async () => {
+                this.loading = true;
+                try {
+                    await this.ensureCsrf();
+
+                    const response = await fetchUser();
+
+                    this.user = response.data.data.user;
+                    this.isAuthenticated = true;
+
+                    return true;
+                } catch (error) {
+                    this.clearAuthState();
+                    
+                    return false;
+                } finally {
+                    this.loading = false;
+                    this.ready = true;
+                    pendingAuthCheck = null;
+                }
+            })();
+
+            return pendingAuthCheck;
         },
 
         async login(credentials) {

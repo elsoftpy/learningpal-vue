@@ -618,7 +618,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore(); 
 
-  if (!authStore.ready && !authStore.loading) {
+  if (!authStore.ready) {
     try {
       await authStore.checkAuth();
     } catch (error) {

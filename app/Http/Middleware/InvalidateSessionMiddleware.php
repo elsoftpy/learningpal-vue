@@ -2,15 +2,17 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Traits\UserProfileTrait;
 use App\Services\Utilities\ResponseService;
 use Closure;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class InvalidateSessionMiddleware
 {
+    use UserProfileTrait;
+
     /**
      * Handle an incoming request.
      *
@@ -23,13 +25,13 @@ class InvalidateSessionMiddleware
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 if ($request->expectsJson()) {
-                    Auth::guard($guard)->logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
+                    $user = Auth::guard($guard)->user();
 
-                    return ResponseService::unauthenticated(
-                        message: __('Session expired. Please log in again.'),
-                        errors: ['session' => [__('Your session has been invalidated. Please log in again.')]]
+                    return ResponseService::success(
+                        message: __('Already authenticated.'),
+                        data: [
+                            'user' => $this->userData($user),
+                        ]
                     );
                 }
 
