@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\InvalidateSessionMiddleware;
+use App\Http\Middleware\ServeSpaOnBrowserNavigation;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'guest' => InvalidateSessionMiddleware::class,
+            'spa.navigation' => ServeSpaOnBrowserNavigation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

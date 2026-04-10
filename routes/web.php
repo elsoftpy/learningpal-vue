@@ -76,7 +76,7 @@ Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
         ->name('ongoing_and_pending_sessions');
 });
 
-Route::prefix('settings')->name('settings.')->middleware('auth')->group(function () {
+Route::prefix('settings')->name('settings.')->middleware(['auth', 'spa.navigation'])->group(function () {
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserProfileController::class, 'index'])
             ->name('index')
@@ -124,7 +124,7 @@ Route::prefix('settings')->name('settings.')->middleware('auth')->group(function
     });
 });
 
-Route::prefix('academics')->name('academics.')->middleware('auth')->group(function () {
+Route::prefix('academics')->name('academics.')->middleware(['auth', 'spa.navigation'])->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::prefix('language-levels')->name('language-levels.')->group(function () {
             Route::get('/', [LanguageLevelController::class, 'index'])
