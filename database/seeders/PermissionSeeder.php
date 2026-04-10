@@ -142,9 +142,7 @@ class PermissionSeeder extends Seeder
             'show academic menu',
             // academic classes
             'show academic classes menu',
-            'view assigned distance activities',
-            'complete own distance activity tasks',
-            'upload own distance activity production',
+            'view class records',
             'upload own class record production',
         ]);
 
@@ -195,9 +193,7 @@ class PermissionSeeder extends Seeder
             'complete own distance activity tasks',
             'upload own distance activity production',
             'upload own class record production',
-            'view assigned distance activities',
             'view own distance activities',
-            'complete own distance activity tasks',
         ]);
     }
 }
