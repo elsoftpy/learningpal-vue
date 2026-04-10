@@ -22,6 +22,7 @@ class CalendarController extends Controller
 
         $sessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
+            ->whereHas('classSchedule.course')
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('session_date', [$startDate, $endDate])
                     ->orWhereBetween('rescheduled_date', [$startDate, $endDate]);
@@ -60,6 +61,7 @@ class CalendarController extends Controller
 
         $ongoingAndPendingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
+            ->whereHas('classSchedule.course')
             ->whereIn('status', [
                 ClassScheduleStatusEnum::ONGOING->value, 
                 ClassScheduleStatusEnum::PENDING->value
