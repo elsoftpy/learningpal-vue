@@ -82,12 +82,22 @@ axios.interceptors.response.use(
     async (error) => {
         const status = error?.response?.status;
         const requestUrl = error?.config?.url ?? '';
+        const isAuthEndpointRequest = [
+            '/auth/logout',
+            '/auth/me',
+            '/sanctum/csrf-cookie',
+        ].some((path) => requestUrl.includes(path));
         const skipAuthRecovery = [
             '/auth/login',
             '/auth/logout',
             '/auth/me',
             '/sanctum/csrf-cookie',
         ].some((path) => requestUrl.includes(path));
+
+        // Prevent expected auth failures (eg. logout with expired session) from surfacing as UI toasts.
+        if ((status === 401 || status === 419) && isAuthEndpointRequest) {
+            error.__authRedirectHandled = true;
+        }
 
         if ((status === 401 || status === 419) && !skipAuthRecovery) {
             error.__authRedirectHandled = true;
