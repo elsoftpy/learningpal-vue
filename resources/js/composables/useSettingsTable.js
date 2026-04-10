@@ -29,6 +29,13 @@ export function useSettingsTable(options = {}) {
     const { t: $t } = useI18n();
 
     const defaultOnError = (error) => {
+        const status = error?.response?.status;
+
+        // Auth/session failures are handled globally by axios interceptor/router redirect.
+        if (error?.__authRedirectHandled || status === 401 || status === 419) {
+            return;
+        }
+
         const message = error?.message || $t('An unexpected error occurred.');
         toast.add({
             severity: 'error',

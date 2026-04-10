@@ -446,6 +446,11 @@ async function fetchSessionsForRange(range, calendarInstance = calendarAppRef) {
       return;
     }
 
+    const status = error?.response?.status;
+    if (status === 401 || status === 419) {
+      return;
+    }
+
     console.error('Unable to load calendar sessions', error);
     sessionsError.value = error?.response?.data?.message ?? 'Unable to load sessions.';
   } finally {
@@ -483,6 +488,11 @@ async function fetchCalendarsConfig(range, calendarInstance = calendarAppRef) {
     const theme = themeStore.isDark ? 'dark' : 'light';
     calendarInstance.setTheme(theme);
   } catch (error) {
+    const status = error?.response?.status;
+    if (status === 401 || status === 419) {
+      return;
+    }
+
     console.error('Unable to load calendar color map', error);
   }
 }
