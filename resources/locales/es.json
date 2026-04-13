@@ -32,7 +32,7 @@
     "Add class record details before saving.": "Agregue detalles de registro de clase antes de guardar.",
     "Add detail": "Añadir detalle",
     "Add each session before saving the schedule.": "Agrega cada sesión antes de guardar el horario.",
-    "Add one or more links. Use one per line or separate with |": "Add one or more links. Use one per line or separate with |",
+    "Add one or more links. Use one per line or separate with a pipe character.": "Add one or more links. Use one per line or separate with a pipe character.",
     "Add or review feedback for this class schedule.": "Add or review feedback for this class schedule.",
     "Add schedule": "Agregar horario",
     "Address": "Dirección",

@@ -317,7 +317,7 @@
                                                 rows="2"
                                                 auto-resize
                                                 fluid
-                                                :placeholder="$t('Add one or more links. Use one per line or separate with |')"
+                                                :placeholder="$t('Add one or more links. Use one per line or separate with a pipe character.')"
                                                 :disabled="!canEditActivities"
                                             />
                                             <Message v-if="getError(`weeks.${weekIndex}.activities.${activityIndex}.links`)" severity="error" size="small" variant="simple">
