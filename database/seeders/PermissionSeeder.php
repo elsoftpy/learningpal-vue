@@ -144,6 +144,9 @@ class PermissionSeeder extends Seeder
             'show academic classes menu',
             'view class records',
             'upload own class record production',
+            'view assigned distance activities',
+            'complete own distance activity tasks',
+            'upload own distance activity production',
         ]);
 
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
