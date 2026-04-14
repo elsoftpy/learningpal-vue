@@ -95,11 +95,6 @@ class StudyProgramService
                 'status' => $data['status'],
             ]);
 
-            if (array_key_exists('weeks', $data) && is_array($data['weeks'])) {
-                $this->deleteWeeks($studyProgram);
-                $this->syncWeeks($studyProgram, $data['weeks']);
-            }
-
             return $studyProgram->fresh(['languageLevel.language', 'weeks.activities.levelContent']);
         });
     }
