@@ -7,6 +7,7 @@ use App\Models\DistanceActivity;
 use App\Models\DistanceActivityDetail;
 use App\Models\DistanceActivityDetailStudent;
 use App\Models\DistanceActivityStudent;
+use App\Models\StudyProgram;
 use App\Models\StudyProgramWeek;
 use App\Models\StudyProgramWeekActivity;
 use App\Models\User;
@@ -51,6 +52,43 @@ class StudyProgramReplicationService
                     'file_path' => null,
                     'file_name' => null,
                 ]);
+            }
+        }
+    }
+
+    public function propagateStudyProgramCreated(StudyProgram $studyProgram): void
+    {
+        $studyProgram->loadMissing('weeks.activities');
+
+        $courses = Course::query()
+            ->with(['distanceActivities', 'teachers.profile.user', 'students'])
+            ->where('language_level_id', $studyProgram->language_level_id)
+            ->get();
+
+        foreach ($courses as $course) {
+            foreach ($studyProgram->weeks->sortBy('week_number') as $week) {
+                $distanceActivity = $course->distanceActivities
+                    ->firstWhere('study_program_week_id', $week->id);
+
+                if (! $distanceActivity) {
+                    $userId = $this->resolveDistanceActivityUserId($course);
+
+                    if (! $userId) {
+                        continue;
+                    }
+
+                    $distanceActivity = DistanceActivity::query()->create([
+                        'course_id' => $course->id,
+                        'study_program_week_id' => $week->id,
+                        'teacher_id' => $course->teachers->first()?->id,
+                        'user_id' => $userId,
+                        'title' => $week->title,
+                        'comments' => null,
+                    ]);
+                }
+
+                $this->syncDistanceActivityStudents($course, $distanceActivity);
+                $this->syncWeekActivitiesForDistanceActivity($week, $course, $distanceActivity);
             }
         }
     }

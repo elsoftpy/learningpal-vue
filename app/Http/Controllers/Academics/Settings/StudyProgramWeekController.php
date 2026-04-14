@@ -73,6 +73,13 @@ class StudyProgramWeekController extends Controller
             );
         }
 
+        if ($studyProgramService->weekHasStudentInteractions($week)) {
+            return ResponseService::failedValidationResponse(
+                errors: ['week' => [__('This week cannot be deleted because students have already interacted with it.')]],
+                message: __('Unable to delete the study program week.')
+            );
+        }
+
         $studyProgramService->deleteStudyProgramWeek($week);
 
         return ResponseService::success(

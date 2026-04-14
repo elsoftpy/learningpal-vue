@@ -2,6 +2,7 @@
 
 namespace App\Services\Academics\Settings;
 
+use App\Models\DistanceActivityDetailStudent;
 use App\Models\StudyProgram;
 use App\Models\StudyProgramWeek;
 use App\Models\StudyProgramWeekActivity;
@@ -78,6 +79,8 @@ class StudyProgramService
             ]);
 
             $this->syncWeeks($studyProgram, $data['weeks']);
+
+            (new StudyProgramReplicationService())->propagateStudyProgramCreated($studyProgram);
 
             return $studyProgram->fresh(['languageLevel.language', 'weeks.activities.levelContent']);
         });
@@ -211,6 +214,16 @@ class StudyProgramService
             $week->activities()->delete();
             $week->delete();
         });
+    }
+
+    public function weekHasStudentInteractions(StudyProgramWeek $week): bool
+    {
+        return DistanceActivityDetailStudent::query()
+            ->where('completed', true)
+            ->whereHas('distanceActivityDetail.distanceActivity', function ($query) use ($week) {
+                $query->where('study_program_week_id', $week->id);
+            })
+            ->exists();
     }
 
     public function studyProgramWeekActivityData(StudyProgramWeekActivity $activity): array
