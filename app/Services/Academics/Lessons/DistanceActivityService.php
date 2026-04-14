@@ -31,6 +31,7 @@ class DistanceActivityService
                 'teacher.profile',
                 'user.profile',
                 'students.student.profile.user',
+                'studyProgramWeek',
                 'details.studyProgramWeekActivity.media',
                 'details.content',
                 'details.students.student.profile.user',
@@ -107,6 +108,7 @@ class DistanceActivityService
 
         return [
             'id' => $activity->id,
+            'week_number' => $activity->studyProgramWeek?->week_number,
             'teacher_name' => $activity->teacher?->profile?->full_name
                 ?? $activity->user?->profile?->full_name
                 ?? $activity->user?->name

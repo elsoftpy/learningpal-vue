@@ -45,7 +45,7 @@ function formatLanguageLevel(languageLevel) {
 
 const table = useSettingsTable({
     endpoint: '/academics/settings/level-contents',
-    initialSortField: 'id',
+    initialSortField: can('view id columns') ? 'id' : 'language_name',
     initialSortOrder: 1,
     mapResponse: (response) => {
         const rows = response.data?.data?.level_contents || [];
@@ -61,12 +61,12 @@ const table = useSettingsTable({
 });
 
 const columns = computed(() => [
-    textColumn({
+    ...(can('view id columns') ? [textColumn({
         key: 'id',
         header: $t('ID'),
         sortable: true,
         style: 'width: 5%; min-width: 2%;',
-    }),
+    })] : []),
     textColumn({
         key: 'language_name',
         header: $t('Language'),

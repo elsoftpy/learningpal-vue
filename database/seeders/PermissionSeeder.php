@@ -37,6 +37,7 @@ class PermissionSeeder extends Seeder
             'delete users',
             'edit own profile',
             'view profile data',
+            'view id columns',
         ];
 
         foreach ($usersPermissions as $permission) {

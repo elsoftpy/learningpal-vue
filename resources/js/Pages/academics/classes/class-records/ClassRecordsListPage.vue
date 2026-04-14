@@ -166,12 +166,12 @@ const columns = computed(() => [
         style: 'width: 1%',
         visible: () => canViewDetailData.value,
     },
-    textColumn({
+    ...(can('view id columns') ? [textColumn({
         key: 'id',
         header: $t('ID'),
         sortable: true,
         style: 'width: 1%',
-    }),
+    })] : []),
     textColumn({
         key: "teacher",
         header: $t('Teacher'),

@@ -34,9 +34,9 @@ class DistanceActivityController extends Controller
         $search = trim((string) $request->search);
         [$sortField, $sortOrder] = $this->resolveSort(
             $request,
-            ['id', 'teacher_name', 'course_name', 'title'],
-            'id',
-            'desc'
+            ['id', 'teacher_name', 'course_name', 'title', 'week_number'],
+            'week_number',
+            'asc'
         );
 
         $query = $distanceActivityService->visibleActivitiesQuery($user);
@@ -69,6 +69,15 @@ class DistanceActivityController extends Controller
                     ->limit(1),
                 $sortOrder
             );
+        } elseif ($sortField === 'week_number') {
+            $query->orderBy(
+                StudyProgramWeek::query()
+                    ->select('week_number')
+                    ->whereColumn('study_program_weeks.id', 'distance_activities.study_program_week_id')
+                    ->limit(1),
+                $sortOrder
+            );
+            $query->orderBy('distance_activities.id', 'asc');
         } else {
             $query->orderBy($sortField, $sortOrder);
         }

@@ -34,7 +34,7 @@ const canViewActionsColumn = computed(() =>
 
 const table = useSettingsTable({
     endpoint: '/academics/settings/courses',
-    initialSortField: 'id',
+    initialSortField: can('view id columns') ? 'id' : 'name',
     initialSortOrder: 1,
     mapResponse: (response) => ({
         data: response.data?.data?.courses || [],
@@ -43,12 +43,12 @@ const table = useSettingsTable({
 });
 
 const columns = computed(() => [
-    textColumn({
+    ...(can('view id columns') ? [textColumn({
         key: 'id',
         header: $t('ID'),
         sortable: true,
         style: 'width: 5%; min-width: 2%;',
-    }),
+    })] : []),
     textColumn({
         key: 'name',
         header: $t('Course Name'),

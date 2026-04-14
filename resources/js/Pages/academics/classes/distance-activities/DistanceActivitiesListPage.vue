@@ -13,6 +13,7 @@ import { computed, h } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useSettingsTable } from '@/composables/useSettingsTable';
+import { usePermissions } from '@/composables/usePermissions';
 import { textColumn } from '@/components/datatable/columnFactories';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import Button from 'primevue/button';
@@ -20,11 +21,12 @@ import Tag from 'primevue/tag';
 
 const { t: $t } = useI18n();
 const router = useRouter();
+const { can } = usePermissions();
 
 const table = useSettingsTable({
     endpoint: '/academics/lessons/distance-activities',
-    initialSortField: 'id',
-    initialSortOrder: -1,
+    initialSortField: 'week_number',
+    initialSortOrder: 1,
     mapResponse: (response) => ({
         data: response.data?.data?.distance_activities || [],
         total: response.data?.data?.total || 0,
@@ -47,12 +49,12 @@ const statusSeverity = (status) => {
 };
 
 const columns = computed(() => [
-    textColumn({
+    ...(can('view id columns') ? [textColumn({
         key: 'id',
         header: $t('ID'),
         sortable: true,
         style: 'width: 6rem;',
-    }),
+    })] : []),
     textColumn({
         key: 'teacher_name',
         header: $t('Teacher'),

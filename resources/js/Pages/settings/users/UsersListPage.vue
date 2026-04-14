@@ -63,7 +63,7 @@ const profileExpansion = computed(() => {
 const table = useSettingsTable({
     endpoint: '/settings/users',
     searchFields: ['first_name', 'last_name', 'email'],
-    initialSortField: 'id',
+    initialSortField: can('view id columns') ? 'id' : 'full_name',
     initialSortOrder: 1,
     filterConfig: {
         full_name: {
@@ -101,12 +101,12 @@ const columns = computed(() => [
         style: 'width: 1%',
         visible: () => canViewProfileData.value,
     },
-    textColumn({
+    ...(can('view id columns') ? [textColumn({
         key: 'id',
         header: $t('ID'),
         sortable: true,
         style: 'width: 1%',
-    }),
+    })] : []),
     textWithAvatarColumn({
         key: "full_name",
         header: $t('Name'),

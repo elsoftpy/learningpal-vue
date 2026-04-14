@@ -41,12 +41,12 @@ const table = useSettingsTable({
 });
 
 const columns = computed(() => [
-    textColumn({
+    ...(can('view id columns') ? [textColumn({
         key: 'id',
         header: $t('ID'),
         sortable: true,
         style: 'width: 5%; min-width: 2%;',
-    }),
+    })] : []),
     textColumn({
         key: 'name',
         header: $t('Name'),
