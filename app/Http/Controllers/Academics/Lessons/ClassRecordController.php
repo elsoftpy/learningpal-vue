@@ -469,7 +469,6 @@ class ClassRecordController extends Controller
         }
 
         return $teachersQuery
-            ->orderBy('id', 'desc')
             ->get()
             ->map(function (Teacher $teacher) {
                 return [
@@ -477,6 +476,7 @@ class ClassRecordController extends Controller
                     'name' => $teacher->profile?->full_name,
                 ];
             })
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
     }
 
@@ -558,13 +558,15 @@ class ClassRecordController extends Controller
             ->whereHas('classSchedule', function (Builder $query) {
                 (new CourseVisibilityService())->applyCourseScope($query, request()->user());
             })
-            ->orderBy('session_date')
-            ->orderBy('start_time')
+            ->orderByDesc('session_date')
+            ->orderByDesc('start_time')
             ->get()
             ->map(function (ClassScheduleDetail $detail) {
                 return [
                     'id' => $detail->id,
                     'name' => ($detail->classSchedule?->name ?? __('Schedule')).' - '.$detail->session_date?->format('d/m/Y'),
+                    'session_date' => $detail->session_date?->toDateString(),
+                    'start_time' => $detail->start_time,
                 ];
             })
             ->values();

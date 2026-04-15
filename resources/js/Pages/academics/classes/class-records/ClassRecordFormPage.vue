@@ -32,6 +32,9 @@
 								:options="classScheduleDetailsOptions"
 								option-label="name"
 								option-value="id"
+								filter
+								filterBy="name"
+								:filter-placeholder="$t('Search class schedule')"
 								:placeholder="$t('Select a session')"
 								class="w-full"
 								:disabled="isClassScheduleDetailLocked"
@@ -67,6 +70,9 @@
 								:options="teachersOptions"
 								option-label="name"
 								option-value="id"
+								filter
+								filterBy="name"
+								:filter-placeholder="$t('Search teacher')"
 								:placeholder="$t('Select teacher')"
 								class="w-full"
 								:loading="loadingOptions"
@@ -679,8 +685,26 @@ const initialValues = computed(() => {
 	};
 });
 
+const sortClassScheduleDetails = (details = []) => [...details].sort((left, right) => {
+	const leftDate = String(left?.session_date || '');
+	const rightDate = String(right?.session_date || '');
+
+	if (leftDate !== rightDate) {
+		return rightDate.localeCompare(leftDate);
+	}
+
+	const leftStart = String(left?.start_time || '');
+	const rightStart = String(right?.start_time || '');
+
+	if (leftStart !== rightStart) {
+		return rightStart.localeCompare(leftStart);
+	}
+
+	return Number(right?.id || 0) - Number(left?.id || 0);
+});
+
 const applyFormData = (data) => {
-	classScheduleDetailsOptions.value = data?.class_schedule_details || [];
+	classScheduleDetailsOptions.value = sortClassScheduleDetails(data?.class_schedule_details || []);
 	teachersOptions.value = data?.teachers || [];
 	attendanceOptions.value = data?.attendances || [];
 	levelContentsOptions.value = data?.level_contents || [];
