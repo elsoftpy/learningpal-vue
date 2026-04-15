@@ -4,7 +4,7 @@
         :columns="columns"
         :title="$t('Distance Activities')"
         :search-placeholder="$t('Search distance activities...')"
-        :global-filter-fields="['title', 'course_name', 'teacher_name', 'status']"
+        :global-filter-fields="globalFilterFields"
     />
 </template>
 
@@ -22,6 +22,7 @@ import Tag from 'primevue/tag';
 const { t: $t } = useI18n();
 const router = useRouter();
 const { can } = usePermissions();
+const canViewTeacherCourseColumns = computed(() => can('view distance activity teacher and course columns'));
 
 const table = useSettingsTable({
     endpoint: '/academics/lessons/distance-activities',
@@ -48,6 +49,12 @@ const statusSeverity = (status) => {
     return 'warn';
 };
 
+const globalFilterFields = computed(() => [
+    'title',
+    ...(canViewTeacherCourseColumns.value ? ['course_name', 'teacher_name'] : []),
+    'status',
+]);
+
 const columns = computed(() => [
     ...(can('view id columns') ? [textColumn({
         key: 'id',
@@ -55,16 +62,18 @@ const columns = computed(() => [
         sortable: true,
         style: 'width: 6rem;',
     })] : []),
-    textColumn({
-        key: 'teacher_name',
-        header: $t('Teacher'),
-        sortable: true,
-    }),
-    textColumn({
-        key: 'course_name',
-        header: $t('Course'),
-        sortable: true,
-    }),
+    ...(canViewTeacherCourseColumns.value ? [
+        textColumn({
+            key: 'teacher_name',
+            header: $t('Teacher'),
+            sortable: true,
+        }),
+        textColumn({
+            key: 'course_name',
+            header: $t('Course'),
+            sortable: true,
+        }),
+    ] : []),
     textColumn({
         key: 'title',
         header: $t('Distance Activity'),

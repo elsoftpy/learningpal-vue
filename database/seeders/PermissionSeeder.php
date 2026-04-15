@@ -120,6 +120,7 @@ class PermissionSeeder extends Seeder
             'view assigned distance activities',
             'view own distance activities',
             'view all distance activities',
+            'view distance activity teacher and course columns',
             'complete own distance activity tasks',
             'upload own distance activity production',
             'upload own class record production',
@@ -176,6 +177,7 @@ class PermissionSeeder extends Seeder
             'view class records',
             'create class records',
             'view own distance activities',
+            'view distance activity teacher and course columns',
 /*             'create class records',
             'edit class records',
             'delete class records', */
