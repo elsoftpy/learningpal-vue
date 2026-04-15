@@ -805,20 +805,57 @@ const toggleProgressDialogStatusOrder = (status) => {
     progressDialogStatusOrder.value = progressDialogStatusOrder.value === status ? '' : status;
 };
 
+const openBlankTab = () => {
+    const tab = window.open('', '_blank', 'noopener,noreferrer');
+
+    if (!tab) {
+        toast.add({
+            severity: 'warn',
+            summary: $t('Popup blocked'),
+            detail: $t('Allow popups for this site to open links in a new tab.'),
+            life: 4000,
+        });
+        return null;
+    }
+
+    tab.opener = null;
+    return tab;
+};
+
+const navigateTab = (tab, url) => {
+    if (tab && !tab.closed) {
+        tab.location.href = url;
+        return;
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+};
+
 const openStudyMaterial = (url) => {
-    window.open(url, '_blank', 'noopener');
+    const tab = openBlankTab();
+    navigateTab(tab, url);
 };
 
 const openLink = async (detail, link) => {
+    const tab = openBlankTab();
+
+    if (!tab) {
+        return;
+    }
+
     if (isStudentView.value && detail.type === 'video') {
         ensurePendingProduction(detail.id);
         detailLoadingMap[detail.id].video = true;
 
         try {
             await axios.post(`/academics/lessons/distance-activities/details/${detail.id}/video-open`);
-            window.open(link, '_blank', 'noopener');
+            navigateTab(tab, link);
             await fetchDistanceActivity();
         } catch (error) {
+            if (!tab.closed) {
+                tab.close();
+            }
+
             const apiError = handleApiError(error);
             toast.add({
                 severity: 'error',
@@ -833,7 +870,7 @@ const openLink = async (detail, link) => {
         return;
     }
 
-    window.open(link, '_blank', 'noopener');
+    navigateTab(tab, link);
 };
 
 const setProductionFile = (detailId, type, file) => {
