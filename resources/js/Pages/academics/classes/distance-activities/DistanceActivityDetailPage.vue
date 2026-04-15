@@ -805,43 +805,24 @@ const toggleProgressDialogStatusOrder = (status) => {
     progressDialogStatusOrder.value = progressDialogStatusOrder.value === status ? '' : status;
 };
 
-const openBlankTab = () => {
-    const tab = window.open('', '_blank', 'noopener,noreferrer');
+const openInNewTab = (url) => {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+    anchor.style.display = 'none';
 
-    if (!tab) {
-        toast.add({
-            severity: 'warn',
-            summary: $t('Popup blocked'),
-            detail: $t('Allow popups for this site to open links in a new tab.'),
-            life: 4000,
-        });
-        return null;
-    }
-
-    tab.opener = null;
-    return tab;
-};
-
-const navigateTab = (tab, url) => {
-    if (tab && !tab.closed) {
-        tab.location.href = url;
-        return;
-    }
-
-    window.open(url, '_blank', 'noopener,noreferrer');
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
 };
 
 const openStudyMaterial = (url) => {
-    const tab = openBlankTab();
-    navigateTab(tab, url);
+    openInNewTab(url);
 };
 
 const openLink = async (detail, link) => {
-    const tab = openBlankTab();
-
-    if (!tab) {
-        return;
-    }
+    openInNewTab(link);
 
     if (isStudentView.value && detail.type === 'video') {
         ensurePendingProduction(detail.id);
@@ -849,13 +830,8 @@ const openLink = async (detail, link) => {
 
         try {
             await axios.post(`/academics/lessons/distance-activities/details/${detail.id}/video-open`);
-            navigateTab(tab, link);
             await fetchDistanceActivity();
         } catch (error) {
-            if (!tab.closed) {
-                tab.close();
-            }
-
             const apiError = handleApiError(error);
             toast.add({
                 severity: 'error',
@@ -869,8 +845,6 @@ const openLink = async (detail, link) => {
 
         return;
     }
-
-    navigateTab(tab, link);
 };
 
 const setProductionFile = (detailId, type, file) => {
