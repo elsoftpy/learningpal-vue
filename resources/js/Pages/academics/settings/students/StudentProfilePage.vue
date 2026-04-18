@@ -294,7 +294,19 @@ const fetchCourses = async (query = '') => {
 const fetchStudentData = async () => {
     try {
         const response = await axios.post(`/academics/settings/students/${studentId}/data`);
-        studentData.value = response.data.data.student || response.data.student || {};
+        const student = response.data.data.student || response.data.student || {};
+        studentData.value = student;
+
+        // Ensure currently enrolled courses are present in the options list
+        // even if they weren't included in the initial paginated fetch.
+        if (Array.isArray(student.courses) && Array.isArray(student.display_courses)) {
+            const existingIds = new Set(coursesOptions.value.map(c => c.id));
+            student.courses.forEach((id, index) => {
+                if (!existingIds.has(id)) {
+                    coursesOptions.value.push({ id, name: student.display_courses[index] ?? String(id) });
+                }
+            });
+        }
     } catch (error) {
         console.error('Error fetching student data:', error);
         studentData.value = null;
@@ -348,7 +360,7 @@ const handleSubmit =  async (formData) => {
         toast.add({ 
             severity: 'success', 
             summary: $t('Success'), 
-            detail: $t('User saved successfully.'),
+            detail: $t('Student saved successfully.'),
             life: 3000 
         });
 
