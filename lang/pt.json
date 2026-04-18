@@ -171,6 +171,7 @@
     "User deleted successfully.": "Usuário excluído com sucesso.",
     "User profile updated successfully.": "Perfil do usuário atualizado com sucesso.",
     "User saved successfully.": "Usuário salvo com sucesso.",
+    "Student saved successfully.": "Aluno salvo com sucesso.",
     "Username is required.": "Nome de usuário é obrigatório.",
     "Username may not be greater than :max characters.": "Nome de usuário pode não ter mais de :max caracteres.",
     "Username must be a valid string.": "Nome de usuário deve ser uma string válida.",

@@ -171,6 +171,7 @@
     "User deleted successfully.": "User deleted successfully.",
     "User profile updated successfully.": "User profile updated successfully.",
     "User saved successfully.": "User saved successfully.",
+    "Student saved successfully.": "Student saved successfully.",
     "Username is required.": "Username is required.",
     "Username may not be greater than :max characters.": "Username may not be greater than :max characters.",
     "Username must be a valid string.": "Username must be a valid string.",
