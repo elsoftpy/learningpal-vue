@@ -653,7 +653,14 @@ router.beforeEach(async (to, from, next) => {
 
   if (isAuthenticated && userStatus === 'pending' && userId) {
     console.log('Redirecting to own profile for pending user.', isAuthenticated, userStatus, userId);
-    const profileRoute = { name: 'settings.users.profile', params: { id: userId } };
+    const profileRoute = {
+      name: 'settings.users.profile',
+      params: { id: userId },
+      query: {
+        pending_notice: 'payment_validation',
+        pending_notice_at: Date.now().toString(),
+      },
+    };
     const isOnOwnProfile = to.name === profileRoute.name && `${to.params.id ?? ''}` === `${userId}`;
 
     if (!isOnOwnProfile) {

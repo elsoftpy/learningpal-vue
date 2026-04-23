@@ -264,6 +264,43 @@
                         </div>
                     </div>
                 </Dialog>
+
+                <Dialog
+                    v-model:visible="showPendingValidationNotice"
+                    modal
+                    :closable="false"
+                    :style="{ width: '25rem' }"
+                >
+                    <template #header>
+                        <div class="flex w-full justify-between items-center rounded-lg h-16 p-4 text-white bg-blue-500">
+                            <span class="text-xl font-semibold">{{ $t('Information') }}</span>
+                            <Button
+                                icon="pi pi-times"
+                                rounded
+                                size="small"
+                                severity="primary"
+                                variant="outlined"
+                                class="text-white! border-2! hover:text-gray-800!"
+                                @click="showPendingValidationNotice = false"
+                            />
+                        </div>
+                    </template>
+                    <div class="flex flex-col gap-4">
+                        <p class="text-gray-600 max-w-md">
+                            {{ $t("Once we validate your payment you'll be good to go") }}
+                        </p>
+                        <div class="flex justify-end">
+                            <Button
+                                type="button"
+                                icon="pi pi-check"
+                                severity="info"
+                                :label="$t('OK')"
+                                :aria-label="$t('OK')"
+                                @click="showPendingValidationNotice = false"
+                            />
+                        </div>
+                    </div>
+                </Dialog>
             </template>
         </ProfilePage>
     </Form>
@@ -331,6 +368,7 @@ const selectedPaymentFile = ref(null);
 const selectedProfileOption = ref(null);
 
 const showNewUser = ref(false);
+const showPendingValidationNotice = ref(false);
 
 const currentAvatarUrl = computed(() => {
     console.log('Computing currentAvatarUrl for crudAction:', auth.user?.avatar_url);
@@ -356,6 +394,23 @@ watch(userData, (newData) => {
         formKey.value++; // Forces form to re-initialize
     }
 });
+
+watch(
+    () => route.query.pending_notice_at,
+    (pendingNoticeAt) => {
+        if (!pendingNoticeAt || route.query.pending_notice !== 'payment_validation') {
+            return;
+        }
+
+        showPendingValidationNotice.value = true;
+
+        const query = { ...route.query };
+        delete query.pending_notice;
+        delete query.pending_notice_at;
+
+        router.replace({ query });
+    }
+);
 
 const initialValues = computed(() => {
     if (crudAction === 'create') {
