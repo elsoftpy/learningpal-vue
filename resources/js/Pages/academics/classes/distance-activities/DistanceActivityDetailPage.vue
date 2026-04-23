@@ -26,7 +26,7 @@
                                     @click="openGlobalProgressDialog"
                                 >
                                     <i class="pi pi-chart-line text-[11px]" />
-                                    <span>{{ $t('Progress') }}: {{ distanceActivity.progress || '0/0' }}</span>
+                                    <span>{{ $t('Progress') }}: {{ distanceActivity.progress || '0/0' }} {{ $t('completed') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -75,8 +75,8 @@
                                             {{ $t('Task') }} {{ detail.sequence }}
                                         </span>
                                         <Tag
-                                            :value="detail.completed ? $t('Completed') : $t('Pending')"
-                                            :severity="detail.completed ? 'success' : 'warn'"
+                                            :value="detailStatusLabel(detail)"
+                                            :severity="detailStatusSeverity(detail)"
                                         />
                                         <button
                                             v-if="!isStudentView"
@@ -731,7 +731,35 @@ const statusSeverity = (status) => {
         return 'success';
     }
 
+    if (status === 'started') {
+        return 'info';
+    }
+
     return 'warn';
+};
+
+const detailStatusSeverity = (detail) => {
+    if (detail.completed) {
+        return 'success';
+    }
+
+    if (!isStudentView.value && detail.completed_students_count > 0) {
+        return 'info';
+    }
+
+    return 'warn';
+};
+
+const detailStatusLabel = (detail) => {
+    if (detail.completed) {
+        return $t('Completed');
+    }
+
+    if (!isStudentView.value && detail.completed_students_count > 0) {
+        return $t('Started');
+    }
+
+    return $t('Pending');
 };
 
 const parseLinks = (links) => {

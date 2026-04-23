@@ -46,6 +46,10 @@ const statusSeverity = (status) => {
         return 'success';
     }
 
+    if (status === 'started') {
+        return 'info';
+    }
+
     return 'warn';
 };
 

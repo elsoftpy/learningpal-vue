@@ -38,7 +38,7 @@ class DistanceActivityService
                 'details.students.media',
             ]);
 
-        (new CourseVisibilityService())->applyCourseScope($query, $user);
+        (new CourseVisibilityService)->applyCourseScope($query, $user);
 
         $student = $this->resolveStudent($user);
 
@@ -78,14 +78,13 @@ class DistanceActivityService
         });
 
         if (
-            !$user->can('view all distance activities')
-            && !$user->can('view own distance activities')
+            ! $user->can('view all distance activities')
+            && ! $user->can('view own distance activities')
             && $user->can('view assigned distance activities')
-            && !$student
+            && ! $student
         ) {
             $query->whereRaw('1 = 0');
         }
-
 
         return $query;
     }
@@ -105,6 +104,9 @@ class DistanceActivityService
         $viewerMode = $this->viewerMode($activity, $user, $student);
         $isStudentView = $viewerMode === 'student';
         $managerCompleted = $totalAssigned > 0 && $completedAssigned === $totalAssigned;
+        $managerStarted = ! $managerCompleted && $activity->details->some(
+            fn (DistanceActivityDetail $detail) => $detail->students->contains('completed', true)
+        );
 
         return [
             'id' => $activity->id,
@@ -119,11 +121,11 @@ class DistanceActivityService
             'completed' => $isStudentView ? (bool) $studentActivity?->completed : $managerCompleted,
             'completed_at' => $isStudentView ? $studentActivity?->completed_at : null,
             'status' => $isStudentView
-                ? ($studentActivity?->completed ? 'completed' : 'pending')
-                : ($managerCompleted ? 'completed' : 'pending'),
+                ? ($studentActivity?->completed ? 'completed' : ($completedTasks > 0 ? 'started' : 'pending'))
+                : ($managerCompleted ? 'completed' : ($managerStarted ? 'started' : 'pending')),
             'display_status' => $isStudentView
-                ? ($studentActivity?->completed ? __('Completed') : __('Pending'))
-                : ($managerCompleted ? __('Completed') : __('Pending')),
+                ? ($studentActivity?->completed ? __('Completed') : ($completedTasks > 0 ? __('Started') : __('Pending')))
+                : ($managerCompleted ? __('Completed') : ($managerStarted ? __('Started') : __('Pending'))),
             'progress' => $isStudentView
                 ? sprintf('%d/%d', $completedTasks, $totalTasks)
                 : sprintf('%d/%d', $completedAssigned, $totalAssigned),
@@ -205,7 +207,7 @@ class DistanceActivityService
 
     public function findAccessibleActivity(DistanceActivity $activity, User $user): ?DistanceActivity
     {
-        if (!$this->canViewAny($user)) {
+        if (! $this->canViewAny($user)) {
             return null;
         }
 
@@ -216,21 +218,21 @@ class DistanceActivityService
 
     public function markDetailCompletion(DistanceActivityDetail $detail, User $user, bool $completed = true): ?DistanceActivity
     {
-        if (!$completed && !$user->can('reset distance activity completion')) {
+        if (! $completed && ! $user->can('reset distance activity completion')) {
             return null;
         }
 
-        if ($completed && !$user->can('complete own distance activity tasks') && !$user->can('reset distance activity completion')) {
+        if ($completed && ! $user->can('complete own distance activity tasks') && ! $user->can('reset distance activity completion')) {
             return null;
         }
 
         $activity = $this->findAccessibleActivity($detail->distanceActivity, $user);
-        if (!$activity) {
+        if (! $activity) {
             return null;
         }
 
         $studentDetail = $this->resolveOwnStudentDetail($detail, $user);
-        if (!$studentDetail) {
+        if (! $studentDetail) {
             return null;
         }
 
@@ -258,7 +260,7 @@ class DistanceActivityService
 
     public function recordVideoOpen(DistanceActivityDetail $detail, User $user): ?DistanceActivityDetailStudent
     {
-        if (!$user->can('complete own distance activity tasks')) {
+        if (! $user->can('complete own distance activity tasks')) {
             return null;
         }
 
@@ -267,16 +269,16 @@ class DistanceActivityService
         }
 
         $activity = $this->findAccessibleActivity($detail->distanceActivity, $user);
-        if (!$activity) {
+        if (! $activity) {
             return null;
         }
 
         $studentDetail = $this->resolveOwnStudentDetail($detail, $user);
-        if (!$studentDetail) {
+        if (! $studentDetail) {
             return null;
         }
 
-        if (!$studentDetail->video_opened_at) {
+        if (! $studentDetail->video_opened_at) {
             $studentDetail->update([
                 'video_opened_at' => now(),
             ]);
@@ -290,7 +292,7 @@ class DistanceActivityService
         User $user,
         array $files
     ): ?DistanceActivityDetailStudent {
-        if (!$user->can('upload own distance activity production')) {
+        if (! $user->can('upload own distance activity production')) {
             return null;
         }
 
@@ -299,12 +301,12 @@ class DistanceActivityService
         }
 
         $activity = $this->findAccessibleActivity($detail->distanceActivity, $user);
-        if (!$activity) {
+        if (! $activity) {
             return null;
         }
 
         $studentDetail = $this->resolveOwnStudentDetail($detail, $user);
-        if (!$studentDetail) {
+        if (! $studentDetail) {
             return null;
         }
 
@@ -315,7 +317,7 @@ class DistanceActivityService
 
         foreach ($mediaInputs as $inputKey => $mediaType) {
             $uploadedFile = $files[$inputKey] ?? null;
-            if (!$uploadedFile instanceof UploadedFile) {
+            if (! $uploadedFile instanceof UploadedFile) {
                 continue;
             }
 
@@ -337,7 +339,7 @@ class DistanceActivityService
         User $user,
         bool $completed
     ): ?DistanceActivity {
-        if (!$user->can('reset distance activity completion')) {
+        if (! $user->can('reset distance activity completion')) {
             return null;
         }
 
@@ -345,12 +347,12 @@ class DistanceActivityService
         $detail = $studentDetail->distanceActivityDetail;
         $activity = $detail?->distanceActivity;
 
-        if (!$detail || !$activity) {
+        if (! $detail || ! $activity) {
             return null;
         }
 
         $accessibleActivity = $this->findAccessibleActivity($activity, $user);
-        if (!$accessibleActivity) {
+        if (! $accessibleActivity) {
             return null;
         }
 
@@ -369,7 +371,7 @@ class DistanceActivityService
         Media $media,
         User $user
     ): ?DistanceActivity {
-        if (!$user->can('delete distance activity submissions')) {
+        if (! $user->can('delete distance activity submissions')) {
             return null;
         }
 
@@ -378,8 +380,8 @@ class DistanceActivityService
         $activity = $detail?->distanceActivity;
 
         if (
-            !$detail
-            || !$activity
+            ! $detail
+            || ! $activity
             || $media->model_type !== DistanceActivityDetailStudent::class
             || (int) $media->model_id !== (int) $studentDetail->id
         ) {
@@ -387,7 +389,7 @@ class DistanceActivityService
         }
 
         $accessibleActivity = $this->findAccessibleActivity($activity, $user);
-        if (!$accessibleActivity) {
+        if (! $accessibleActivity) {
             return null;
         }
 
@@ -417,7 +419,7 @@ class DistanceActivityService
                 ]
             );
 
-        if (!$studentAssignment) {
+        if (! $studentAssignment) {
             return null;
         }
 
@@ -448,7 +450,7 @@ class DistanceActivityService
         $orderedDetails = $this->orderedDetails($detail->distanceActivity);
         $currentIndex = $orderedDetails->search(fn (DistanceActivityDetail $orderedDetail) => $orderedDetail->id === $detail->id);
 
-        if (!is_int($currentIndex) || $currentIndex <= 0) {
+        if (! is_int($currentIndex) || $currentIndex <= 0) {
             return null;
         }
 
@@ -464,7 +466,7 @@ class DistanceActivityService
                     ->first();
 
             $videoOpenedAt = $previousStudentDetail?->video_opened_at;
-            if (!$videoOpenedAt) {
+            if (! $videoOpenedAt) {
                 return __('You must open all previous video activities before completing later tasks.');
             }
 
@@ -483,7 +485,7 @@ class DistanceActivityService
         DistanceActivityDetailStudent $studentDetail
     ): ?string {
         if ($detail->type->value === 'video') {
-            if (!$studentDetail->video_opened_at) {
+            if (! $studentDetail->video_opened_at) {
                 return __('You must open the video before marking this task as completed.');
             }
 
@@ -522,7 +524,7 @@ class DistanceActivityService
 
         $currentIndex = $orderedDetails->search(fn (DistanceActivityDetail $orderedDetail) => $orderedDetail->id === $detail->id);
 
-        if (!is_int($currentIndex) || $currentIndex <= 0) {
+        if (! is_int($currentIndex) || $currentIndex <= 0) {
             return null;
         }
 
@@ -534,7 +536,7 @@ class DistanceActivityService
             }
 
             $previousStudentDetail = $previousDetail->students->firstWhere('student_id', $student->id);
-            if (!$previousStudentDetail?->video_opened_at) {
+            if (! $previousStudentDetail?->video_opened_at) {
                 return null;
             }
 
@@ -566,7 +568,7 @@ class DistanceActivityService
 
         $currentIndex = $orderedDetails->search(fn (DistanceActivityDetail $orderedDetail) => $orderedDetail->id === $detail->id);
 
-        if (!is_int($currentIndex) || $currentIndex <= 0) {
+        if (! is_int($currentIndex) || $currentIndex <= 0) {
             return null;
         }
 
@@ -576,7 +578,7 @@ class DistanceActivityService
             }
 
             $previousStudentDetail = $previousDetail->students->firstWhere('student_id', $student->id);
-            if (!$previousStudentDetail?->video_opened_at) {
+            if (! $previousStudentDetail?->video_opened_at) {
                 return __('Open the previous video activity first.');
             }
 
@@ -593,7 +595,7 @@ class DistanceActivityService
 
     protected function videoUnlockAt($videoOpenedAt): ?Carbon
     {
-        if (!$videoOpenedAt) {
+        if (! $videoOpenedAt) {
             return null;
         }
 
@@ -698,7 +700,7 @@ class DistanceActivityService
         $isOwner = (int) $activity->user_id === (int) $user->id
             || (int) $activity->teacher?->profile?->user?->id === (int) $user->id;
 
-        if ($isAssignedStudent && !$isOwner) {
+        if ($isAssignedStudent && ! $isOwner) {
             return 'student';
         }
 
