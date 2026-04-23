@@ -25,6 +25,9 @@ export const createClassRecordSchema = (t, locale = 'es') => {
         end_time: z.string()
             .min(1, { message: t('End time is required.') })
             .regex(/^([01]\d|2[0-3]):[0-5]\d$/, { message: t('Use HH:MM format.') }),
-        comments: z.string().max(255, { message: t('Comments are too long.') }).optional().or(z.literal('')),
+        comments: z.string()
+            .trim()
+            .min(1, { message: t('Comments are required.') })
+            .max(255, { message: t('Comments are too long.') }),
     });
 };

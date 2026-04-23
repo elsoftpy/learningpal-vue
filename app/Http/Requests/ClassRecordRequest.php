@@ -70,7 +70,7 @@ class ClassRecordRequest extends FormRequest
                 Rule::in(AttendanceStatusEnum::values()),
             ],
             'comments' => [
-                'nullable', 
+                'required', 
                 'string', 
                 'max:255',
             ],
