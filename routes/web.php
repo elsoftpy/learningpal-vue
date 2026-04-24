@@ -5,14 +5,15 @@ use App\Http\Controllers\Academics\Lessons\ClassRecordController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleController;
 use App\Http\Controllers\Academics\Lessons\ClassScheduleDetailController;
 use App\Http\Controllers\Academics\Lessons\DistanceActivityController;
+use App\Http\Controllers\Academics\Lessons\StudentSessionActionController;
 use App\Http\Controllers\Academics\Reports\MonthlyClassesReportController;
 use App\Http\Controllers\Academics\Reports\TeacherHoursReportController;
 use App\Http\Controllers\Academics\Settings\CourseController;
 use App\Http\Controllers\Academics\Settings\LanguageLevelController;
+use App\Http\Controllers\Academics\Settings\StudentController;
 use App\Http\Controllers\Academics\Settings\StudyProgramController;
 use App\Http\Controllers\Academics\Settings\StudyProgramWeekActivityController;
 use App\Http\Controllers\Academics\Settings\StudyProgramWeekController;
-use App\Http\Controllers\Academics\Settings\StudentController;
 use App\Http\Controllers\Academics\Settings\TeacherController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\ClassReminderActionController;
@@ -40,8 +41,8 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::middleware(['auth'])->group(function () {
 
         Route::post('/logout', [AuthenticationController::class, 'logout'])
-            ->name('logout');   
-        
+            ->name('logout');
+
         Route::get('/me', [AuthenticationController::class, 'me'])
             ->name('me');
     });
@@ -50,7 +51,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 Route::prefix('lists')->name('lists.')->middleware('auth')->group(function () {
     Route::post('/status', StatusListController::class)
         ->name('status');
-    
+
     Route::post('/roles', RoleListController::class)
         ->name('roles');
 
@@ -340,7 +341,22 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
                 Route::post('/{detail}/destroy', [ClassScheduleDetailController::class, 'destroy'])
                     ->name('destroy')
                     ->middleware('can:delete class schedule details');
+
+                Route::post('/{detail}/student-action', [StudentSessionActionController::class, 'performAction'])
+                    ->name('student-action')
+                    ->middleware('can:perform student session action');
+
+                Route::post('/{detail}/status-history', [StudentSessionActionController::class, 'statusHistory'])
+                    ->name('status-history');
             });
+
+            Route::get('/my-sessions', [StudentSessionActionController::class, 'index'])
+                ->name('my-sessions.index')
+                ->middleware('can:view own class schedule details');
+
+            Route::post('/my-sessions/list', [StudentSessionActionController::class, 'list'])
+                ->name('my-sessions.list')
+                ->middleware('can:view own class schedule details');
         });
 
         Route::prefix('class-records')->name('class-records.')->group(function () {
@@ -476,7 +492,6 @@ Route::prefix('email/class-reminder')->name('email.class-reminder.')->group(func
     Route::get('/done', [ClassReminderActionController::class, 'showDonePage'])
         ->name('done');
 });
-
 
 Route::get('/{any}', function () {
     return view('app'); // your Vue root template

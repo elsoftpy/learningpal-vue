@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+
 use function filter_var;
 
 class SendClassEmailCommand extends Command
@@ -40,6 +41,7 @@ class SendClassEmailCommand extends Command
 
             if (! $detail) {
                 $this->error("ClassScheduleDetail #{$detailId} not found.");
+
                 return self::FAILURE;
             }
 
@@ -53,6 +55,7 @@ class SendClassEmailCommand extends Command
                     'classSchedule.course.students.profile.user',
                 ])
                 ->whereNotIn('status', [
+                    ClassScheduleStatusEnum::PENDING->value,
                     ClassScheduleStatusEnum::COMPLETED->value,
                     ClassScheduleStatusEnum::CANCELED->value,
                 ])
@@ -77,10 +80,17 @@ class SendClassEmailCommand extends Command
         $skipped = 0;
 
         foreach ($classes as $classDetail) {
+            if ($classDetail->status === ClassScheduleStatusEnum::PENDING->value) {
+                $skipped++;
+
+                continue;
+            }
+
             $course = $classDetail->classSchedule?->course;
 
             if (! $course) {
                 $skipped++;
+
                 continue;
             }
 
@@ -101,6 +111,7 @@ class SendClassEmailCommand extends Command
                         'class_schedule_detail_id' => $classDetail->id,
                         'student_id' => $student->id,
                     ]);
+
                     continue;
                 }
 
@@ -117,6 +128,7 @@ class SendClassEmailCommand extends Command
 
                 if ($dryRun) {
                     $this->line(sprintf('DRY RUN -> %s (%s) at %s', $profile->full_name, $email, $classTime));
+
                     continue;
                 }
 

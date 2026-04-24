@@ -481,6 +481,19 @@ const routes = [
     },
   },
   {
+    path: '/academics/classes/my-sessions',
+    name: 'academics.classes.class-schedules.my-sessions',
+    component: () => import('../Pages/academics/classes/class-schedules/StudentSessionsPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'view own class schedule details',
+      module: 'academics',
+      submodule: 'classes',
+      title: 'My Class Schedules',
+      headerIcon: 'calendar',
+    },
+  },
+  {
     path: '/academics/classes/distance-activities',
     name: 'academics.classes.distance-activities.list',
     component: () => import('../Pages/academics/classes/distance-activities/DistanceActivitiesListPage.vue'),

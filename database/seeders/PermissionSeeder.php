@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -100,7 +99,7 @@ class PermissionSeeder extends Seeder
             'view schedule feedback',
             'create schedule feedback',
             'edit schedule feedback',
-            'delete schedule feedback', 
+            'delete schedule feedback',
             'view classes',
             'create classes',
             'edit classes',
@@ -126,6 +125,8 @@ class PermissionSeeder extends Seeder
             'upload own class record production',
             'reset distance activity completion',
             'delete distance activity submissions',
+            'view own class schedule details',
+            'perform student session action',
         ];
 
         foreach ($academicLessonsPermissions as $permission) {
@@ -149,6 +150,8 @@ class PermissionSeeder extends Seeder
             'view assigned distance activities',
             'complete own distance activity tasks',
             'upload own distance activity production',
+            'view own class schedule details',
+            'perform student session action',
         ]);
 
         $teacher = Role::firstOrCreate(['name' => 'teacher']);
@@ -178,7 +181,7 @@ class PermissionSeeder extends Seeder
             'create class records',
             'view own distance activities',
             'view distance activity teacher and course columns',
-/*             'create class records',
+            /*             'create class records',
             'edit class records',
             'delete class records', */
 
@@ -200,6 +203,8 @@ class PermissionSeeder extends Seeder
             'upload own distance activity production',
             'upload own class record production',
             'view own distance activities',
+            'view own class schedule details',
+            'perform student session action',
         ]);
     }
 }

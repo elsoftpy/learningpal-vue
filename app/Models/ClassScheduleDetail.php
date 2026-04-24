@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\ClassScheduleDetailFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ClassScheduleDetail extends Model
 {
-    /** @use HasFactory<\Database\Factories\ClassScheduleDetailFactory> */
+    /** @use HasFactory<ClassScheduleDetailFactory> */
     use HasFactory;
 
     protected $table = 'class_schedule_details';
@@ -51,5 +53,10 @@ class ClassScheduleDetail extends Model
     public function classRecord(): HasOne
     {
         return $this->hasOne(ClassRecord::class, 'class_schedule_detail_id');
+    }
+
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(ClassScheduleDetailStatusHistory::class);
     }
 }

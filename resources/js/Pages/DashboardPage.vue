@@ -74,7 +74,25 @@
           </p>
         </div>
 
-        <div class="mt-5 flex justify-end">
+        <div class="mt-5 flex flex-wrap justify-end gap-2">
+          <template v-if="can('perform student session action') && activeEventPopover.actionable">
+            <button
+              type="button"
+              :disabled="sessionActionLoading"
+              class="inline-flex items-center rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50 dark:bg-amber-600 dark:hover:bg-amber-500"
+              @click="performSessionAction('pending')"
+            >
+              {{ sessionActionLoading ? $t('Sending…') : $t('Leave Pending') }}
+            </button>
+            <button
+              type="button"
+              :disabled="sessionActionLoading"
+              class="inline-flex items-center rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-50 dark:bg-violet-700 dark:hover:bg-violet-600"
+              @click="performSessionAction('upload_task')"
+            >
+              {{ sessionActionLoading ? $t('Sending…') : $t('Request Class Record Upload') }}
+            </button>
+          </template>
           <a
             v-if="activeEventPopover.chatRoomUrl"
             :href="activeEventPopover.chatRoomUrl"
@@ -85,7 +103,7 @@
             {{ $t('Join Event') }}
           </a>
           <span
-            v-else
+            v-if="!activeEventPopover.chatRoomUrl && !can('perform student session action')"
             class="text-xs text-slate-500 dark:text-slate-400"
           >
             {{ $t('No event link available') }}
@@ -100,6 +118,7 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useI18n } from 'vue-i18n';
 import AppLayout from "@/Layouts/AppLayout.vue";
+import { usePermissions } from '@/composables/usePermissions.js';
 import { ScheduleXCalendar } from "@schedule-x/vue";
 import {
   createCalendar,
@@ -116,6 +135,7 @@ import 'temporal-polyfill/global';
 import api from '@/axios';
 
 const { t: $t } = useI18n();
+const { can } = usePermissions();
 const appName = import.meta.env.VITE_APP_NAME || 'LearningPal';
 const appVersion = import.meta.env.VITE_APP_VERSION || 'N/A';
 const appLocale = import.meta.env.VITE_APP_LOCALE + '-ES'|| 'en-US';
@@ -142,6 +162,7 @@ const defaultCalendars = {
 const themeStore = useThemeStore();
 const sessionsLoading = ref(false);
 const sessionsError = ref('');
+const sessionActionLoading = ref(false);
 const courseLookupByName = ref({});
 const courseLookupById = ref({});
 const calendarDefinitions = ref({ ...defaultCalendars });
@@ -307,15 +328,44 @@ const openEventPopover = (eventData) => {
     return;
   }
 
+  const actionableStatuses = ['scheduled', 'reprogramed'];
+
   activeEventPopover.value = {
     id: eventData.id,
     title: eventData.title ?? 'Class session',
     displayDate: eventData.displayDate ?? '',
     displayTime: eventData.displayTime ?? '',
     statusLabel: eventData.statusLabel ?? '',
+    status: eventData.status ?? '',
+    actionable: actionableStatuses.includes(eventData.status ?? ''),
     description: eventData.sessionDescription ?? '',
     chatRoomUrl: eventData.chatRoomUrl ?? '',
   };
+};
+
+const performSessionAction = async (actionType) => {
+  if (!activeEventPopover.value?.id || sessionActionLoading.value) return;
+
+  sessionActionLoading.value = true;
+
+  try {
+    await api.post(
+      `/academics/lessons/class-schedules/details/${activeEventPopover.value.id}/student-action`,
+      { action_type: actionType },
+    );
+
+    closeEventPopover();
+
+    const currentRange = calendarAppRef?.$app?.calendarState?.range?.value;
+    if (currentRange) {
+      fetchSessionsForRange(currentRange);
+    }
+  } catch (error) {
+    const message = error?.response?.data?.message ?? 'Unable to perform action.';
+    alert(message);
+  } finally {
+    sessionActionLoading.value = false;
+  }
 };
 
 const buildZonedDateTime = (dateString, timeString) => {
@@ -386,6 +436,7 @@ const sessionToCalendarEvent = (session) => {
     displayDate: formatDisplayDate(eventDate),
     displayTime,
     statusLabel,
+    status: session.status ?? '',
     sessionDescription: session.description ?? '',
     chatRoomUrl: session.chat_room_url,
     _customContent: {
