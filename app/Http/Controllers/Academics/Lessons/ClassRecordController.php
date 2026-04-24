@@ -12,7 +12,6 @@ use App\Models\ClassRecordDetail;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
 use App\Models\LevelContent;
-use App\Models\Profile;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\Academics\Lessons\ClassRecordDetailService;
@@ -33,7 +32,7 @@ class ClassRecordController extends Controller
 
     public function index(Request $request)
     {
-        $visibility = new CourseVisibilityService();
+        $visibility = new CourseVisibilityService;
         $page = $request->page;
         $perPage = $request->per_page;
         $search = $request->search;
@@ -54,23 +53,23 @@ class ClassRecordController extends Controller
             if (str_contains($search, '/')) {
                 $searchArray = explode('/', $search);
                 if (count($searchArray) === 3) {
-                    $search = $searchArray[2] . '-' . $searchArray[1] . '-' . $searchArray[0];
+                    $search = $searchArray[2].'-'.$searchArray[1].'-'.$searchArray[0];
                 } elseif (count($searchArray) === 2) {
-                    $search = $searchArray[1] . '-' . $searchArray[0];
+                    $search = $searchArray[1].'-'.$searchArray[0];
                 }
             }
 
             $query->where(function (Builder $query) use ($search) {
                 $query->where('date', $search)
                     ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('name', 'like', '%' . $search . '%');
+                        $q->where('name', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('course', function ($q) use ($search) {
-                        $q->where('name', 'like', '%' . $search . '%');
+                        $q->where('name', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('teacher', function ($q) use ($search) {
                         $q->whereHas('profile', function ($teacherProfileQuery) use ($search) {
-                            $teacherProfileQuery->where('full_name', 'like', '%' . $search . '%');
+                            $teacherProfileQuery->where('full_name', 'like', '%'.$search.'%');
                         });
                     });
             });
@@ -122,7 +121,7 @@ class ClassRecordController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $classRecords = $paginated->getCollection()->map(function (ClassRecord $classRecord) {
-            return (new ClassRecordService())->classRecordData($classRecord);
+            return (new ClassRecordService)->classRecordData($classRecord);
         });
 
         return ResponseService::success(
@@ -146,13 +145,13 @@ class ClassRecordController extends Controller
 
     public function classRecordData(Request $request, ClassRecord $classRecord)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classRecord->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classRecord->course_id);
 
         $classRecord->loadMissing(['teacher.profile', 'course', 'user', 'classScheduleDetail.classSchedule', 'details.content', 'media', 'attendances.student.profile']);
 
         $lockedClassScheduleDetailId = $request->integer('class_schedule_detail_id') ?: null;
         $data = $this->buildFormData($request, $classRecord, $lockedClassScheduleDetailId);
-        $data['class_record'] = (new ClassRecordService())->classRecordData($classRecord);
+        $data['class_record'] = (new ClassRecordService)->classRecordData($classRecord);
 
         return ResponseService::success(
             message: __('Class record retrieved successfully.'),
@@ -163,7 +162,7 @@ class ClassRecordController extends Controller
     public function classScheduleDetailContext(ClassScheduleDetail $detail)
     {
         $courseId = $detail->classSchedule?->course_id;
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $courseId);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $courseId);
 
         return ResponseService::success(
             message: __('Class schedule detail context loaded successfully.'),
@@ -174,14 +173,14 @@ class ClassRecordController extends Controller
             ]
         );
     }
-    
+
     public function store(ClassRecordRequest $request)
     {
         $classScheduleDetail = ClassScheduleDetail::query()
             ->with('classSchedule')
             ->findOrFail($request->class_schedule_detail_id);
 
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classScheduleDetail->classSchedule?->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classScheduleDetail->classSchedule?->course_id);
 
         $this->validateTeacherPermission($request, (int) $request->teacher_id);
 
@@ -192,7 +191,7 @@ class ClassRecordController extends Controller
         ]);
 
         DB::transaction(function () use ($payload, $classScheduleDetail, $request) {
-            (new ClassRecordService())->createClassRecord(
+            (new ClassRecordService)->createClassRecord(
                 $payload,
                 $request->file('detail_files', []),
                 [
@@ -212,13 +211,13 @@ class ClassRecordController extends Controller
 
     public function update(ClassRecordRequest $request, ClassRecord $classRecord)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classRecord->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classRecord->course_id);
 
         $classScheduleDetail = ClassScheduleDetail::query()
             ->with('classSchedule')
             ->findOrFail($request->class_schedule_detail_id);
 
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classScheduleDetail->classSchedule?->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classScheduleDetail->classSchedule?->course_id);
 
         $this->validateTeacherPermission($request, (int) $request->teacher_id);
 
@@ -229,7 +228,7 @@ class ClassRecordController extends Controller
         ]);
 
         DB::transaction(function () use ($classRecord, $payload, $request) {
-            (new ClassRecordService())->updateClassRecord(
+            (new ClassRecordService)->updateClassRecord(
                 $classRecord,
                 $payload,
                 $request->file('detail_files', []),
@@ -247,8 +246,13 @@ class ClassRecordController extends Controller
 
     public function destroy(ClassRecord $record)
     {
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $record->course_id);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $record->course_id);
 
+        foreach ($record->details as $detail) {
+            $detail->detailStudents()->delete();
+        }
+        $record->details()->delete();
+        $record->students()->delete();
         $record->delete();
 
         return ResponseService::success(
@@ -258,7 +262,7 @@ class ClassRecordController extends Controller
 
     public function saveStudentProduction(Request $request, ClassRecord $classRecord)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classRecord->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classRecord->course_id);
 
         if (! $request->user()?->can('upload own class record production')) {
             return ResponseService::error(
@@ -302,13 +306,13 @@ class ClassRecordController extends Controller
             return ResponseService::success(
                 message: __('No student production files were provided.'),
                 data: [
-                    'class_record' => (new ClassRecordService())->classRecordData($classRecord),
+                    'class_record' => (new ClassRecordService)->classRecordData($classRecord),
                 ]
             );
         }
 
         DB::transaction(function () use ($classRecord, $request) {
-            (new ClassRecordService())->saveStudentProductionMedia(
+            (new ClassRecordService)->saveStudentProductionMedia(
                 $classRecord,
                 [
                     'student_production_file' => $request->file('student_production_file'),
@@ -320,7 +324,7 @@ class ClassRecordController extends Controller
         return ResponseService::success(
             message: __('Student production saved successfully.'),
             data: [
-                'class_record' => (new ClassRecordService())->classRecordData($classRecord),
+                'class_record' => (new ClassRecordService)->classRecordData($classRecord),
             ]
         );
     }
@@ -330,12 +334,12 @@ class ClassRecordController extends Controller
         $detail->loadMissing(['classRecord.teacher.profile', 'classRecord.course', 'media', 'content']);
 
         $courseId = $detail->classRecord?->course_id;
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $courseId);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $courseId);
 
         return ResponseService::success(
             message: __('Class record detail form data loaded successfully.'),
             data: [
-                'detail' => (new ClassRecordDetailService())->classRecordDetailData($detail),
+                'detail' => (new ClassRecordDetailService)->classRecordDetailData($detail),
                 'level_contents' => $this->levelContentsOptions($courseId),
                 'record_info' => [
                     'teacher' => $detail->classRecord?->teacher?->profile?->full_name ?? '',
@@ -348,7 +352,7 @@ class ClassRecordController extends Controller
 
     public function updateDetail(Request $request, ClassRecordDetail $detail)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $detail->classRecord?->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $detail->classRecord?->course_id);
 
         $validated = $request->validate([
             'activity' => 'required|string|max:1000',
@@ -377,7 +381,7 @@ class ClassRecordController extends Controller
 
     public function destroyDetail(ClassRecordDetail $detail)
     {
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $detail->classRecord?->course_id);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $detail->classRecord?->course_id);
 
         $detail->clearMediaCollection('attachment');
         $detail->detailStudents()->delete();
@@ -425,11 +429,11 @@ class ClassRecordController extends Controller
 
     private function courseStudentsOptions(?int $courseId = null): Collection
     {
-        if (!$courseId) {
+        if (! $courseId) {
             return collect([]);
         }
 
-        if (!(new CourseVisibilityService())->canAccessCourseId(request()->user(), $courseId)) {
+        if (! (new CourseVisibilityService)->canAccessCourseId(request()->user(), $courseId)) {
             return collect([]);
         }
 
@@ -461,7 +465,7 @@ class ClassRecordController extends Controller
         if ($request->user()->cannot('list other teachers')) {
             $teacherId = $request->user()->profile?->teacher?->id;
 
-            if (!$teacherId) {
+            if (! $teacherId) {
                 throw new HttpException(403, __('Sorry, you\'re not a teacher, you can\'t create class records'));
             }
 
@@ -482,17 +486,17 @@ class ClassRecordController extends Controller
 
     private function levelContentsOptions(?int $courseId = null): Collection
     {
-        if (!$courseId) {
+        if (! $courseId) {
             return collect([]);
         }
 
-        if (!(new CourseVisibilityService())->canAccessCourseId(request()->user(), $courseId)) {
+        if (! (new CourseVisibilityService)->canAccessCourseId(request()->user(), $courseId)) {
             return collect([]);
         }
 
         $languageLevelId = Course::query()->find($courseId)?->language_level_id;
 
-        if (!$languageLevelId) {
+        if (! $languageLevelId) {
             return collect([]);
         }
 
@@ -509,7 +513,7 @@ class ClassRecordController extends Controller
 
     private function resolveCourseIdFromClassScheduleDetail(?int $classScheduleDetailId = null): ?int
     {
-        if (!$classScheduleDetailId) {
+        if (! $classScheduleDetailId) {
             return null;
         }
 
@@ -517,12 +521,12 @@ class ClassRecordController extends Controller
             ->with('classSchedule')
             ->find($classScheduleDetailId)?->classSchedule?->course_id;
 
-        return (new CourseVisibilityService())->canAccessCourseId(request()->user(), $courseId) ? $courseId : null;
+        return (new CourseVisibilityService)->canAccessCourseId(request()->user(), $courseId) ? $courseId : null;
     }
 
     private function resolveTeacherIdFromClassScheduleDetail(?int $classScheduleDetailId = null): ?int
     {
-        if (!$classScheduleDetailId) {
+        if (! $classScheduleDetailId) {
             return null;
         }
 
@@ -530,7 +534,7 @@ class ClassRecordController extends Controller
             ->with(['classSchedule.course.teachers'])
             ->find($classScheduleDetailId);
 
-        if (!(new CourseVisibilityService())->canAccessCourseId(request()->user(), $detail?->classSchedule?->course_id)) {
+        if (! (new CourseVisibilityService)->canAccessCourseId(request()->user(), $detail?->classSchedule?->course_id)) {
             return null;
         }
 
@@ -556,7 +560,7 @@ class ClassRecordController extends Controller
                 }
             })
             ->whereHas('classSchedule', function (Builder $query) {
-                (new CourseVisibilityService())->applyCourseScope($query, request()->user());
+                (new CourseVisibilityService)->applyCourseScope($query, request()->user());
             })
             ->orderByDesc('session_date')
             ->orderByDesc('start_time')
@@ -580,7 +584,7 @@ class ClassRecordController extends Controller
 
         $profileTeacher = $request->user()->profile?->teacher;
 
-        if (!$profileTeacher) {
+        if (! $profileTeacher) {
             throw new HttpException(403, __('Sorry, you\'re not a teacher, you can\'t create class records'));
         }
 
