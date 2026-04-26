@@ -94,7 +94,13 @@
                     >
                         <template #items>
                             <PlainMenuItem
-                                v-if="can('view own class schedule details')"
+                                v-if="can('view class schedules')"
+                                :route="{ name: 'academics.classes.class-schedules.list' }"
+                                baseRoute="academics.classes.class-schedules"
+                                :title="$t('Class Schedules')"
+                            />
+                            <PlainMenuItem
+                                v-if="can('view own class schedule details') && isStudentRole"
                                 :route="{ name: 'academics.classes.class-schedules.my-sessions' }"
                                 baseRoute="academics.classes.class-schedules.my-sessions"
                                 :title="$t('My Class Schedules')"
@@ -110,12 +116,6 @@
                                 :route="{ name: 'academics.classes.distance-activities.list' }"
                                 baseRoute="academics.classes.distance-activities"
                                 :title="$t('Distance Activities')"
-                            />
-                            <PlainMenuItem
-                                v-if="can('view class schedules')"
-                                :route="{ name: 'academics.classes.class-schedules.list' }"
-                                baseRoute="academics.classes.class-schedules"
-                                :title="$t('Class Schedules')"
                             />
                         </template>
                     </SubmoduleMenuItem>
@@ -147,6 +147,7 @@
     </ul>
 </template>
 <script setup>
+import { computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { usePermissions } from '@/composables/usePermissions';
 import IconMenuItem from './IconMenuItem.vue';
@@ -156,5 +157,13 @@ import PlainMenuItem from './PlainMenuItem.vue';
 
 const auth = useAuthStore();
 const { can } = usePermissions();
+
+const isStudentRole = computed(() => {
+    const roles = Array.isArray(auth.user?.roles) ? auth.user.roles : [];
+    const roleNames = roles
+        .map((role) => (typeof role === 'object' ? role?.name : role))
+        .filter(Boolean);
+    return roleNames.includes('student') || roleNames.includes('annual_student');
+});
 
 </script>
