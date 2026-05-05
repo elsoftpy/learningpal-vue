@@ -179,11 +179,10 @@ class PermissionSeeder extends Seeder
             'confirm class reprogramming', */
             'view class records',
             'create class records',
+            //'edit class records',
+            'delete class records', 
             'view own distance activities',
             'view distance activity teacher and course columns',
-            /*             'create class records',
-            'edit class records',
-            'delete class records', */
 
         ]);
 

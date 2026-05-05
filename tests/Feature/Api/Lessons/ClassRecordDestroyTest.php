@@ -9,6 +9,7 @@ use App\Models\ClassRecordStudent;
 use App\Models\ClassSchedule;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
+use App\Models\Profile;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
@@ -105,6 +106,61 @@ class ClassRecordDestroyTest extends TestCase
         $scheduleDetail = ClassScheduleDetail::factory()->create(['class_schedule_id' => $schedule->id]);
 
         $classRecord = $this->makeClassRecord($course, $teacher, $scheduleDetail, $user);
+
+        $response = $this->actingAs($user, 'web')
+            ->postJson("/academics/lessons/class-records/{$classRecord->id}/destroy");
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('class_records', ['id' => $classRecord->id]);
+    }
+
+    public function test_teacher_can_delete_class_record_for_assigned_course(): void
+    {
+        $user = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+        $user->assignRole('teacher');
+
+        $teacher = Teacher::factory()->create([
+            'profile_id' => $user->profile_id,
+            'status' => 'active',
+        ]);
+
+        $course = Course::factory()->create();
+        $teacher->courses()->sync([$course->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $scheduleDetail = ClassScheduleDetail::factory()->create(['class_schedule_id' => $schedule->id]);
+
+        $classRecord = $this->makeClassRecord($course, $teacher, $scheduleDetail, $user);
+
+        $response = $this->actingAs($user, 'web')
+            ->postJson("/academics/lessons/class-records/{$classRecord->id}/destroy");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('class_records', ['id' => $classRecord->id]);
+    }
+
+    public function test_teacher_cannot_delete_class_record_for_unassigned_course(): void
+    {
+        $user = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+        $user->assignRole('teacher');
+
+        $teacher = Teacher::factory()->create([
+            'profile_id' => $user->profile_id,
+            'status' => 'active',
+        ]);
+
+        $otherTeacher = Teacher::factory()->create();
+        $course = Course::factory()->create();
+        // teacher is NOT assigned to $course
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $scheduleDetail = ClassScheduleDetail::factory()->create(['class_schedule_id' => $schedule->id]);
+
+        $classRecord = $this->makeClassRecord($course, $otherTeacher, $scheduleDetail, $user);
 
         $response = $this->actingAs($user, 'web')
             ->postJson("/academics/lessons/class-records/{$classRecord->id}/destroy");
