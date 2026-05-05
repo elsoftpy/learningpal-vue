@@ -4,11 +4,15 @@
         "codex",
         "copilot"
     ],
-    "editors": [
-        "claude_code",
-        "codex",
-        "vscode"
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "packages": [
+        "spatie/laravel-medialibrary"
     ],
-    "guidelines": [],
-    "sail": true
+    "sail": true,
+    "skills": [
+        "tailwindcss-development",
+        "medialibrary-development"
+    ]
 }
