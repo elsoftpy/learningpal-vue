@@ -10,6 +10,7 @@ use App\Http\Requests\ClassRecordRequest;
 use App\Models\ClassRecord;
 use App\Models\ClassRecordDetail;
 use App\Models\ClassScheduleDetail;
+use App\Models\ClassScheduleDetailStatusHistory;
 use App\Models\Course;
 use App\Models\LevelContent;
 use App\Models\Teacher;
@@ -199,8 +200,20 @@ class ClassRecordController extends Controller
                     'student_production_audio' => $request->file('student_production_audio'),
                 ]
             );
+
+            $oldStatus = $classScheduleDetail->status;
             $classScheduleDetail->update([
                 'status' => ClassScheduleStatusEnum::COMPLETED->value,
+            ]);
+
+            ClassScheduleDetailStatusHistory::query()->create([
+                'class_schedule_detail_id' => $classScheduleDetail->id,
+                'changed_by_user_id' => $request->user()->id,
+                'changed_by_type' => 'class_record',
+                'old_status' => $oldStatus,
+                'new_status' => ClassScheduleStatusEnum::COMPLETED->value,
+                'action_type' => 'class_record_created',
+                'created_at' => now(),
             ]);
         });
 
@@ -248,12 +261,29 @@ class ClassRecordController extends Controller
     {
         (new CourseVisibilityService)->authorizeCourseId(request()->user(), $record->course_id);
 
-        foreach ($record->details as $detail) {
-            $detail->detailStudents()->delete();
-        }
-        $record->details()->delete();
-        $record->students()->delete();
-        $record->delete();
+        DB::transaction(function () use ($record): void {
+            $historyEntry = ClassScheduleDetailStatusHistory::query()
+                ->where('class_schedule_detail_id', $record->class_schedule_detail_id)
+                ->where('new_status', ClassScheduleStatusEnum::COMPLETED->value)
+                ->where('action_type', 'class_record_created')
+                ->latest('created_at')
+                ->first();
+
+            foreach ($record->details as $detail) {
+                $detail->detailStudents()->delete();
+            }
+            $record->details()->delete();
+            $record->students()->delete();
+            $record->delete();
+
+            if ($historyEntry) {
+                ClassScheduleDetail::query()
+                    ->where('id', $record->class_schedule_detail_id)
+                    ->update(['status' => $historyEntry->old_status]);
+
+                $historyEntry->delete();
+            }
+        });
 
         return ResponseService::success(
             message: __('Class record deleted successfully.')
