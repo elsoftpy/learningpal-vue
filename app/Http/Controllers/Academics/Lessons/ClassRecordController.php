@@ -548,6 +548,7 @@ class ClassRecordController extends Controller
             ClassScheduleStatusEnum::PENDING->value,
             ClassScheduleStatusEnum::ONGOING->value,
             ClassScheduleStatusEnum::REPROGRAMED->value,
+            ClassScheduleStatusEnum::CANCELED->value,
         ];
 
         return ClassScheduleDetail::query()
