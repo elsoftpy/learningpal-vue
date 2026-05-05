@@ -39,7 +39,9 @@ class StudentSessionActionTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => $status,
+            'session_date' => Carbon::parse('2026-06-15'),
             'start_time' => Carbon::parse('2026-06-15 09:00:00'),
+            'rescheduled_date' => null,
             'rescheduled_start_time' => null,
         ]);
 
@@ -74,7 +76,13 @@ class StudentSessionActionTest extends TestCase
             'new_status' => ClassScheduleStatusEnum::PENDING->value,
             'action_type' => 'pending',
         ]);
-        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
+        Notification::assertSentOnDemand(
+            ClassStudentActionToTeacherNotification::class,
+            function (ClassStudentActionToTeacherNotification $notification): bool {
+                return $notification->sessionDate === '15/06/2026'
+                    && $notification->startTime === '09:00';
+            }
+        );
     }
 
     public function test_student_can_perform_upload_task_action_on_enrolled_session(): void

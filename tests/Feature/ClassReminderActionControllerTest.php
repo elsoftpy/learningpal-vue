@@ -77,7 +77,9 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
             'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'rescheduled_date' => null,
             'rescheduled_start_time' => null,
         ]);
 
@@ -92,7 +94,13 @@ class ClassReminderActionControllerTest extends TestCase
         $response->assertOk();
         $response->assertSee(__('Request Received'));
         $this->assertSame(ClassScheduleStatusEnum::PENDING->value, $detail->fresh()->status);
-        Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
+        Notification::assertSentOnDemand(
+            ClassStudentActionToTeacherNotification::class,
+            function (ClassStudentActionToTeacherNotification $notification): bool {
+                return $notification->sessionDate === '20/03/2026'
+                    && $notification->startTime === '09:00';
+            }
+        );
         Notification::assertCount(3);
     }
 

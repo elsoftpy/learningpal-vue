@@ -13,6 +13,7 @@ class ClassStudentActionToTeacherNotification extends Notification
     public function __construct(
         public string $teacherName,
         public string $studentName,
+        public string $sessionDate,
         public string $startTime,
         public string $courseName,
         public string $actionType,
@@ -35,6 +36,7 @@ class ClassStudentActionToTeacherNotification extends Notification
             ->subject(__('Student action notification'))
             ->markdown('emails.class-student-action-to-teacher', [
                 'teacherName' => $this->teacherName,
+                'sessionDate' => $this->sessionDate,
                 'startTime' => $this->startTime,
                 'courseName' => $this->courseName,
                 'actionMessage' => $actionMessage,

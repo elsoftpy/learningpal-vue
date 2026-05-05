@@ -156,6 +156,7 @@ class ClassReminderActionController extends Controller
             ->values();
 
         $teacherName = $teacherNames->isNotEmpty() ? $teacherNames->join(', ') : 'Docente';
+        $classDate = ($detail->rescheduled_date ?? $detail->session_date)?->format('d/m/Y') ?? '--/--/----';
         $classTime = ($detail->rescheduled_start_time ?? $detail->start_time)?->format('H:i') ?? '--:--';
 
         $teacherRecipients = collect(
@@ -178,6 +179,7 @@ class ClassReminderActionController extends Controller
                 ->notify(new ClassStudentActionToTeacherNotification(
                     teacherName: $teacherName,
                     studentName: $detail->classSchedule->course->students->find($studentId)?->profile?->full_name ?? '',
+                    sessionDate: $classDate,
                     startTime: $classTime,
                     courseName: $course->name,
                     actionType: $actionType,
@@ -268,9 +270,9 @@ class ClassReminderActionController extends Controller
 
     private function resolveProfileEmail(Profile $profile): ?string
     {
-        return $this->sanitizeEmail($profile->email_alt)
-            ?: $this->sanitizeEmail($profile->user?->email)
-            ?: $this->sanitizeEmail($profile->email);
+        return $this->sanitizeEmail($profile->user?->email)
+            ?: $this->sanitizeEmail($profile->email)
+            ?: $this->sanitizeEmail($profile->email_alt);
     }
 
     private function sanitizeEmail(mixed $value): ?string
