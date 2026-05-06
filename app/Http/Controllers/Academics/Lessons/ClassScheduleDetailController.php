@@ -11,15 +11,17 @@ use App\Services\Utilities\ResponseService;
 
 class ClassScheduleDetailController extends Controller
 {
-    
     public function update(ClassScheduleDetailRequest $request, ClassScheduleDetail $detail)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $detail->classSchedule?->course_id);
+        if (! $request->user()?->canAny(['edit class schedule details', 'reschedule class'])) {
+            abort(403);
+        }
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $detail->classSchedule?->course_id);
 
         $validated = $request->validated();
         $manualStatus = $validated['status'] ?? null;
 
-        $detail->fill($validated);
+        $detail->fill(array_filter($validated, fn ($value) => $value !== null));
 
         $hasRescheduleData = $request->filled('rescheduled_date')
             && $request->filled('rescheduled_start_time')
@@ -45,7 +47,7 @@ class ClassScheduleDetailController extends Controller
 
     public function destroy(ClassScheduleDetail $detail)
     {
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $detail->classSchedule?->course_id);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $detail->classSchedule?->course_id);
 
         $detail->delete();
 

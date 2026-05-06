@@ -335,8 +335,7 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
                     ->middleware('can:create class schedule details');
 
                 Route::post('/{detail}/edit', [ClassScheduleDetailController::class, 'update'])
-                    ->name('edit')
-                    ->middleware('can:edit class schedule details');
+                    ->name('edit');
 
                 Route::post('/{detail}/destroy', [ClassScheduleDetailController::class, 'destroy'])
                     ->name('destroy')

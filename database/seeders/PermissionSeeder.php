@@ -105,6 +105,7 @@ class PermissionSeeder extends Seeder
             'edit classes',
             'delete classes',
             'view class schedule details',
+            'create class schedule details',
             'edit class schedule details',
             'change schedule detail status',
             'delete class schedule details',
@@ -171,16 +172,14 @@ class PermissionSeeder extends Seeder
             'view students',
             // academic classes
             'show academic classes menu',
-            'create class schedules',
-            'edit class schedules',
             'view class schedule details',
-            'edit class schedule details',
+            'reschedule class',
             /*'delete class schedule details',
             'confirm class reprogramming', */
             'view class records',
             'create class records',
-            //'edit class records',
-            'delete class records', 
+            // 'edit class records',
+            'delete class records',
             'view own distance activities',
             'view distance activity teacher and course columns',
 

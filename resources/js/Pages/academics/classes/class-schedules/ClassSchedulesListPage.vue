@@ -191,13 +191,12 @@ const columns = computed(() => [
         header: $t('Feedback'),
         style: 'min-width: 12rem',
         visible: () => canViewFeedback.value,
-        body: ({ data }) => h(Button, {
+        body: ({ data }) => isFeedbackButtonDisabled(data) ? null : h(Button, {
             size: 'small',
             severity: 'info',
             outlined: true,
             icon: resolveFeedbackButtonIcon(data),
             label: resolveFeedbackButtonLabel(data),
-            disabled: isFeedbackButtonDisabled(data),
             onClick: () => openFeedbackDialog(data),
         }),
     },
@@ -224,10 +223,10 @@ const isFeedbackButtonDisabled = (schedule) => !rowHasFeedback(schedule) && !can
 
 const resolveFeedbackButtonLabel = (schedule) => {
     if (rowHasFeedback(schedule)) {
-        return canEditFeedback.value ? $t('Edit Feedback') : $t('View Feedback');
+        return canEditFeedback.value ? `${$t('Edit')} Feedback` : `${$t('View')} Feedback`;
     }
 
-    return $t('Add Feedback');
+    return `${$t('Add')} Feedback`;
 };
 
 const resolveFeedbackButtonIcon = (schedule) => {

@@ -80,7 +80,7 @@
                     </div>
 
                     <div v-else-if="!loadError" class="space-y-4">
-                        <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
+                        <div v-if="canEditDetails" class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
                             <div class="flex flex-col w-full md:w-1/4">
                                 <DateInput
                                     id="session_date"
@@ -159,7 +159,7 @@
                             </div>  
                         </div>
                         <div class="flex flex-col md:flex-row w-full space-y-4 md:space-x-2">
-                            <div class="flex flex-col w-full md:w-1/4">
+                            <div v-if="canEditDetails" class="flex flex-col w-full md:w-1/4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {{ $t('Activity') }}
                                 </label>
@@ -306,6 +306,7 @@ const { can } = usePermissions();
 const scheduleId = computed(() => route.params.scheduleId);
 const detailId = computed(() => route.params.detailId);
 const canEditStatus = computed(() => can('change schedule detail status'));
+const canEditDetails = computed(() => can('edit class schedule details'));
 
 const createEmptyDetail = () => ({
     session_date: '',
@@ -521,6 +522,14 @@ const handleSubmit = async (formData) => {
 
     if (!canEditStatus.value) {
         delete values.status;
+    }
+
+    if (!canEditDetails.value) {
+        delete values.session_date;
+        delete values.start_time;
+        delete values.end_time;
+        delete values.topic;
+        delete values.activity;
     }
 
     values.class_schedule_id = scheduleId.value;

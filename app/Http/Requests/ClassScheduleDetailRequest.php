@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ClassScheduleStatusEnum;
 use App\Services\Utilities\DateTimeService;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,11 +21,12 @@ class ClassScheduleDetailRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $canEditStatus = (bool) $this->user()?->can('change schedule detail status');
+        $canEditDetails = (bool) $this->user()?->can('edit class schedule details');
         $hasAnyRescheduleValue = collect([
             'rescheduled_date',
             'rescheduled_start_time',
@@ -34,29 +36,31 @@ class ClassScheduleDetailRequest extends FormRequest
             || $hasAnyRescheduleValue;
 
         return [
-            'session_date' => [
-                'required', 
-                'date',
-            ],
-            'start_time' => [
-                'required', 
-                'date',
-            ],
-            'end_time' => [
-                'required', 
-                'date', 
-                'after:start_time',
-            ],
-            'topic' => [
-                'nullable', 
-                'string', 
-                'max:500',
-            ],
-            'activity' => [
-                'nullable', 
-                'string', 
-                'max:500',
-            ],
+            'session_date' => Rule::when(
+                $canEditDetails,
+                ['required', 'date'],
+                ['prohibited']
+            ),
+            'start_time' => Rule::when(
+                $canEditDetails,
+                ['required', 'date'],
+                ['prohibited']
+            ),
+            'end_time' => Rule::when(
+                $canEditDetails,
+                ['required', 'date', 'after:start_time'],
+                ['prohibited']
+            ),
+            'topic' => Rule::when(
+                $canEditDetails,
+                ['nullable', 'string', 'max:500'],
+                ['prohibited']
+            ),
+            'activity' => Rule::when(
+                $canEditDetails,
+                ['nullable', 'string', 'max:500'],
+                ['prohibited']
+            ),
             'rescheduled_date' => [
                 Rule::when($requiresReschedule, ['required', 'date'], ['nullable', 'date']),
             ],

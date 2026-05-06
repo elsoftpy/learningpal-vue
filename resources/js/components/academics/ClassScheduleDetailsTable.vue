@@ -46,6 +46,7 @@
                             <td class="py-2 pr-4">
                                 <div class="flex space-x-2">
                                     <Button 
+                                        v-if="canEditDetail"
                                         type="button"
                                         size="small"
                                         :label="$t('Edit')"
@@ -61,6 +62,7 @@
                                         @click="handleRecord(session)"
                                     />
                                     <Button
+                                        v-if="canDeleteDetail"
                                         type="button"
                                         size="small"
                                         :label="$t('Delete')"
@@ -118,10 +120,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'primevue/usetoast';
+import { usePermissions } from '@/composables/usePermissions.js';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Dialog from 'primevue/dialog';
@@ -130,6 +133,10 @@ import api from '@/axios';
 const { t: $t } = useI18n();
 const router = useRouter();
 const toast = useToast();
+const { can } = usePermissions();
+
+const canEditDetail = computed(() => can(['edit class schedule details', 'reschedule class']));
+const canDeleteDetail = computed(() => can('delete class schedule details'));
 
 const historyDialogVisible = ref(false);
 const historyLoading = ref(false);

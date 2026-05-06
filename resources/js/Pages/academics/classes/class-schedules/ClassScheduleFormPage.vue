@@ -130,10 +130,10 @@
                             <h3 class="text-base font-semibold text-gray-700 dark:text-gray-200">
                                 {{ $t('Session Details') }}
                             </h3>
-                            <span class="text-xs text-gray-500">{{ $t('Add each session before saving the schedule.') }}</span>
+                            <span v-if="canCreateDetail" class="text-xs text-gray-500">{{ $t('Add each session before saving the schedule.') }}</span>
                         </div>
 
-                        <div class="flex flex-col lg:flex-row w-full gap-4">
+                        <div v-if="canCreateDetail" class="flex flex-col lg:flex-row w-full gap-4">
                             <div class="flex flex-col w-full lg:w-1/3">
                                 <DateInput
                                     id="detail-session-date"
@@ -194,7 +194,7 @@
                         </div>
 
                         <Message
-                            v-if="detailFormError"
+                            v-if="canCreateDetail && detailFormError"
                             severity="error"
                             size="small"
                             variant="simple"
@@ -202,7 +202,7 @@
                             {{ detailFormError }}
                         </Message>
 
-                        <div class="flex justify-end">
+                        <div v-if="canCreateDetail" class="flex justify-end">
                             <Button
                                 type="button"
                                 :label="$t('Add schedule')"
@@ -297,6 +297,7 @@ import { useRowActions } from '@/composables/useRowActions';
 import { Form } from '@primevue/forms';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
+import { usePermissions } from '@/composables/usePermissions.js';
 import ProgressSpinner from 'primevue/progressspinner';
 import PageContainer from '@/components/layout/pages/PageContainer.vue';
 import InputText from 'primevue/inputtext';
@@ -315,6 +316,8 @@ import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 const { locale, t: $t } = useI18n();
 const { handleApiError } = useApiErrorHandler();
 const { extractFormData } = useFormValues();
+const { can } = usePermissions();
+const canCreateDetail = computed(() => can('create class schedule details'));
 const classScheduleSchema = computed(() => createClassScheduleSchema($t, locale.value));
 const resolver = zodResolver(classScheduleSchema.value);
 const route = useRoute();
