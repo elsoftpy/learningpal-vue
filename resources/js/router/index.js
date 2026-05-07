@@ -495,6 +495,20 @@ const routes = [
   },
   {
     path: '/academics/classes/distance-activities',
+    name: 'academics.classes.distance-activities.weeks',
+    component: () => import('../Pages/academics/classes/distance-activities/DistanceActivityWeeksPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: ['view assigned distance activities', 'view own distance activities', 'view all distance activities'],
+      module: 'academics',
+      submodule: 'classes',
+      title: 'Distance Activities',
+      headerIcon: 'list',
+      crud: 'read',
+    },
+  },
+  {
+    path: '/academics/classes/distance-activities/list',
     name: 'academics.classes.distance-activities.list',
     component: () => import('../Pages/academics/classes/distance-activities/DistanceActivitiesListPage.vue'),
     meta: {

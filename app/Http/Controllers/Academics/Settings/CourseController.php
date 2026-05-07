@@ -21,7 +21,7 @@ class CourseController extends Controller
 
     public function index(Request $request)
     {
-        $visibility = new CourseVisibilityService();
+        $visibility = new CourseVisibilityService;
         $page = $request->page;
         $perPage = $request->per_page;
         $search = $request->search;
@@ -39,12 +39,12 @@ class CourseController extends Controller
 
         if ($search) {
             $coursesQuery->where(function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
+                $query->where('name', 'like', '%'.$search.'%')
                     ->orWhereHas('language', function ($q) use ($search) {
-                        $q->where('name', 'like', '%' . $search . '%');
+                        $q->where('name', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('languageLevel', function ($q) use ($search) {
-                        $q->where('level', 'like', '%' . $search . '%');
+                        $q->where('level', 'like', '%'.$search.'%');
                     });
             });
         }
@@ -81,8 +81,8 @@ class CourseController extends Controller
 
         $paginated = $coursesQuery->paginate($perPage, ['*'], 'page', $page);
 
-        $courses = $paginated->getCollection()->map(function (Course $course){
-            return (new CourseService())->courseData($course);
+        $courses = $paginated->getCollection()->map(function (Course $course) {
+            return (new CourseService)->courseData($course);
         });
 
         return ResponseService::success(
@@ -95,7 +95,7 @@ class CourseController extends Controller
 
     public function courseData(Course $course, CourseService $courseService)
     {
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $course->id);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $course->id);
 
         $courseData = $courseService->courseData($course);
 
@@ -122,9 +122,9 @@ class CourseController extends Controller
 
     public function update(CourseRequest $request, Course $course, CourseService $courseService)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $course->id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $course->id);
 
-        $course->update($request->validated());
+        $course = $courseService->updateCourse($course, $request->validated(), $request->user());
 
         $courseData = $courseService->courseData($course);
 
@@ -138,7 +138,7 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $course->id);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $course->id);
 
         $course->delete();
 

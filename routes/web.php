@@ -417,6 +417,9 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
             Route::get('/filter-options', [DistanceActivityController::class, 'filterOptions'])
                 ->name('filter-options');
 
+            Route::get('/weeks', [DistanceActivityController::class, 'weeks'])
+                ->name('weeks');
+
             Route::post('/{distanceActivity}/data', [DistanceActivityController::class, 'data'])
                 ->name('data');
 

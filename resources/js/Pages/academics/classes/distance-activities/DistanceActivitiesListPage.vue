@@ -2,10 +2,21 @@
     <ResourceTableLayout
         :table="table"
         :columns="columns"
-        :title="$t('Distance Activities')"
+        :title="weekTitle || $t('Distance Activities')"
         :search-placeholder="$t('Search distance activities...')"
         :global-filter-fields="globalFilterFields"
     >
+        <template #actions>
+            <Button
+                type="button"
+                icon="pi pi-arrow-left"
+                severity="secondary"
+                outlined
+                size="small"
+                :label="$t('Back to weeks')"
+                @click="goBackToWeeks"
+            />
+        </template>
         <template #before-filter>
             <Select
                 v-if="languageLevelOptions.length"
@@ -35,7 +46,7 @@
 
 <script setup>
 import { computed, h, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useSettingsTable } from '@/composables/useSettingsTable';
 import { usePermissions } from '@/composables/usePermissions';
@@ -48,7 +59,19 @@ import axios from 'axios';
 
 const { t: $t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const { can } = usePermissions();
+
+const weekId = route.query.week_id ? parseInt(route.query.week_id) : null;
+const weekTitle = route.query.week_title || null;
+const weekLanguageLevelId = route.query.language_level_id ? parseInt(route.query.language_level_id) : null;
+
+const goBackToWeeks = () => {
+    router.push({
+        name: 'academics.classes.distance-activities.weeks',
+        ...(weekLanguageLevelId ? { query: { language_level_id: weekLanguageLevelId } } : {}),
+    });
+};
 const canViewTeacherCourseColumns = computed(() => can('view distance activity teacher and course columns'));
 
 const languageLevelOptions = ref([]);
@@ -69,8 +92,9 @@ const table = useSettingsTable({
     initialSortField: 'week_number',
     initialSortOrder: 1,
     filterConfig: {
-        language_level_id: { defaultValue: null, matchMode: 'equals' },
+        language_level_id: { defaultValue: weekLanguageLevelId, matchMode: 'equals' },
         student_id: { defaultValue: null, matchMode: 'equals' },
+        study_program_week_id: { defaultValue: weekId, matchMode: 'equals' },
     },
     mapResponse: (response) => ({
         data: response.data?.data?.distance_activities || [],

@@ -1,0 +1,1 @@
+import{u as t,o,j as n,i as e}from"./app-DwRj7ig1.js";import{s as i}from"./index-D4bqcW6q.js";const u={__name:"SubmitButton",props:{isLoading:{type:Boolean,default:!1}},setup(s){const{t:a}=t();return(r,c)=>(o(),n(e(i),{type:"submit",loading:s.isLoading,label:e(a)("Save Changes"),icon:"pi pi-save",severity:"success"},null,8,["loading","label"]))}};export{u as _};

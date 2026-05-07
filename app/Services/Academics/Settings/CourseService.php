@@ -4,8 +4,8 @@ namespace App\Services\Academics\Settings;
 
 use App\Models\Course;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CourseService
 {
@@ -14,7 +14,30 @@ class CourseService
         return DB::transaction(function () use ($data, $user) {
             $course = Course::query()->create($data);
 
-            (new StudyProgramReplicationService())->replicateToCourse($course, $user);
+            (new StudyProgramReplicationService)->replicateToCourse($course, $user);
+
+            return $course->fresh(['language', 'languageLevel']);
+        });
+    }
+
+    public function updateCourse(Course $course, array $data, User $user): Course
+    {
+        return DB::transaction(function () use ($course, $data, $user) {
+            $oldLanguageLevelId = $course->language_level_id;
+
+            $course->update($data);
+
+            if (isset($data['language_level_id']) && (int) $data['language_level_id'] !== (int) $oldLanguageLevelId) {
+                $fresh = $course->fresh(['students']);
+
+                (new StudyProgramReplicationService)->replicateToCourse($fresh, $user);
+
+                $enrollmentService = new DistanceActivityEnrollmentService;
+
+                foreach ($fresh->students as $student) {
+                    $enrollmentService->syncStudentEnrollments($student, [$course->id]);
+                }
+            }
 
             return $course->fresh(['language', 'languageLevel']);
         });
@@ -46,7 +69,7 @@ class CourseService
 
     public function getCoursesDisplayNames(Collection $courses): array
     {
-        return $courses->map(function($course) {
+        return $courses->map(function ($course) {
             return $this->getCourseDisplayName($course);
         })->toArray();
     }

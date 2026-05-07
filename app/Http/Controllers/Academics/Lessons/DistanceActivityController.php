@@ -76,6 +76,10 @@ class DistanceActivityController extends Controller
             }
         }
 
+        if (isset($filters['study_program_week_id'])) {
+            $query->where('study_program_week_id', (int) $filters['study_program_week_id']);
+        }
+
         if ($sortField === 'teacher_name') {
             $query->orderBy(
                 Profile::query()
@@ -143,6 +147,29 @@ class DistanceActivityController extends Controller
             data: [
                 'language_levels' => $languageLevels,
                 'students' => $visibility->studentOptionsForUser($request->user()),
+            ]
+        );
+    }
+
+    public function weeks(Request $request, DistanceActivityService $distanceActivityService)
+    {
+        $user = $request->user();
+
+        if (! $distanceActivityService->canViewAny($user)) {
+            return ResponseService::unauthorized(__('You are not authorized to view distance activities.'));
+        }
+
+        $visibility = new CourseVisibilityService;
+        $languageLevelId = $request->language_level_id ? (int) $request->language_level_id : null;
+
+        if ($languageLevelId !== null && ! $visibility->canAccessLanguageLevelId($user, $languageLevelId)) {
+            $languageLevelId = null;
+        }
+
+        return ResponseService::success(
+            message: __('Distance activity weeks retrieved successfully.'),
+            data: [
+                'weeks' => $distanceActivityService->weeksSummaryData($user, $languageLevelId),
             ]
         );
     }

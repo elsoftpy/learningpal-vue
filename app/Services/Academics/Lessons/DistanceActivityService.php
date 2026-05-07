@@ -135,6 +135,58 @@ class DistanceActivityService
         ];
     }
 
+    /**
+     * @return array<int, array{id: int, week_number: int, title: string|null, status: string, total_activities: int, completed_activities: int}>
+     */
+    public function weeksSummaryData(User $user, ?int $languageLevelId = null): array
+    {
+        $query = $this->visibleActivitiesQuery($user);
+
+        if ($languageLevelId !== null) {
+            $query->where('language_level_id', $languageLevelId);
+        }
+
+        $activities = $query->get();
+
+        $byWeek = $activities->groupBy('study_program_week_id');
+
+        $weeks = [];
+
+        foreach ($byWeek as $weekId => $weekActivities) {
+            $week = $weekActivities->first()->studyProgramWeek;
+
+            if (! $week) {
+                continue;
+            }
+
+            $statuses = $weekActivities->map(fn (DistanceActivity $a) => $this->listData($a, $user)['status']);
+            $total = $statuses->count();
+            $completedCount = $statuses->filter(fn (string $s) => $s === 'completed')->count();
+            $progressCount = $statuses->filter(fn (string $s) => $s === 'completed' || $s === 'started')->count();
+
+            if ($completedCount === $total) {
+                $weekStatus = 'completed';
+            } elseif ($progressCount > 0) {
+                $weekStatus = 'started';
+            } else {
+                $weekStatus = 'pending';
+            }
+
+            $weeks[] = [
+                'id' => $week->id,
+                'week_number' => $week->week_number,
+                'title' => $week->title,
+                'status' => $weekStatus,
+                'total_activities' => $total,
+                'completed_activities' => $completedCount,
+            ];
+        }
+
+        usort($weeks, fn (array $a, array $b) => $a['week_number'] <=> $b['week_number']);
+
+        return $weeks;
+    }
+
     public function detailData(DistanceActivity $activity, User $user): array
     {
         $activity->loadMissing([

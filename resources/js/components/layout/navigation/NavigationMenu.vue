@@ -113,7 +113,7 @@
                             />
                             <PlainMenuItem
                                 v-if="can(['view assigned distance activities', 'view own distance activities', 'view all distance activities'])"
-                                :route="{ name: 'academics.classes.distance-activities.list' }"
+                                :route="{ name: 'academics.classes.distance-activities.weeks' }"
                                 baseRoute="academics.classes.distance-activities"
                                 :title="$t('Distance Activities')"
                             />
