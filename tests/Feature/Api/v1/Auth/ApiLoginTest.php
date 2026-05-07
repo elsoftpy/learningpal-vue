@@ -3,8 +3,6 @@
 namespace Tests\Feature\Api\v1\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ApiLoginTest extends TestCase
@@ -21,22 +19,22 @@ class ApiLoginTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                    'success',
-                    'message',
-                    'data' => [
-                        'user' => [
-                            'id',
-                            'type',
-                            'first_name',
-                            'last_name',
-                            'company_name',
-                            'email',
-                            'token',
-                        ],
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'user' => [
+                        'id',
+                        'type',
+                        'first_name',
+                        'last_name',
+                        'company_name',
+                        'email',
+                        'token',
                     ],
-                 ]);
-        
+                ],
+            ]);
+
         $this->assertAuthenticated();
     }
 
@@ -52,19 +50,19 @@ class ApiLoginTest extends TestCase
         ]);
 
         $response->assertStatus(401)
-                 ->assertJson([
-                    'success' => false,
-                    'message' => __('Unauthenticated.'),
-                 ])
-                 ->assertJsonStructure([
-                    'success',
-                    'message',
-                    'data',
-                    'errors' => [
-                        'authentication',
-                    ],
-                 ]);
-        
+            ->assertJson([
+                'success' => false,
+                'message' => __('auth.failed'),
+            ])
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data',
+                'errors' => [
+                    'authentication',
+                ],
+            ]);
+
         $this->assertGuest();
     }
 }

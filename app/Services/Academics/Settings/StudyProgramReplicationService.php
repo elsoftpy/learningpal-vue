@@ -33,6 +33,7 @@ class StudyProgramReplicationService
         foreach ($studyProgram->weeks->sortBy('week_number') as $week) {
             $distanceActivity = DistanceActivity::query()->create([
                 'course_id' => $course->id,
+                'language_level_id' => $course->language_level_id,
                 'study_program_week_id' => $week->id,
                 'teacher_id' => $teacherId,
                 'user_id' => $user->id,
@@ -79,6 +80,7 @@ class StudyProgramReplicationService
 
                     $distanceActivity = DistanceActivity::query()->create([
                         'course_id' => $course->id,
+                        'language_level_id' => $course->language_level_id,
                         'study_program_week_id' => $week->id,
                         'teacher_id' => $course->teachers->first()?->id,
                         'user_id' => $userId,
@@ -115,6 +117,7 @@ class StudyProgramReplicationService
 
                 $distanceActivity = DistanceActivity::query()->create([
                     'course_id' => $course->id,
+                    'language_level_id' => $course->language_level_id,
                     'study_program_week_id' => $week->id,
                     'teacher_id' => $course->teachers->first()?->id,
                     'user_id' => $userId,

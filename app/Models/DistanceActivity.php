@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\DistanceActivityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DistanceActivity extends Model
 {
-    /** @use HasFactory<\Database\Factories\DistanceActivityFactory> */
+    /** @use HasFactory<DistanceActivityFactory> */
     use HasFactory;
 
     protected $table = 'distance_activities';
 
     protected $fillable = [
         'course_id',
+        'language_level_id',
         'study_program_week_id',
         'teacher_id',
         'user_id',
@@ -51,5 +53,10 @@ class DistanceActivity extends Model
     public function studyProgramWeek(): BelongsTo
     {
         return $this->belongsTo(StudyProgramWeek::class);
+    }
+
+    public function languageLevel(): BelongsTo
+    {
+        return $this->belongsTo(LanguageLevel::class);
     }
 }

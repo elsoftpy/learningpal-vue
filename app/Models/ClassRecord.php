@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ClassRecordFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,14 +12,16 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class ClassRecord extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\ClassRecordFactory> */
+    /** @use HasFactory<ClassRecordFactory> */
     use HasFactory;
+
     use InteractsWithMedia;
 
     protected $table = 'class_records';
 
     protected $fillable = [
         'course_id',
+        'language_level_id',
         'teacher_id',
         'class_schedule_detail_id',
         'user_id',
@@ -72,6 +75,11 @@ class ClassRecord extends Model implements HasMedia
     public function classScheduleDetail(): BelongsTo
     {
         return $this->belongsTo(ClassScheduleDetail::class);
+    }
+
+    public function languageLevel(): BelongsTo
+    {
+        return $this->belongsTo(LanguageLevel::class);
     }
 
     public function registerMediaCollections(): void

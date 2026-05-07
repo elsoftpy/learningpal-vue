@@ -178,7 +178,7 @@ class ClassRecordController extends Controller
     public function store(ClassRecordRequest $request)
     {
         $classScheduleDetail = ClassScheduleDetail::query()
-            ->with('classSchedule')
+            ->with('classSchedule.course')
             ->findOrFail($request->class_schedule_detail_id);
 
         (new CourseVisibilityService)->authorizeCourseId($request->user(), $classScheduleDetail->classSchedule?->course_id);
@@ -187,6 +187,7 @@ class ClassRecordController extends Controller
 
         $payload = array_merge($request->validated(), [
             'course_id' => $classScheduleDetail->classSchedule->course_id,
+            'language_level_id' => $classScheduleDetail->classSchedule->course?->language_level_id,
             'user_id' => $request->user()->id,
             'mode' => 'online',
         ]);

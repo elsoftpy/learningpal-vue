@@ -4,9 +4,6 @@ namespace Tests\Feature\Auth;
 
 use App\Enums\StatusEnum;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class LoginSpaTest extends TestCase
@@ -45,7 +42,7 @@ class LoginSpaTest extends TestCase
                     'birth_date',
                     'full_name',
                     'status',
-                    'roles'
+                    'roles',
                 ],
             ],
         ]);
@@ -68,16 +65,16 @@ class LoginSpaTest extends TestCase
         $response->assertStatus(401);
 
         $response->assertJson([
-            'message' => __('Unauthenticated.'),
+            'message' => __('auth.failed'),
         ])
-        ->assertJsonStructure([
-            'success',
-            'message',
-            'data',
-            'errors' => [
-                'authentication',
-            ],
-        ]);
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data',
+                'errors' => [
+                    'authentication',
+                ],
+            ]);
 
         $this->assertGuest();
     }
@@ -90,14 +87,14 @@ class LoginSpaTest extends TestCase
 
         $response->assertJsonValidationErrors(['name', 'password'])
             ->assertJsonStructure([
-            'success',
-            'message',
-            'data',
-            'errors' => [
-                'name',
-                'password',
-            ],
-        ]);
+                'success',
+                'message',
+                'data',
+                'errors' => [
+                    'name',
+                    'password',
+                ],
+            ]);
     }
 
     public function test_inactive_user_cannot_login()
@@ -116,16 +113,16 @@ class LoginSpaTest extends TestCase
         $response->assertStatus(401);
 
         $response->assertJson([
-            'message' => __('Unauthenticated.'),
+            'message' => __('auth.failed'),
         ])
-        ->assertJsonStructure([
-            'success',
-            'message',
-            'data',
-            'errors' => [
-                'authentication',
-            ],
-        ]);
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data',
+                'errors' => [
+                    'authentication',
+                ],
+            ]);
 
         $this->assertGuest();
     }
@@ -165,7 +162,7 @@ class LoginSpaTest extends TestCase
                     'birth_date',
                     'full_name',
                     'status',
-                    'roles'
+                    'roles',
                 ],
             ],
         ]);
@@ -180,7 +177,7 @@ class LoginSpaTest extends TestCase
             'password' => bcrypt('Password123!'),
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('auth.logout'));
@@ -197,7 +194,7 @@ class LoginSpaTest extends TestCase
 
     public function test_authenticated_user_can_get_me()
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = User::factory()->create();
 
         $this->actingAs($user);
@@ -205,30 +202,30 @@ class LoginSpaTest extends TestCase
         $response = $this->getJson(route('auth.me'));
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'success',
-                    'message',
-                    'data' => [
-                        'user' => [
-                            'id',
-                            'name',
-                            'type',
-                            'personal_id',
-                            'first_name',
-                            'last_name',
-                            'company_name',
-                            'ruc',
-                            'email',
-                            'phone',
-                            'address',
-                            'gender',
-                            'birth_date',
-                            'full_name',
-                            'status',
-                            'roles'
-                        ],
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'user' => [
+                        'id',
+                        'name',
+                        'type',
+                        'personal_id',
+                        'first_name',
+                        'last_name',
+                        'company_name',
+                        'ruc',
+                        'email',
+                        'phone',
+                        'address',
+                        'gender',
+                        'birth_date',
+                        'full_name',
+                        'status',
+                        'roles',
                     ],
-                ]);
+                ],
+            ]);
     }
 
     public function test_guest_cannot_access_me_endpoint()
