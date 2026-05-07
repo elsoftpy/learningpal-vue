@@ -363,6 +363,10 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
                 ->name('index')
                 ->middleware('can:view class records');
 
+            Route::get('/filter-options', [ClassRecordController::class, 'filterOptions'])
+                ->name('filter-options')
+                ->middleware('can:view class records');
+
             Route::post('/class-schedule-details/{detail}/context', [ClassRecordController::class, 'classScheduleDetailContext'])
                 ->name('class-schedule-details.context')
                 ->middleware('can:view class records');

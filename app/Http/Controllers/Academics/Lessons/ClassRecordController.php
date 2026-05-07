@@ -12,6 +12,7 @@ use App\Models\ClassRecordDetail;
 use App\Models\ClassScheduleDetail;
 use App\Models\ClassScheduleDetailStatusHistory;
 use App\Models\Course;
+use App\Models\LanguageLevel;
 use App\Models\LevelContent;
 use App\Models\Teacher;
 use App\Models\User;
@@ -50,6 +51,12 @@ class ClassRecordController extends Controller
 
         $visibility->applyCourseScope($query, $request->user());
 
+        // Students may only see class records they are listed in.
+        if ($request->user()?->profile?->student) {
+            $studentId = $request->user()->profile->student->id;
+            $query->whereHas('students', fn (Builder $q) => $q->where('student_id', $studentId));
+        }
+
         if ($search) {
             if (str_contains($search, '/')) {
                 $searchArray = explode('/', $search);
@@ -76,10 +83,21 @@ class ClassRecordController extends Controller
             });
         }
 
-        // Apply filters if any
-        if ($filters) {
-            foreach ($filters as $field => $value) {
-                $query->where($field, $value);
+        // Apply filters
+        if (isset($filters['language_level_id'])) {
+            $languageLevelId = (int) $filters['language_level_id'];
+
+            if ($visibility->canAccessLanguageLevelId($request->user(), $languageLevelId)) {
+                $query->where('language_level_id', $languageLevelId);
+            }
+        }
+
+        if (isset($filters['student_id']) && ! $request->user()?->profile?->student) {
+            $studentId = (int) $filters['student_id'];
+            $visibleStudentIds = $visibility->visibleStudentsForUser($request->user());
+
+            if ($visibleStudentIds === null || in_array($studentId, $visibleStudentIds, true)) {
+                $query->whereHas('students', fn (Builder $q) => $q->where('student_id', $studentId));
             }
         }
 
@@ -130,6 +148,31 @@ class ClassRecordController extends Controller
             data: [
                 'class_records' => $classRecords,
                 'total' => $paginated->total(),
+            ]
+        );
+    }
+
+    public function filterOptions(Request $request)
+    {
+        $visibility = new CourseVisibilityService;
+
+        $visibleLanguageLevelIds = $visibility->visibleLanguageLevelIdsForUser($request->user());
+        $languageLevels = LanguageLevel::query()
+            ->when($visibleLanguageLevelIds !== null, fn ($q) => $q->whereIn('id', $visibleLanguageLevelIds))
+            ->orderBy('level')
+            ->orderBy('description')
+            ->get()
+            ->map(fn (LanguageLevel $ll) => [
+                'value' => $ll->id,
+                'label' => trim(($ll->level ? $ll->level.' - ' : '').$ll->description),
+            ])
+            ->values();
+
+        return ResponseService::success(
+            message: __('Class record filter options loaded successfully.'),
+            data: [
+                'language_levels' => $languageLevels,
+                'students' => $visibility->studentOptionsForUser($request->user()),
             ]
         );
     }

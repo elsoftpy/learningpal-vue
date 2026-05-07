@@ -3,6 +3,7 @@
 namespace App\Services\Authorization;
 
 use App\Models\Course;
+use App\Models\Student;
 use App\Models\User;
 use App\Services\Academics\Settings\TeacherService;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +19,7 @@ class CourseVisibilityService
         }
 
         if ($user?->profile?->teacher) {
-            return (new TeacherService())->assignedCoursesArray($user->profile->teacher);
+            return (new TeacherService)->assignedCoursesArray($user->profile->teacher);
         }
 
         if ($user?->profile?->student) {
@@ -137,5 +138,61 @@ class CourseVisibilityService
         if ($candidateIds->isEmpty() || $candidateIds->intersect($visibleCourseIds)->isEmpty()) {
             throw new HttpException(403, __($message));
         }
+    }
+
+    /**
+     * Returns student IDs visible to the user for filtering class records.
+     * - Admins (view all students): null → no filter, show all
+     * - Teachers: students enrolled in their assigned courses
+     * - Students: empty array → filter not exposed to them
+     */
+    public function visibleStudentsForUser(?User $user): ?array
+    {
+        if ($user?->can('view all students')) {
+            return null;
+        }
+
+        if ($user?->profile?->teacher) {
+            $courseIds = (new TeacherService)->assignedCoursesArray($user->profile->teacher);
+
+            return Student::query()
+                ->whereHas('courses', fn (Builder $q) => $q->whereIn('courses.id', $courseIds))
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+        }
+
+        return [];
+    }
+
+    /**
+     * @return array<int, array{value: int, label: string}>
+     */
+    public function studentOptionsForUser(?User $user): array
+    {
+        if ($user?->can('view all students')) {
+            return Student::query()
+                ->with('profile')
+                ->get()
+                ->map(fn (Student $s) => ['value' => $s->id, 'label' => $s->profile?->full_name ?? ''])
+                ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+                ->values()
+                ->all();
+        }
+
+        if ($user?->profile?->teacher) {
+            $courseIds = (new TeacherService)->assignedCoursesArray($user->profile->teacher);
+
+            return Student::query()
+                ->with('profile')
+                ->whereHas('courses', fn (Builder $q) => $q->whereIn('courses.id', $courseIds))
+                ->get()
+                ->map(fn (Student $s) => ['value' => $s->id, 'label' => $s->profile?->full_name ?? ''])
+                ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+                ->values()
+                ->all();
+        }
+
+        return [];
     }
 }

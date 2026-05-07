@@ -9,6 +9,30 @@
         :global-filter-fields="['name']"
         :delete-dialog="actions.deleteDialogConfig"
     >
+        <template #before-filter>
+            <Select
+                v-if="languageLevelOptions.length"
+                v-model="table.filters.value.language_level_id.value"
+                :options="languageLevelOptions"
+                option-label="label"
+                option-value="value"
+                :placeholder="$t('Language Level')"
+                show-clear
+                class="w-full md:w-48"
+                size="small"
+            />
+            <Select
+                v-if="studentOptions.length"
+                v-model="table.filters.value.student_id.value"
+                :options="studentOptions"
+                option-label="label"
+                option-value="value"
+                :placeholder="$t('Student')"
+                show-clear
+                class="w-full md:w-48"
+                size="small"
+            />
+        </template>
         <template v-if="canViewDetailData" #expansion="{ data }">
             <ClassRecordDetailsTable
                 v-if="Array.isArray(data.details) && data.details.length"
@@ -71,7 +95,7 @@
     </Dialog>
 </template>
 <script setup>
-import { computed, h, ref } from 'vue';
+import { computed, h, onMounted, ref } from 'vue';
 import { usePermissions } from '@/composables/usePermissions.js';
 import { useSettingsTable } from '@/composables/useSettingsTable.js';
 import { useRowActions } from '@/composables/useRowActions.js';
@@ -84,6 +108,8 @@ import ClassRecordDetailsTable from '@/components/academics/ClassRecordDetailsTa
 import DeleteDialog from '@/components/datatable/DeleteDialog.vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
+import Select from 'primevue/select';
+import axios from 'axios';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
@@ -103,10 +129,26 @@ const canUploadOwnClassRecordProduction = computed(() => {
     return can('upload own class record production') && isStudentRole.value;
 });
 
+const languageLevelOptions = ref([]);
+const studentOptions = ref([]);
+
+onMounted(async () => {
+    try {
+        const response = await axios.get('/academics/lessons/class-records/filter-options');
+        languageLevelOptions.value = response.data?.data?.language_levels ?? [];
+        studentOptions.value = response.data?.data?.students ?? [];
+    } catch {
+        // Filter options unavailable — filters remain hidden.
+    }
+});
+
 const table = useSettingsTable({
     endpoint: '/academics/lessons/class-records',
     searchFields: ['name'],
-    filterConfig: {},
+    filterConfig: {
+        language_level_id: { defaultValue: null, matchMode: 'equals' },
+        student_id: { defaultValue: null, matchMode: 'equals' },
+    },
     initialSortField: 'date',
     initialSortOrder: -1,
     mapResponse: (response) => ({

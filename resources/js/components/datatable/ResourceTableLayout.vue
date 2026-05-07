@@ -50,6 +50,9 @@
                                         />
                                     </slot>
                                 </template>
+                                <template v-if="$slots['before-filter']" #before-filter>
+                                    <slot name="before-filter" />
+                                </template>
                             </DataTableToolbar>
                         </slot>
                     </template>
