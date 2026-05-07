@@ -3,35 +3,39 @@
 namespace App\Http\Controllers\Academics\Lessons;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\DistanceActivity;
 use App\Models\DistanceActivityDetail;
 use App\Models\DistanceActivityDetailStudent;
-use App\Models\Course;
-use App\Models\Language;
+use App\Models\LanguageLevel;
 use App\Models\Profile;
 use App\Models\StudyProgramWeek;
 use App\Services\Academics\Lessons\DistanceActivityService;
+use App\Services\Authorization\CourseVisibilityService;
+use App\Services\Traits\FilterResolverTrait;
 use App\Services\Traits\SortResolverTrait;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DistanceActivityController extends Controller
 {
-    use SortResolverTrait;
+    use FilterResolverTrait, SortResolverTrait;
 
     public function index(Request $request, DistanceActivityService $distanceActivityService)
     {
         $user = $request->user();
 
-        if (!$distanceActivityService->canViewAny($user)) {
+        if (! $distanceActivityService->canViewAny($user)) {
             return ResponseService::unauthorized(__('You are not authorized to view distance activities.'));
         }
 
         $page = (int) $request->page;
         $perPage = (int) ($request->per_page ?: 10);
         $search = trim((string) $request->search);
+        $filters = $this->resolveFilters($request->filters);
         [$sortField, $sortOrder] = $this->resolveSort(
             $request,
             ['id', 'teacher_name', 'course_name', 'title', 'week_number'],
@@ -50,6 +54,26 @@ class DistanceActivityController extends Controller
                     ->orWhereHas('teacher.profile', fn ($teacherQuery) => $teacherQuery->where('full_name', 'like', '%'.$search.'%'))
                     ->orWhereHas('user.profile', fn ($ownerQuery) => $ownerQuery->where('full_name', 'like', '%'.$search.'%'));
             });
+        }
+
+        // Apply filters
+        $visibility = new CourseVisibilityService;
+
+        if (isset($filters['language_level_id'])) {
+            $languageLevelId = (int) $filters['language_level_id'];
+
+            if ($visibility->canAccessLanguageLevelId($user, $languageLevelId)) {
+                $query->where('language_level_id', $languageLevelId);
+            }
+        }
+
+        if (isset($filters['student_id']) && ! $user?->profile?->student) {
+            $studentId = (int) $filters['student_id'];
+            $visibleStudentIds = $visibility->visibleStudentsForUser($user);
+
+            if ($visibleStudentIds === null || in_array($studentId, $visibleStudentIds, true)) {
+                $query->whereHas('students', fn (Builder $q) => $q->where('student_id', $studentId));
+            }
         }
 
         if ($sortField === 'teacher_name') {
@@ -98,10 +122,35 @@ class DistanceActivityController extends Controller
         );
     }
 
+    public function filterOptions(Request $request)
+    {
+        $visibility = new CourseVisibilityService;
+
+        $visibleLanguageLevelIds = $visibility->visibleLanguageLevelIdsForUser($request->user());
+        $languageLevels = LanguageLevel::query()
+            ->when($visibleLanguageLevelIds !== null, fn ($q) => $q->whereIn('id', $visibleLanguageLevelIds))
+            ->orderBy('level')
+            ->orderBy('description')
+            ->get()
+            ->map(fn (LanguageLevel $ll) => [
+                'value' => $ll->id,
+                'label' => trim(($ll->level ? $ll->level.' - ' : '').$ll->description),
+            ])
+            ->values();
+
+        return ResponseService::success(
+            message: __('Distance activity filter options loaded successfully.'),
+            data: [
+                'language_levels' => $languageLevels,
+                'students' => $visibility->studentOptionsForUser($request->user()),
+            ]
+        );
+    }
+
     public function data(Request $request, DistanceActivity $distanceActivity, DistanceActivityService $distanceActivityService)
     {
         $activity = $distanceActivityService->findAccessibleActivity($distanceActivity, $request->user());
-        if (!$activity) {
+        if (! $activity) {
             return ResponseService::unauthorized(__('You are not authorized to view this distance activity.'));
         }
 
@@ -134,7 +183,7 @@ class DistanceActivityController extends Controller
             );
         }
 
-        if (!$activity) {
+        if (! $activity) {
             return ResponseService::unauthorized(__('You are not authorized to update this distance activity task.'));
         }
 
@@ -149,7 +198,7 @@ class DistanceActivityController extends Controller
     public function recordVideoOpen(Request $request, DistanceActivityDetail $detail, DistanceActivityService $distanceActivityService)
     {
         $studentDetail = $distanceActivityService->recordVideoOpen($detail, $request->user());
-        if (!$studentDetail) {
+        if (! $studentDetail) {
             return ResponseService::unauthorized(__('You are not authorized to update this video activity.'));
         }
 
@@ -186,8 +235,8 @@ class DistanceActivityController extends Controller
             ]
         );
 
-        $hasAnyFile = !empty($validated['student_production_file']) || !empty($validated['student_production_audio']);
-        if (!$hasAnyFile) {
+        $hasAnyFile = ! empty($validated['student_production_file']) || ! empty($validated['student_production_audio']);
+        if (! $hasAnyFile) {
             return ResponseService::failedValidationResponse(
                 errors: ['student_production' => [__('No student production files were provided.')]],
                 message: __('Unable to save student production.')
@@ -205,7 +254,7 @@ class DistanceActivityController extends Controller
             );
         });
 
-        if (!$studentDetail) {
+        if (! $studentDetail) {
             return ResponseService::unauthorized(__('You are not authorized to upload student production for this task.'));
         }
 
@@ -236,7 +285,7 @@ class DistanceActivityController extends Controller
             );
         });
 
-        if (!$activity) {
+        if (! $activity) {
             return ResponseService::unauthorized(__('You are not authorized to update this distance activity task.'));
         }
 
@@ -262,7 +311,7 @@ class DistanceActivityController extends Controller
             );
         });
 
-        if (!$activity) {
+        if (! $activity) {
             return ResponseService::unauthorized(__('You are not authorized to delete this distance activity submission.'));
         }
 

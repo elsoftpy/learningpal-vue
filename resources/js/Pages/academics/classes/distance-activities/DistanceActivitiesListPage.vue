@@ -5,11 +5,36 @@
         :title="$t('Distance Activities')"
         :search-placeholder="$t('Search distance activities...')"
         :global-filter-fields="globalFilterFields"
-    />
+    >
+        <template #before-filter>
+            <Select
+                v-if="languageLevelOptions.length"
+                v-model="table.filters.value.language_level_id.value"
+                :options="languageLevelOptions"
+                option-label="label"
+                option-value="value"
+                :placeholder="$t('Language Level')"
+                show-clear
+                class="w-full md:w-48"
+                size="small"
+            />
+            <Select
+                v-if="studentOptions.length"
+                v-model="table.filters.value.student_id.value"
+                :options="studentOptions"
+                option-label="label"
+                option-value="value"
+                :placeholder="$t('Student')"
+                show-clear
+                class="w-full md:w-48"
+                size="small"
+            />
+        </template>
+    </ResourceTableLayout>
 </template>
 
 <script setup>
-import { computed, h } from 'vue';
+import { computed, h, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useSettingsTable } from '@/composables/useSettingsTable';
@@ -18,16 +43,35 @@ import { textColumn } from '@/components/datatable/columnFactories';
 import ResourceTableLayout from '@/components/datatable/ResourceTableLayout.vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
+import Select from 'primevue/select';
+import axios from 'axios';
 
 const { t: $t } = useI18n();
 const router = useRouter();
 const { can } = usePermissions();
 const canViewTeacherCourseColumns = computed(() => can('view distance activity teacher and course columns'));
 
+const languageLevelOptions = ref([]);
+const studentOptions = ref([]);
+
+onMounted(async () => {
+    try {
+        const response = await axios.get('/academics/lessons/distance-activities/filter-options');
+        languageLevelOptions.value = response.data?.data?.language_levels ?? [];
+        studentOptions.value = response.data?.data?.students ?? [];
+    } catch {
+        // Filter options unavailable — filters remain hidden.
+    }
+});
+
 const table = useSettingsTable({
     endpoint: '/academics/lessons/distance-activities',
     initialSortField: 'week_number',
     initialSortOrder: 1,
+    filterConfig: {
+        language_level_id: { defaultValue: null, matchMode: 'equals' },
+        student_id: { defaultValue: null, matchMode: 'equals' },
+    },
     mapResponse: (response) => ({
         data: response.data?.data?.distance_activities || [],
         total: response.data?.data?.total || 0,
@@ -47,10 +91,10 @@ const statusSeverity = (status) => {
     }
 
     if (status === 'started') {
-        return 'info';
+        return 'warn';
     }
 
-    return 'warn';
+    return 'danger';
 };
 
 const globalFilterFields = computed(() => [

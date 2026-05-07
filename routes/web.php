@@ -414,6 +414,9 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
             Route::get('/', [DistanceActivityController::class, 'index'])
                 ->name('index');
 
+            Route::get('/filter-options', [DistanceActivityController::class, 'filterOptions'])
+                ->name('filter-options');
+
             Route::post('/{distanceActivity}/data', [DistanceActivityController::class, 'data'])
                 ->name('data');
 
