@@ -12,6 +12,8 @@ use App\Notifications\ClassStudentActionToTeacherNotification;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
+use App\Models\EmailLog;
 
 class ClassSessionActionService
 {
@@ -115,16 +117,61 @@ class ClassSessionActionService
             ->unique()
             ->values();
 
+        $studentName = $course->students->find($studentId)?->profile?->full_name ?? '';
+        $courseName = $course->name;
+        $detailId = $detail->id;
+        $courseId = $course?->id;
+
         foreach ($recipients as $email) {
-            Notification::route('mail', $email)
-                ->notify(new ClassStudentActionToTeacherNotification(
-                    teacherName: $teacherName,
-                    studentName: $course->students->find($studentId)?->profile?->full_name ?? '',
-                    sessionDate: $classDate,
-                    startTime: $classTime,
-                    courseName: $course->name,
-                    actionType: $actionType,
-                ));
+            $logData = [
+                'class_schedule_detail_id' => $detailId,
+                'course_id' => $courseId,
+                'course_name' => $courseName,
+                'session_date' => $detail->session_date?->toDateString(),
+                'start_time' => $detail->start_time?->format('H:i'),
+                'rescheduled_date' => $detail->rescheduled_date?->toDateString(),
+                'rescheduled_start_time' => $detail->rescheduled_start_time?->format('H:i'),
+                'teacher_name' => $teacherName,
+                'student_name' => $studentName,
+                'action_type' => $actionType,
+                'email_destino' => $email,
+            ];
+            try {
+                Notification::route('mail', $email)
+                    ->notify(new ClassStudentActionToTeacherNotification(
+                        teacherName: $teacherName,
+                        studentName: $studentName,
+                        sessionDate: $classDate,
+                        startTime: $classTime,
+                        courseName: $courseName,
+                        actionType: $actionType,
+                    ));
+
+                EmailLog::create([
+                    'email_destino' => $email,
+                    'greeting' => $teacherName,
+                    'hora' => $classTime,
+                    'url' => null,
+                    'estado' => 'Enviado',
+                    'error' => null,
+                ] + $logData);
+
+                Log::info('ClassStudentActionToTeacherNotification sent', $logData + ['estado' => 'Enviado']);
+            } catch (\Throwable $exception) {
+                EmailLog::create([
+                    'email_destino' => $email,
+                    'greeting' => $teacherName,
+                    'hora' => $classTime,
+                    'url' => null,
+                    'estado' => 'Error',
+                    'error' => $exception->getMessage(),
+                ] + $logData);
+
+                Log::error('ClassStudentActionToTeacherNotification failed', $logData + [
+                    'estado' => 'Error',
+                    'error' => $exception->getMessage(),
+                ]);
+            }
         }
     }
 
