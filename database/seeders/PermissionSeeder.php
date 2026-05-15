@@ -173,7 +173,6 @@ class PermissionSeeder extends Seeder
             // academic classes
             'show academic classes menu',
             'view class schedule details',
-            'reschedule class',
             /*'delete class schedule details',
             'confirm class reprogramming', */
             'view class records',
