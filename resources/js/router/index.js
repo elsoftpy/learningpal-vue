@@ -473,6 +473,7 @@ const routes = [
     component: () => import('../Pages/academics/classes/class-schedules/ClassScheduleDetailFormPage.vue'),
     meta: {
       requiresAuth: true,
+      permission: ['edit class schedule details', 'change schedule detail status', 'reschedule class'],
       module: 'academics',
       submodule: 'classes',
       title: 'Edit Class Schedule Detail',
