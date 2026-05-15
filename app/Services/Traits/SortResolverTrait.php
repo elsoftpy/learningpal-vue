@@ -15,11 +15,11 @@ trait SortResolverTrait
         $sortField = $request->string('sort_field')->toString();
         $sortOrder = strtolower($request->string('sort_order', $defaultSortOrder)->toString());
 
-        if (!in_array($sortField, $allowedSortFields, true)) {
+        if (! in_array($sortField, $allowedSortFields, true)) {
             $sortField = $defaultSortField;
         }
 
-        if (!in_array($sortOrder, ['asc', 'desc'], true)) {
+        if (! in_array($sortOrder, ['asc', 'desc'], true)) {
             $sortOrder = $defaultSortOrder;
         }
 

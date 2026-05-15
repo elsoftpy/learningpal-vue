@@ -19,8 +19,9 @@ class ProfileService
     public function getFullName(string $type, ?string $firstName, ?string $lastName, ?string $companyName): string
     {
         if ($type === 'person') {
-            return trim($firstName . ' ' . $lastName);
-        } 
+            return trim($firstName.' '.$lastName);
+        }
+
         return trim($companyName);
     }
 
@@ -32,7 +33,7 @@ class ProfileService
             lastName: $profileData['last_name'] ?? null,
             companyName: $profileData['company_name'] ?? null
         );
-        
+
         $profileData['full_name'] = $fullName;
 
         return Profile::create($profileData);
@@ -47,9 +48,10 @@ class ProfileService
         }
 
         $profile = $this->findByEmail($email);
-        if (!$profile) {
+        if (! $profile) {
             $profile = $this->createProfile($profileData);
         }
+
         return $profile;
     }
 
@@ -67,7 +69,7 @@ class ProfileService
         $profile->update($profileData);
     }
 
-    public function findByEmail(string $email): Profile|null
+    public function findByEmail(string $email): ?Profile
     {
         return Profile::where('email', $email)->first();
     }

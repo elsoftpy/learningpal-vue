@@ -19,7 +19,7 @@ class ClassScheduleController extends Controller
 
     public function index(Request $request)
     {
-        $visibility = new CourseVisibilityService();
+        $visibility = new CourseVisibilityService;
         $page = $request->page;
         $perPage = $request->per_page;
         $search = $request->search;
@@ -28,11 +28,11 @@ class ClassScheduleController extends Controller
         $sortField = $request->string('sort_field')->toString();
         $sortOrder = strtolower($request->string('sort_order', 'desc')->toString());
 
-        if (!in_array($sortField, $allowedSortFields, true)) {
+        if (! in_array($sortField, $allowedSortFields, true)) {
             $sortField = 'schedule_month';
         }
 
-        if (!in_array($sortOrder, ['asc', 'desc'], true)) {
+        if (! in_array($sortOrder, ['asc', 'desc'], true)) {
             $sortOrder = 'desc';
         }
 
@@ -45,19 +45,19 @@ class ClassScheduleController extends Controller
             if (str_contains($search, '/')) {
                 $searchArray = explode('/', $search);
                 if (count($searchArray) === 3) {
-                    $search = $searchArray[2] . '-' . $searchArray[1] . '-' . $searchArray[0];
+                    $search = $searchArray[2].'-'.$searchArray[1].'-'.$searchArray[0];
                 } elseif (count($searchArray) === 2) {
-                    $search = $searchArray[1] . '-' . $searchArray[0];
+                    $search = $searchArray[1].'-'.$searchArray[0];
                 }
             }
 
             $query->where(function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('schedule_month', 'like', '%' . $search . '%')
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('schedule_month', 'like', '%'.$search.'%')
                     ->orWhereHas('course', function ($q) use ($search) {
-                        $q->where('name', 'like', '%' . $search . '%');
+                        $q->where('name', 'like', '%'.$search.'%');
                     });
-                });
+            });
         }
 
         if ($filters) {
@@ -70,7 +70,7 @@ class ClassScheduleController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $includeFeedback = $request->user()?->can('view schedule feedback') ?? false;
-        $classScheduleService = new ClassScheduleService();
+        $classScheduleService = new ClassScheduleService;
 
         $classSchedules = $paginated->getCollection()->map(function (ClassSchedule $classSchedule) use ($classScheduleService, $includeFeedback) {
             return $classScheduleService->classScheduleData($classSchedule, $includeFeedback);
@@ -87,7 +87,7 @@ class ClassScheduleController extends Controller
 
     public function classScheduleData(Request $request, ClassSchedule $classSchedule, ClassScheduleService $classScheduleService)
     {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classSchedule->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classSchedule->course_id);
 
         $classScheduleData = $classScheduleService->classScheduleData(
             $classSchedule,
@@ -118,7 +118,7 @@ class ClassScheduleController extends Controller
         ClassSchedule $classSchedule,
         ClassScheduleService $classScheduleService
     ) {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classSchedule->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classSchedule->course_id);
 
         $updateClassSchedule = $classScheduleService->updateClassSchedule($classSchedule, $request->validated());
 
@@ -136,7 +136,7 @@ class ClassScheduleController extends Controller
         ClassSchedule $classSchedule,
         ClassScheduleService $classScheduleService
     ) {
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), $classSchedule->course_id);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $classSchedule->course_id);
 
         $validated = $request->validate([
             'feedback' => [
@@ -153,9 +153,9 @@ class ClassScheduleController extends Controller
         $hasExistingFeedback = $existingFeedback !== null && $existingFeedback !== '';
         $hasIncomingFeedback = $feedback !== null && $feedback !== '';
 
-        if ($hasExistingFeedback && !$hasIncomingFeedback) {
+        if ($hasExistingFeedback && ! $hasIncomingFeedback) {
             $this->authorizeFeedbackAction($request, 'delete schedule feedback');
-        } elseif (!$hasExistingFeedback && $hasIncomingFeedback) {
+        } elseif (! $hasExistingFeedback && $hasIncomingFeedback) {
             $this->authorizeFeedbackAction($request, 'create schedule feedback');
         } elseif ($hasExistingFeedback && $hasIncomingFeedback && $existingFeedback !== $feedback) {
             $this->authorizeFeedbackAction($request, 'edit schedule feedback');
@@ -178,24 +178,24 @@ class ClassScheduleController extends Controller
 
     protected function authorizeFeedbackAction(Request $request, string $permission): void
     {
-        if (!($request->user()?->can('view schedule feedback') ?? false)) {
+        if (! ($request->user()?->can('view schedule feedback') ?? false)) {
             throw new AuthorizationException(__('This action is unauthorized.'));
         }
 
-        if (!($request->user()?->can($permission) ?? false)) {
+        if (! ($request->user()?->can($permission) ?? false)) {
             throw new AuthorizationException(__('This action is unauthorized.'));
         }
     }
 
     public function destroy(ClassSchedule $classSchedule)
     {
-        (new CourseVisibilityService())->authorizeCourseId(request()->user(), $classSchedule->course_id);
+        (new CourseVisibilityService)->authorizeCourseId(request()->user(), $classSchedule->course_id);
 
         $classSchedule->details()->delete();
         $classSchedule->delete();
+
         return ResponseService::success(
             message: __('Class schedule deleted successfully.')
         );
     }
-
 }

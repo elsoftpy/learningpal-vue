@@ -189,7 +189,7 @@ class TeacherHoursReportController extends Controller
             ->with(['profile', 'courses'])
             ->findOrFail($teacherId);
 
-        (new CourseVisibilityService())->authorizeAnyVisibleCourse(
+        (new CourseVisibilityService)->authorizeAnyVisibleCourse(
             $request->user(),
             $teacher->courses->pluck('id'),
             'The selected teacher is not available.'
@@ -206,7 +206,7 @@ class TeacherHoursReportController extends Controller
             ->where('mode', 'online')
             ->whereBetween('date', [$startDate, $endDate]);
 
-        (new CourseVisibilityService())->applyCourseScope($query, $request->user());
+        (new CourseVisibilityService)->applyCourseScope($query, $request->user());
 
         $selectedIds = collect($request->input('selected_row_ids', []))
             ->map(fn ($id) => (int) $id)

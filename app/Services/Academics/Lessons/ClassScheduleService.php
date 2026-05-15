@@ -26,6 +26,7 @@ class ClassScheduleService
                 $classSchedule->details()->create($detailData);
             }
         }
+
         return $classSchedule;
     }
 
@@ -60,7 +61,8 @@ class ClassScheduleService
     public function classScheduleData(ClassSchedule $classSchedule, bool $includeFeedback = true)
     {
         $course = $classSchedule->course;
-        $courseName = (new CourseService())->getCourseDisplayName($course);
+        $courseName = (new CourseService)->getCourseDisplayName($course);
+
         return [
             'id' => $classSchedule->id,
             'name' => $classSchedule->name,
@@ -75,7 +77,7 @@ class ClassScheduleService
                 ->orderBy('start_time')
                 ->get()
                 ->map(function ($detail) {
-                    return (new ClassScheduleDetailService())->classScheduleDetailData($detail);
+                    return (new ClassScheduleDetailService)->classScheduleDetailData($detail);
                 }),
         ];
     }

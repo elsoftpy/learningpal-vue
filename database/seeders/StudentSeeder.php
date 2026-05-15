@@ -22,7 +22,7 @@ class StudentSeeder extends Seeder
         foreach ($emails as $email) {
             $user = User::query()->where('email', $email)->first();
 
-            if (!$user?->profile_id) {
+            if (! $user?->profile_id) {
                 continue;
             }
 

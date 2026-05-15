@@ -6,8 +6,6 @@ use App\Models\Course;
 use App\Models\Language;
 use App\Models\Profile;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class LanguageSpaTest extends TestCase
@@ -27,7 +25,7 @@ class LanguageSpaTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('settings.languages.index'));
@@ -56,7 +54,7 @@ class LanguageSpaTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('settings.languages.index'));
@@ -83,7 +81,7 @@ class LanguageSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('settings.languages.index'));
@@ -91,12 +89,10 @@ class LanguageSpaTest extends TestCase
         $response->assertStatus(403);
     }
 
-
     public function test_unauthenticated_user_cannot_delete_language(): void
     {
         $language = Language::first() ?? Language::factory()->create();
         $response = $this->postJson(route('settings.languages.destroy', ['language' => $language->id]));
-        
 
         $response->assertStatus(401);
     }
@@ -113,7 +109,7 @@ class LanguageSpaTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('settings.languages.destroy', ['language' => $language->id]));
@@ -140,7 +136,7 @@ class LanguageSpaTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('settings.languages.destroy', ['language' => $language->id]));
@@ -163,7 +159,7 @@ class LanguageSpaTest extends TestCase
 
         $language = Language::first() ?? Language::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('settings.languages.destroy', ['language' => $language->id]));

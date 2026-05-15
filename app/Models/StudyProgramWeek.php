@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StudyProgramStatusEnum;
+use Database\Factories\StudyProgramWeekFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StudyProgramWeek extends Model
 {
-    /** @use HasFactory<\Database\Factories\StudyProgramWeekFactory> */
+    /** @use HasFactory<StudyProgramWeekFactory> */
     use HasFactory;
 
     protected $table = 'study_program_weeks';

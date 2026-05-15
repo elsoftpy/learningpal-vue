@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ApiAuthenticationController extends Controller
 {
-    use UserProfileTrait; 
-    public function login (LoginRequest $request, AuthService $authService)
+    use UserProfileTrait;
+
+    public function login(LoginRequest $request, AuthService $authService)
     {
         if (! $authService->loginAttempt($request)) {
             return ResponseService::unauthenticated(
@@ -23,13 +24,13 @@ class ApiAuthenticationController extends Controller
         }
 
         $user = Auth::user();
-        
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         $userData = array_merge($this->userData($user), ['token' => $token]);
 
         return ResponseService::success(
-            message: __('Login successful.'), 
+            message: __('Login successful.'),
             data: [
                 'user' => $userData,
             ],
@@ -39,13 +40,13 @@ class ApiAuthenticationController extends Controller
     public function register(RegisterRequest $request, AuthService $authService)
     {
         $user = $authService->registerUser($request);
-        
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         $userData = array_merge($this->userData($user), ['token' => $token]);
-        
+
         return ResponseService::created(
-            message: __('Registration successful.'), 
+            message: __('Registration successful.'),
             data: [
                 'user' => $userData,
             ]

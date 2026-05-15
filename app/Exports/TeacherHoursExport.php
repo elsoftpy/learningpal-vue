@@ -10,11 +10,9 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TeacherHoursExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
+class TeacherHoursExport implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles
 {
-    public function __construct(private readonly Collection $rows)
-    {
-    }
+    public function __construct(private readonly Collection $rows) {}
 
     public function collection(): Collection
     {

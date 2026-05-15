@@ -5,10 +5,11 @@ namespace Database\Factories;
 use App\Enums\StudyProgramActivityTypeEnum;
 use App\Models\LevelContent;
 use App\Models\StudyProgramWeek;
+use App\Models\StudyProgramWeekActivity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\StudyProgramWeekActivity>
+ * @extends Factory<StudyProgramWeekActivity>
  */
 class StudyProgramWeekActivityFactory extends Factory
 {

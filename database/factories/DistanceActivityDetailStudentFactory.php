@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\DistanceActivityDetailStudent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DistanceActivityDetailStudent>
+ * @extends Factory<DistanceActivityDetailStudent>
  */
 class DistanceActivityDetailStudentFactory extends Factory
 {

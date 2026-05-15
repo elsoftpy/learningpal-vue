@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Models\DistanceActivity;
+use App\Models\DistanceActivityDetail;
 use App\Models\LevelContent;
 use App\Models\StudyProgramWeekActivity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DistanceActivityDetail>
+ * @extends Factory<DistanceActivityDetail>
  */
 class DistanceActivityDetailFactory extends Factory
 {

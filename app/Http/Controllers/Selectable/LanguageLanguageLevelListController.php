@@ -22,7 +22,7 @@ class LanguageLanguageLevelListController extends Controller
             ->where('language_id', $languageId)
             ->where('status', StatusEnum::ACTIVE->value);
 
-        (new CourseVisibilityService())->applyLanguageLevelScope($query, $request->user(), 'id');
+        (new CourseVisibilityService)->applyLanguageLevelScope($query, $request->user(), 'id');
 
         return $query->get()
             ->map(function (LanguageLevel $level) {

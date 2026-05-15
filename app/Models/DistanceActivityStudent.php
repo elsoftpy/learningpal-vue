@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\DistanceActivityStudentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DistanceActivityStudent extends Model
 {
-    /** @use HasFactory<\Database\Factories\DistanceActivityStudentFactory> */
+    /** @use HasFactory<DistanceActivityStudentFactory> */
     use HasFactory;
 
     protected $table = 'distance_activity_students';

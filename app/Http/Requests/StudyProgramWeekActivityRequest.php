@@ -53,14 +53,14 @@ class StudyProgramWeekActivityRequest extends FormRequest
                 $validator->errors()->add('free_content', __('Free content must be empty when content topic is selected.'));
             }
 
-            if (!$hasLevelContent && !$hasFreeContent) {
+            if (! $hasLevelContent && ! $hasFreeContent) {
                 $validator->errors()->add('free_content', __('Free content is required when no content topic is selected.'));
             }
 
             $links = $this->input('links');
             $hasLinks = is_string($links) && trim($links) !== '';
 
-            if ($this->input('type') === StudyProgramActivityTypeEnum::VIDEO->value && !$hasLinks) {
+            if ($this->input('type') === StudyProgramActivityTypeEnum::VIDEO->value && ! $hasLinks) {
                 $validator->errors()->add('links', __('A video activity requires at least one link.'));
             }
         });
@@ -90,7 +90,7 @@ class StudyProgramWeekActivityRequest extends FormRequest
             $payload['links'] = $links !== '' ? $links : null;
         }
 
-        if (!empty($payload)) {
+        if (! empty($payload)) {
             $this->merge($payload);
         }
     }

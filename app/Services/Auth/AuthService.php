@@ -3,13 +3,12 @@
 namespace App\Services\Auth;
 
 use App\Enums\StatusEnum;
-use App\Models\User;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Services\Settings\Users\ProfileService;
+use App\Models\User;
 use App\Services\Settings\Users\UserService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AuthService
 {
@@ -20,9 +19,9 @@ class AuthService
             'password' => $request->input('password'),
             'status' => [StatusEnum::ACTIVE->value, StatusEnum::PENDING->value],
         ];
-        
-        if (! Auth::attempt($credentials, )) {
-             
+
+        if (! Auth::attempt($credentials)) {
+
             return false;
         }
 
@@ -32,7 +31,7 @@ class AuthService
     public function registerUser(RegisterRequest $request): User
     {
         return DB::transaction(function () use ($request) {
-            $user = (new UserService())->createUser(
+            $user = (new UserService)->createUser(
                 userData: $request->only(['name', 'email', 'password']),
                 profileData: $request->except(['name', 'password']),
             );

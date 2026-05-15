@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('study_program_week_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('teacher_id')->nullable()->constrained();
             $table->foreignId('user_id')->constrained();
-            $table->string('title');    
+            $table->string('title');
             $table->string('comments')->nullable();
             $table->timestamps();
         });

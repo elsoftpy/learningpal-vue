@@ -15,8 +15,7 @@ class ClassReminderActionableNotification extends Notification
         public string $classUrl,
         public string $greeting,
         public string $notifyUrl,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

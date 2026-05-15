@@ -8,9 +8,7 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MonthlyClassesReportExport implements WithMultipleSheets
 {
-    public function __construct(private readonly Collection $reports)
-    {
-    }
+    public function __construct(private readonly Collection $reports) {}
 
     public function sheets(): array
     {

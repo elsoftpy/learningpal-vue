@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use App\Enums\StatusEnum;
 use App\Http\Requests\Traits\ProfileValidationTrait;
 use App\Services\Utilities\DateTimeService;
-use Carbon\Carbon;
-use Exception;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UserProfileRequest extends FormRequest
 {
     use ProfileValidationTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,37 +24,37 @@ class UserProfileRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return array_merge( 
-            $this->profileRules(), 
+        return array_merge(
+            $this->profileRules(),
             [
                 'name' => [
-                    'required', 
-                    'string', 
-                    'max:255', 
+                    'required',
+                    'string',
+                    'max:255',
                     Rule::unique('users', 'name')->ignore($this->user?->id),
                 ],
                 'password' => [
-                    'nullable', 
-                    'string', 
+                    'nullable',
+                    'string',
                     'min:6',
                 ],
                 'roles' => [
                     'sometimes',
-                    'required', 
+                    'required',
                     'array',
                 ],
                 'roles.*' => [
-                    'string', 
+                    'string',
                     'exists:roles,name',
                 ],
                 'status' => [
                     'sometimes',
-                    'required', 
-                    'string', 
+                    'required',
+                    'string',
                     Rule::in(StatusEnum::values()),
                 ],
                 'birth_date' => [

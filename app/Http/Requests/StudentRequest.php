@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use App\Enums\StatusEnum;
 use App\Http\Requests\Traits\ProfileValidationTrait;
 use App\Services\Utilities\DateTimeService;
-use Carbon\Carbon;
-use Exception;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StudentRequest extends FormRequest
 {
     use ProfileValidationTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,17 +24,17 @@ class StudentRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
 
         return array_merge(
-            $this->profileRules(), 
+            $this->profileRules(),
             [
                 'status' => [
-                    'sometimes', 
-                    'string', 
+                    'sometimes',
+                    'string',
                     Rule::in(StatusEnum::values()),
                 ],
                 'courses' => [
@@ -54,7 +54,7 @@ class StudentRequest extends FormRequest
     {
         $this->normalizeOptionalProfileFields();
 
-        if ($this->has('birth_date') && $this->birth_date) {        
+        if ($this->has('birth_date') && $this->birth_date) {
             $birthDate = DateTimeService::dateFromLocalizedString($this->birth_date);
         }
 

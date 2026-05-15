@@ -16,7 +16,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 });
 
 Route::get('/authorization-test', function (Request $request) {
-    
+
     return response()->json([
         'success' => true,
         'message' => __('You have access to this restricted resource.'),

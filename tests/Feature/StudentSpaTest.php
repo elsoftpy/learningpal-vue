@@ -7,8 +7,6 @@ use App\Models\Profile;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class StudentSpaTest extends TestCase
@@ -29,14 +27,14 @@ class StudentSpaTest extends TestCase
         $course2 = Course::factory()->create();
 
         $teacher->courses()->sync([$course1->id]);
-        
+
         $student1 = Student::factory()->create();
         $student2 = Student::factory()->create();
-        
+
         $student1->courses()->sync([$course1->id]);
         $student2->courses()->sync([$course2->id]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('academics.settings.students.index', [
@@ -93,14 +91,14 @@ class StudentSpaTest extends TestCase
 
         Student::factory()->count(5)->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('academics.settings.students.index', [
             'per_page' => 5,
             'page' => 1,
         ]));
-        
+
         $response->assertStatus(200);
 
         $response->assertJsonStructure([
@@ -139,13 +137,11 @@ class StudentSpaTest extends TestCase
 
         $user->assignRole('student');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('academics.settings.students.index'));
 
         $response->assertStatus(403);
     }
-
-    
 }

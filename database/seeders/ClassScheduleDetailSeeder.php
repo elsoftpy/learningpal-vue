@@ -112,7 +112,7 @@ class ClassScheduleDetailSeeder extends Seeder
                 ]
             );
 
-            if (!isset($keptOrdersBySchedule[$plannedDetail['class_schedule_id']])) {
+            if (! isset($keptOrdersBySchedule[$plannedDetail['class_schedule_id']])) {
                 $keptOrdersBySchedule[$plannedDetail['class_schedule_id']] = [];
             }
 
@@ -124,7 +124,7 @@ class ClassScheduleDetailSeeder extends Seeder
             ClassScheduleDetail::query()
                 ->where('class_schedule_id', $schedule->id)
                 ->when(
-                    !empty($keptOrders),
+                    ! empty($keptOrders),
                     fn ($query) => $query->whereNotIn('order', $keptOrders),
                     fn ($query) => $query->whereNotNull('id')
                 )

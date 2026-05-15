@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\ClassSchedule;
 use App\Models\Course;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ClassSchedule>
+ * @extends Factory<ClassSchedule>
  */
 class ClassScheduleFactory extends Factory
 {

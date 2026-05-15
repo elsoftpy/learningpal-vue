@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ClassRecordAttendanceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClassRecordAttendance extends Model
 {
-    /** @use HasFactory<\Database\Factories\ClassRecordAttendanceFactory> */
+    /** @use HasFactory<ClassRecordAttendanceFactory> */
     use HasFactory;
 
     protected $table = 'class_record_attendances';

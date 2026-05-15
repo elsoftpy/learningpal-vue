@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Language;
+use App\Models\LanguageLevel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LanguageLevel>
+ * @extends Factory<LanguageLevel>
  */
 class LanguageLevelFactory extends Factory
 {

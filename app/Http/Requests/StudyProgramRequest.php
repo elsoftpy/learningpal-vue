@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\StudyProgramActivityTypeEnum;
 use App\Enums\StudyProgramStatusEnum;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -21,7 +22,7 @@ class StudyProgramRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -62,7 +63,7 @@ class StudyProgramRequest extends FormRequest
         $validator->after(function (Validator $validator) {
             $weeks = $this->input('weeks', []);
 
-            if (!is_array($weeks)) {
+            if (! is_array($weeks)) {
                 return;
             }
 
@@ -70,7 +71,7 @@ class StudyProgramRequest extends FormRequest
                 $activities = is_array($week['activities'] ?? null) ? $week['activities'] : [];
 
                 foreach ($activities as $activityIndex => $activity) {
-                    if (!is_array($activity)) {
+                    if (! is_array($activity)) {
                         continue;
                     }
 
@@ -83,7 +84,7 @@ class StudyProgramRequest extends FormRequest
                         $validator->errors()->add($field, __('Free content must be empty when content topic is selected.'));
                     }
 
-                    if (!$hasLevelContent && !$hasFreeContent) {
+                    if (! $hasLevelContent && ! $hasFreeContent) {
                         $validator->errors()->add($field, __('Free content is required when no content topic is selected.'));
                     }
 
@@ -91,7 +92,7 @@ class StudyProgramRequest extends FormRequest
                     $hasLinks = is_string($links) && trim($links) !== '';
                     $isVideoActivity = ($activity['type'] ?? null) === StudyProgramActivityTypeEnum::VIDEO->value;
 
-                    if ($isVideoActivity && !$hasLinks) {
+                    if ($isVideoActivity && ! $hasLinks) {
                         $validator->errors()->add("weeks.$weekIndex.activities.$activityIndex.links", __('A video activity requires at least one link.'));
                     }
                 }
@@ -101,19 +102,19 @@ class StudyProgramRequest extends FormRequest
 
     public function prepareForValidation(): void
     {
-        if (!is_array($this->weeks)) {
+        if (! is_array($this->weeks)) {
             return;
         }
 
         $weeks = collect($this->weeks)
             ->map(function ($week) {
-                if (!is_array($week) || !isset($week['activities']) || !is_array($week['activities'])) {
+                if (! is_array($week) || ! isset($week['activities']) || ! is_array($week['activities'])) {
                     return $week;
                 }
 
                 $week['activities'] = collect($week['activities'])
                     ->map(function ($activity) {
-                        if (!is_array($activity)) {
+                        if (! is_array($activity)) {
                             return $activity;
                         }
 

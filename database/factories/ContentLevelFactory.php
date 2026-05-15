@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ContentLevel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContentLevel>
+ * @extends Factory<ContentLevel>
  */
 class ContentLevelFactory extends Factory
 {

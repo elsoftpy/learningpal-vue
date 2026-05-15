@@ -2,11 +2,9 @@
 
 namespace App\Services\Academics\Lessons;
 
-use App\Models\ClassProgramDetail;
 use App\Models\ClassScheduleDetail;
 use App\Services\Academics\Settings\CourseService;
 use App\Services\Utilities\DateTimeService;
-use Carbon\Carbon;
 
 class ClassScheduleDetailService
 {
@@ -30,7 +28,7 @@ class ClassScheduleDetailService
             'activity' => $detail->activity,
             'order' => $detail->order,
             'status' => $detail->status,
-            'display_status' => ucfirst(__( $detail->status )),
+            'display_status' => ucfirst(__($detail->status)),
             'is_completed' => $detail->status === 'completed',
             'class_record_id' => $classRecordId,
             'has_class_record' => (bool) $classRecordId,
@@ -51,10 +49,10 @@ class ClassScheduleDetailService
             'rescheduled_start_time' => DateTimeService::formatTime($detail?->rescheduled_start_time),
             'rescheduled_end_time' => DateTimeService::formatTime($detail?->rescheduled_end_time),
             'course_id' => $course?->id,
-            'display_course' => $course ? (new CourseService())->getCourseDisplayName($course) : '',
+            'display_course' => $course ? (new CourseService)->getCourseDisplayName($course) : '',
             'chat_room_url' => $course?->chat_room_link,
             'status' => $detail->status,
-            'display_status' => ucfirst(__( $detail->status )),
+            'display_status' => ucfirst(__($detail->status)),
         ];
-    }   
+    }
 }

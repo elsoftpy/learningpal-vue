@@ -19,14 +19,13 @@ class RoleListController extends Controller
         $locale = app()->getLocale();
 
         $query = Role::query();
-        
-        
+
         if ($request?->search === '') {
             return response()->json([
                 'data' => $this->getUnpaginatedRoles($query),
             ]);
         }
-        
+
         $searchedRoles = $this->getTranslatedRoleName($request->search, $locale);
         $query->whereIn('name', $searchedRoles);
 
@@ -44,9 +43,10 @@ class RoleListController extends Controller
                 'current_page' => $roles->currentPage(),
                 'last_page' => $roles->lastPage(),
                 'total' => $roles->total(),
-                
+
             ]);
         }
+
         return response()->json([
             'data' => $this->getUnpaginatedRoles($query),
         ]);
@@ -56,55 +56,55 @@ class RoleListController extends Controller
     {
         $translated = collect([
             [
-                'locale' => 'es', 
+                'locale' => 'es',
                 'roles' => [
                     'admin' => 'Administrador',
                     'student' => 'Estudiante',
                     'teacher' => 'Profesor',
                     'annual_student' => 'Estudiante Anual',
-                ]
+                ],
             ],
             [
-                'locale' => 'pt', 
+                'locale' => 'pt',
                 'roles' => [
                     'admin' => 'admin',
                     'student' => 'Estudante',
                     'teacher' => 'Professor',
                     'annual_student' => 'Estudante Anual',
-                ]
+                ],
             ],
             [
-                'locale' => 'en', 
+                'locale' => 'en',
                 'roles' => [
                     'admin' => 'admin',
                     'student' => 'student',
                     'teacher' => 'teacher',
                     'annual_student' => 'annual student',
-                ]
+                ],
             ],
         ]);
 
         $localeRoles = collect($translated->where('locale', $locale)->first());
         $roles = collect(array_filter(
             $localeRoles->get('roles'),
-            function($role) use($roleName) {
+            function ($role) use ($roleName) {
                 return str_contains(strtolower($role), strtolower($roleName));
             }
         ));
-        
+
         return $roles->keys()->all();
     }
 
     protected function getUnpaginatedRoles(Builder $query)
     {
 
-        return  $query->limit(10)
-                ->get()
-                ->map(function ($role) {
-                    return [
-                        'name' => $role->name,
-                        'label' => ucfirst(__($role->name)),
-                    ];
-                });
+        return $query->limit(10)
+            ->get()
+            ->map(function ($role) {
+                return [
+                    'name' => $role->name,
+                    'label' => ucfirst(__($role->name)),
+                ];
+            });
     }
 }

@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\ClassSchedule;
+use App\Models\ClassScheduleDetail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ClassScheduleDetail>
+ * @extends Factory<ClassScheduleDetail>
  */
 class ClassScheduleDetailFactory extends Factory
 {
@@ -28,15 +29,15 @@ class ClassScheduleDetailFactory extends Factory
         $startHour = $this->faker->numberBetween(8, 10);
         $startTime = Carbon::createFromFormat(
             'Y-m-d H:i:s',
-            $sessionDate->format('Y-m-d') . ' ' . sprintf('%02d:00:00', $startHour)
+            $sessionDate->format('Y-m-d').' '.sprintf('%02d:00:00', $startHour)
         );
         $endTime = (clone $startTime)->modify('+1 hour');
-        // calculate duration in minutes    
+        // calculate duration in minutes
         $duration = ($endTime->getTimestamp() - $startTime->getTimestamp()) / 60;
 
         $rescheduledDate = $this->faker->optional()->date();
         if ($rescheduledDate) {
-            $rescheduledStartTime = $this->faker->dateTimeBetween($rescheduledDate . ' 08:00:00', $rescheduledDate . ' 10:00:00');
+            $rescheduledStartTime = $this->faker->dateTimeBetween($rescheduledDate.' 08:00:00', $rescheduledDate.' 10:00:00');
             $rescheduledEndTime = (clone $rescheduledStartTime)->modify('+1 hour');
             $rescheduleCount = $this->faker->numberBetween(1, 5);
             $rescheduleDuration = ($rescheduledEndTime->getTimestamp() - $rescheduledStartTime->getTimestamp()) / 60;

@@ -6,7 +6,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ResponseService
 {
-
     public static function success(string $message = '', $data = [], int $statusCode = 200): JsonResponse
     {
         return response()->json([

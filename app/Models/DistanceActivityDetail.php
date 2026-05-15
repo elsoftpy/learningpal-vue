@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StudyProgramActivityTypeEnum;
+use Database\Factories\DistanceActivityDetailFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DistanceActivityDetail extends Model
 {
-    /** @use HasFactory<\Database\Factories\DistanceActivityDetailFactory> */
+    /** @use HasFactory<DistanceActivityDetailFactory> */
     use HasFactory;
 
     protected $table = 'distance_activity_details';

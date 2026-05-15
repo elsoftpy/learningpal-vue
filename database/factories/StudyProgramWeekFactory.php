@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\StudyProgramStatusEnum;
 use App\Models\StudyProgram;
+use App\Models\StudyProgramWeek;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\StudyProgramWeek>
+ * @extends Factory<StudyProgramWeek>
  */
 class StudyProgramWeekFactory extends Factory
 {

@@ -15,7 +15,7 @@ class ClassScheduleSpaTest extends TestCase
         $search = 'Default Sort Schedule';
         $user = User::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user->assignRole('admin');
 
         $course = Course::factory()->create();
@@ -54,7 +54,7 @@ class ClassScheduleSpaTest extends TestCase
         $search = 'ID Sort Schedule';
         $user = User::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user->assignRole('admin');
 
         $course = Course::factory()->create();
@@ -93,7 +93,7 @@ class ClassScheduleSpaTest extends TestCase
         $search = 'Name Sort Schedule';
         $user = User::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user->assignRole('admin');
 
         $course = Course::factory()->create();
@@ -132,7 +132,7 @@ class ClassScheduleSpaTest extends TestCase
         $search = 'Month Sort Schedule';
         $user = User::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user->assignRole('admin');
 
         $course = Course::factory()->create();
@@ -170,7 +170,7 @@ class ClassScheduleSpaTest extends TestCase
     {
         $user = User::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user->assignRole('admin');
 
         $course = Course::factory()->create();
@@ -228,5 +228,4 @@ class ClassScheduleSpaTest extends TestCase
 
         $this->assertSame(2, $classSchedule->fresh()->details()->count());
     }
-
 }

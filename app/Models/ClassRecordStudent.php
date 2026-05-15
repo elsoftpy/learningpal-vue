@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ClassRecordStudentsFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClassRecordStudent extends Model
 {
-    /** @use HasFactory<\Database\Factories\ClassRecordStudentsFactory> */
+    /** @use HasFactory<ClassRecordStudentsFactory> */
     use HasFactory;
 
     protected $table = 'class_record_students';

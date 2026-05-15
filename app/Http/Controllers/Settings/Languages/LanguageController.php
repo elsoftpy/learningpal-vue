@@ -27,7 +27,7 @@ class LanguageController extends Controller
         $languagesQuery = Language::query();
 
         if ($search) {
-            $languagesQuery->where('name', 'like', '%' . $search . '%');
+            $languagesQuery->where('name', 'like', '%'.$search.'%');
         }
 
         $paginated = $languagesQuery
@@ -35,7 +35,7 @@ class LanguageController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $languages = $paginated->getCollection()->map(function (Language $language) {
-            return (new LanguageService())->languageData($language);
+            return (new LanguageService)->languageData($language);
         });
 
         return ResponseService::success(

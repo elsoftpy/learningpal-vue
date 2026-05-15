@@ -6,7 +6,6 @@ use App\Enums\ProfileTypeEnum;
 use App\Enums\StatusEnum;
 use App\Models\Profile;
 use App\Models\User;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
@@ -25,33 +24,33 @@ class RegisterSpaTest extends TestCase
             'phone' => '1234567890',
             'personal_id' => '123456',
             'gender' => 'male',
-            'address' => '123 Main St', 
+            'address' => '123 Main St',
         ]);
 
         $response->assertStatus(201)
-                 ->assertJsonStructure([
-                     'success',
-                     'message',
-                     'data' => [
-                         'user' => [
-                            'id',
-                            'type',
-                            'personal_id',
-                            'first_name',
-                            'last_name',
-                            'company_name',
-                            'ruc',
-                            'email',
-                            'phone',
-                            'address',
-                            'gender',
-                            'birth_date',
-                            'full_name',
-                            'status',
-                            'roles',
-                         ],
-                     ],
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'user' => [
+                        'id',
+                        'type',
+                        'personal_id',
+                        'first_name',
+                        'last_name',
+                        'company_name',
+                        'ruc',
+                        'email',
+                        'phone',
+                        'address',
+                        'gender',
+                        'birth_date',
+                        'full_name',
+                        'status',
+                        'roles',
+                    ],
+                ],
+            ]);
 
         $this->assertAuthenticated();
 
@@ -89,29 +88,29 @@ class RegisterSpaTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-                 ->assertJsonStructure([
-                     'success',
-                     'message',
-                     'data' => [
-                         'user' => [
-                            'id',
-                            'type',
-                            'personal_id',
-                            'first_name',
-                            'last_name',
-                            'company_name',
-                            'ruc',
-                            'email',
-                            'phone',
-                            'address',
-                            'gender',
-                            'birth_date',
-                            'full_name',
-                            'status',
-                            'roles',
-                         ],
-                     ],
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'user' => [
+                        'id',
+                        'type',
+                        'personal_id',
+                        'first_name',
+                        'last_name',
+                        'company_name',
+                        'ruc',
+                        'email',
+                        'phone',
+                        'address',
+                        'gender',
+                        'birth_date',
+                        'full_name',
+                        'status',
+                        'roles',
+                    ],
+                ],
+            ]);
 
         $this->assertAuthenticated();
 
@@ -139,7 +138,7 @@ class RegisterSpaTest extends TestCase
                 'email' => 'jane@example.com',
             ])->id,
         ]);
-        
+
         $response = $this->postJson(route('auth.register'), [
             'type' => ProfileTypeEnum::PERSON->value,
             'first_name' => 'Jane',

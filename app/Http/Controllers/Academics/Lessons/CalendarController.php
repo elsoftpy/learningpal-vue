@@ -15,7 +15,7 @@ class CalendarController extends Controller
 {
     public function calendarSessions(CalendarSessionRequest $request)
     {
-        $visibleCourseIds = (new CourseVisibilityService())->visibleCourseIdsForUser($request->user());
+        $visibleCourseIds = (new CourseVisibilityService)->visibleCourseIdsForUser($request->user());
 
         $startDate = $request->start_date->copy()->startOfDay();
         $endDate = $request->end_date->copy()->endOfDay();
@@ -34,9 +34,9 @@ class CalendarController extends Controller
             })
             ->get()
             ->map(function (ClassScheduleDetail $detail) {
-                return (new ClassScheduleDetailService())->sessionData($detail);
+                return (new ClassScheduleDetailService)->sessionData($detail);
             });
-        
+
         return response()->json([
             'sessions' => $sessions,
         ]);
@@ -44,10 +44,10 @@ class CalendarController extends Controller
 
     public function scheduledCalendarCourses(CalendarSessionRequest $request)
     {
-        $calendarService = new CalendarService();
+        $calendarService = new CalendarService;
         $calendars = $calendarService->calendarsColorsScheme(
             $request,
-            (new CourseVisibilityService())->visibleCourseIdsForUser($request->user())
+            (new CourseVisibilityService)->visibleCourseIdsForUser($request->user())
         );
 
         return response()->json([
@@ -57,14 +57,14 @@ class CalendarController extends Controller
 
     public function ongoingAndPendingSessions(Request $request)
     {
-        $visibleCourseIds = (new CourseVisibilityService())->visibleCourseIdsForUser($request->user());
+        $visibleCourseIds = (new CourseVisibilityService)->visibleCourseIdsForUser($request->user());
 
         $ongoingAndPendingSessions = ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
             ->whereHas('classSchedule.course')
             ->whereIn('status', [
-                ClassScheduleStatusEnum::ONGOING->value, 
-                ClassScheduleStatusEnum::PENDING->value
+                ClassScheduleStatusEnum::ONGOING->value,
+                ClassScheduleStatusEnum::PENDING->value,
             ])
             ->when($visibleCourseIds !== null, function ($query) use ($visibleCourseIds) {
                 $query->whereHas('classSchedule', function ($q) use ($visibleCourseIds) {
@@ -73,12 +73,11 @@ class CalendarController extends Controller
             })
             ->get()
             ->map(function (ClassScheduleDetail $detail) {
-                return (new ClassScheduleDetailService())->sessionData($detail);
+                return (new ClassScheduleDetailService)->sessionData($detail);
             });
-        
+
         return response()->json([
             'ongoing_and_pending_sessions' => $ongoingAndPendingSessions,
         ]);
     }
-
 }

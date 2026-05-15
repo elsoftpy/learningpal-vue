@@ -18,7 +18,7 @@ class LanguageListController extends Controller
         $query = Language::query()
             ->select('id', 'name');
 
-        $visibleLanguageLevelIds = (new CourseVisibilityService())->visibleLanguageLevelIdsForUser($request->user());
+        $visibleLanguageLevelIds = (new CourseVisibilityService)->visibleLanguageLevelIdsForUser($request->user());
 
         if ($visibleLanguageLevelIds !== null) {
             $query->whereHas('levels', function (Builder $levelQuery) use ($visibleLanguageLevelIds) {

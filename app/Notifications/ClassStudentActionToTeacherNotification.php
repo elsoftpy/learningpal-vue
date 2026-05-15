@@ -17,8 +17,7 @@ class ClassStudentActionToTeacherNotification extends Notification
         public string $startTime,
         public string $courseName,
         public string $actionType,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

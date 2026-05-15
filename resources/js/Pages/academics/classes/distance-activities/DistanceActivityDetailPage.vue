@@ -104,7 +104,7 @@
                                                 <a
                                                     href="#"
                                                     class="text-blue-600 underline dark:text-blue-400 break-all"
-                                                    @click.prevent="openLink(detail, link)"
+                                                    @click.prevent="openLink(detail, link, index)"
                                                 >
                                                     {{ link }}
                                                 </a>
@@ -123,7 +123,7 @@
                                             severity="secondary"
                                             outlined
                                             :label="$t('Open Link')"
-                                            @click="openLink(detail, link)"
+                                            @click="openLink(detail, link, index)"
                                         />
                                         <Button
                                             v-if="detail.study_material_url"
@@ -147,7 +147,7 @@
                                     </div>
 
                                     <div
-                                        v-if="isStudentView && detail.type === 'video' && detail.video_opened_at && isDetailLocked(detail) && lockCountdown(detail)"
+                                        v-if="isStudentView && isLinkTimerType(detail) && detail.active_link_timer_started_at && isDetailLocked(detail) && lockCountdown(detail)"
                                         class="mt-3 rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.18),_transparent_55%),linear-gradient(135deg,_rgba(255,251,235,1),_rgba(255,247,237,1))] px-4 py-5 text-center shadow-sm dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.16),_transparent_45%),linear-gradient(135deg,_rgba(30,41,59,0.9),_rgba(15,23,42,0.95))]"
                                     >
                                         <div class="mx-auto flex w-full max-w-[9.5rem] flex-col items-center">
@@ -183,7 +183,7 @@
                                                 </div>
                                             </div>
                                             <div class="mt-3 text-[11px] font-medium uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
-                                                {{ $t('Video In Progress') }}
+                                                {{ $t('In progress') }}
                                             </div>
                                             <div class="mt-1 text-xs text-slate-600 dark:text-slate-300">
                                                 {{ $t('Complete after the timer finishes') }}
@@ -849,15 +849,18 @@ const openStudyMaterial = (url) => {
     openInNewTab(url);
 };
 
-const openLink = async (detail, link) => {
-    openInNewTab(link);
+const isLinkTimerType = (detail) => ['video', 'exercise'].includes(detail?.type);
 
-    if (isStudentView.value && detail.type === 'video') {
+const openLink = async (detail, link, index = 0) => {
+    if (isStudentView.value && isLinkTimerType(detail)) {
         ensurePendingProduction(detail.id);
         detailLoadingMap[detail.id].video = true;
 
         try {
-            await axios.post(`/academics/lessons/distance-activities/details/${detail.id}/video-open`);
+            await axios.post(`/academics/lessons/distance-activities/details/${detail.id}/video-open`, {
+                link_index: index,
+            });
+            openInNewTab(link);
             await fetchDistanceActivity();
         } catch (error) {
             const apiError = handleApiError(error);
@@ -873,6 +876,8 @@ const openLink = async (detail, link) => {
 
         return;
     }
+
+    openInNewTab(link);
 };
 
 const setProductionFile = (detailId, type, file) => {
@@ -890,10 +895,6 @@ const hasSavedProduction = (detail) => Array.isArray(detail?.student_production_
 const completionRequirementMessage = (detail) => {
     if (detail?.completed) {
         return '';
-    }
-
-    if (detail?.type === 'video' && !detail?.video_opened_at) {
-        return $t('Open the video link before marking this task as completed.');
     }
 
     if (detail?.type === 'production' && !hasSavedProduction(detail)) {
@@ -1115,11 +1116,11 @@ const countdownRemainingMs = (detail) => {
 };
 
 const countdownTotalMs = (detail) => {
-    if (!detail?.next_completion_locked_until || !detail?.video_opened_at) {
+    if (!detail?.next_completion_locked_until || !detail?.active_link_timer_started_at) {
         return 0;
     }
 
-    const total = new Date(detail.next_completion_locked_until).getTime() - new Date(detail.video_opened_at).getTime();
+    const total = new Date(detail.next_completion_locked_until).getTime() - new Date(detail.active_link_timer_started_at).getTime();
     return Math.max(0, total);
 };
 

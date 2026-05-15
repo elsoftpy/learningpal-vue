@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 class UserProfileController extends Controller
 {
     use FilterResolverTrait, SortResolverTrait, UserProfileTrait;
-    
+
     public function index(Request $request)
     {
         $page = (int) $request->page;
@@ -35,10 +35,10 @@ class UserProfileController extends Controller
         if ($search) {
             $usersQuery->where(function ($query) use ($search) {
                 $query->whereHas('profile', function ($q) use ($search) {
-                    $q->where('full_name', 'like', '%' . $search . '%')
-                        ->orWhere('company_name', 'like', '%' . $search . '%');
+                    $q->where('full_name', 'like', '%'.$search.'%')
+                        ->orWhere('company_name', 'like', '%'.$search.'%');
                 })
-                ->orWhere('email', 'like', '%' . $search . '%');
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -47,8 +47,8 @@ class UserProfileController extends Controller
             if ($nameFilter !== '') {
                 $usersQuery->where(function ($query) use ($nameFilter) {
                     $query->whereHas('profile', function ($q) use ($nameFilter) {
-                            $q->where('full_name', 'like', '%' . $nameFilter . '%');
-                        });
+                        $q->where('full_name', 'like', '%'.$nameFilter.'%');
+                    });
                 });
             }
         }
@@ -75,7 +75,7 @@ class UserProfileController extends Controller
         }
 
         $paginated = $usersQuery->paginate($perPage, ['*'], 'page', $page);
-        
+
         $users = $paginated->getCollection()->map(function (User $user) {
 
             return $this->userData($user);
@@ -108,7 +108,7 @@ class UserProfileController extends Controller
 
         $user = DB::transaction(function () use ($profileData, $userData, $userService, $canEditExistingProfile) {
             $user = $userService->createUser($userData, $profileData, $canEditExistingProfile);
-            
+
             return $user;
         });
 
@@ -133,7 +133,7 @@ class UserProfileController extends Controller
     {
         $isEditingOwnProfile = $user->id === Auth::id();
 
-        if (!$isEditingOwnProfile && $request->user()->cannot('edit users')) {
+        if (! $isEditingOwnProfile && $request->user()->cannot('edit users')) {
             return ResponseService::unauthorized(
                 message: __('You do not have permission to edit this user.')
             );
@@ -161,13 +161,13 @@ class UserProfileController extends Controller
 
             unset($userData['status']);
         }
-        
+
         DB::transaction(function () use ($user, $profileData, $userData, $userService) {
-        
+
             $userService->updateUserProfile($user, $profileData);
             $userService->updateUserData($user, $userData);
         });
-        
+
         return ResponseService::success(
             message: __('User profile updated successfully.'),
             data: [
@@ -208,5 +208,4 @@ class UserProfileController extends Controller
             ]
         );
     }
-
 }

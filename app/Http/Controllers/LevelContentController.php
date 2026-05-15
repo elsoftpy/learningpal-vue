@@ -32,10 +32,10 @@ class LevelContentController extends Controller
             ->with('languageLevel.language');
 
         if ($search) {
-            $levelContentQuery->where('content', 'like', '%' . $search . '%')
+            $levelContentQuery->where('content', 'like', '%'.$search.'%')
                 ->orWhereHas('languageLevel', function ($q) use ($search) {
-                    $q->where('description', 'like', '%' . $search . '%')
-                      ->orWhere('level', 'like', '%' . $search . '%');
+                    $q->where('description', 'like', '%'.$search.'%')
+                        ->orWhere('level', 'like', '%'.$search.'%');
                 });
         }
 
@@ -73,7 +73,7 @@ class LevelContentController extends Controller
         $paginated = $levelContentQuery->paginate($perPage, ['*'], 'page', $page);
 
         $levelContent = $paginated->getCollection()->map(function (LevelContent $levelContent) {
-            return (new LevelContentService())->levelContentData($levelContent);
+            return (new LevelContentService)->levelContentData($levelContent);
         });
 
         return ResponseService::success(
@@ -88,7 +88,7 @@ class LevelContentController extends Controller
     {
         $data = $request->validated();
 
-        $levelContentService = new LevelContentService();
+        $levelContentService = new LevelContentService;
         $levelContent = $levelContentService->createLevelContent($data);
 
         return ResponseService::success(

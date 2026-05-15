@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -11,7 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Profile extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\ProfileFactory> */
+    /** @use HasFactory<ProfileFactory> */
     use HasFactory, InteractsWithMedia;
 
     protected $table = 'profiles';
@@ -64,14 +65,13 @@ class Profile extends Model implements HasMedia
                     ->width(100)
                     ->height(100)
                     ->sharpen(10);
-                
+
                 $this->addMediaConversion('medium')
                     ->width(300)
                     ->height(300);
             });
-        
+
         $this->addMediaCollection('payment_receipt')
             ->singleFile();
     }
-
 }

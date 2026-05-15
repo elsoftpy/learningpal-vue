@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\DistanceActivityDetailStudentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class DistanceActivityDetailStudent extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\DistanceActivityDetailStudentFactory> */
+    /** @use HasFactory<DistanceActivityDetailStudentFactory> */
     use HasFactory, InteractsWithMedia;
 
     protected $table = 'distance_activity_detail_students';
@@ -21,6 +22,7 @@ class DistanceActivityDetailStudent extends Model implements HasMedia
         'completed',
         'completed_at',
         'video_opened_at',
+        'link_opened_at_map',
     ];
 
     protected function casts(): array
@@ -29,6 +31,7 @@ class DistanceActivityDetailStudent extends Model implements HasMedia
             'completed' => 'boolean',
             'completed_at' => 'datetime',
             'video_opened_at' => 'datetime',
+            'link_opened_at_map' => 'array',
         ];
     }
 

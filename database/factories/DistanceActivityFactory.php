@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\StudyProgramStatusEnum;
 use App\Models\Course;
+use App\Models\DistanceActivity;
 use App\Models\StudyProgram;
 use App\Models\StudyProgramWeek;
 use App\Models\Teacher;
@@ -11,7 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DistanceActivity>
+ * @extends Factory<DistanceActivity>
  */
 class DistanceActivityFactory extends Factory
 {

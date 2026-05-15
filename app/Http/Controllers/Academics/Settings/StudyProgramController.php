@@ -22,7 +22,7 @@ class StudyProgramController extends Controller
 
     public function index(Request $request, StudyProgramService $studyProgramService)
     {
-        $visibility = new CourseVisibilityService();
+        $visibility = new CourseVisibilityService;
         $page = (int) $request->page;
         $perPage = (int) $request->per_page;
         $search = $request->search;
@@ -112,7 +112,7 @@ class StudyProgramController extends Controller
 
     public function store(StudyProgramRequest $request, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(
+        (new CourseVisibilityService)->authorizeLanguageLevelId(
             $request->user(),
             (int) $request->validated('language_level_id')
         );
@@ -129,7 +129,7 @@ class StudyProgramController extends Controller
 
     public function studyProgramData(StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
 
         return ResponseService::success(
             data: [
@@ -140,8 +140,8 @@ class StudyProgramController extends Controller
 
     public function update(StudyProgramRequest $request, StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId($request->user(), $studyProgram->language_level_id);
-        (new CourseVisibilityService())->authorizeLanguageLevelId(
+        (new CourseVisibilityService)->authorizeLanguageLevelId($request->user(), $studyProgram->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(
             $request->user(),
             (int) $request->validated('language_level_id')
         );
@@ -158,7 +158,7 @@ class StudyProgramController extends Controller
 
     public function destroy(StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
 
         $studyProgramService->deleteStudyProgram($studyProgram);
 

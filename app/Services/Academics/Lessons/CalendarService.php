@@ -12,7 +12,8 @@ use Illuminate\Http\Request;
 
 class CalendarService
 {
-    protected function sessionsQuery(Carbon $startDate, Carbon $endDate): Builder {
+    protected function sessionsQuery(Carbon $startDate, Carbon $endDate): Builder
+    {
         return ClassScheduleDetail::query()
             ->with(['classSchedule', 'classSchedule.course'])
             ->where(function ($query) use ($startDate, $endDate) {
@@ -46,20 +47,20 @@ class CalendarService
 
         $courses = Course::query()
             ->whereIn('id', $coursesIds)
-            ->get(); 
+            ->get();
 
         $caledarColors = $this->calendarColors($coursesIds);
-        $courseService = new CourseService();
-        
+        $courseService = new CourseService;
+
         return $courses->map(function ($course) use ($caledarColors, $courseService) {
-            $displayName =  $courseService->getCourseDisplayName($course);
+            $displayName = $courseService->getCourseDisplayName($course);
 
             return [
                 $displayName => [
                     'course_id' => $course->id,
                     'lightColors' => $caledarColors[$course->id]['light'],
                     'darkColors' => $caledarColors[$course->id]['dark'],
-                ]
+                ],
             ];
         })->toArray();
     }

@@ -8,8 +8,8 @@ use App\Models\ClassRecord;
 use App\Models\ClassRecordAttendance;
 use App\Models\ClassRecordDetail;
 use App\Models\ClassRecordDetailStudents;
-use App\Models\ClassScheduleDetail;
 use App\Models\ClassRecordStudent;
+use App\Models\ClassScheduleDetail;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -40,13 +40,13 @@ class ClassRecordSeeder extends Seeder
             $course = $scheduleDetail->classSchedule?->course;
             $teacher = $course?->teachers?->first();
 
-            if (!$course || !$teacher) {
+            if (! $course || ! $teacher) {
                 continue;
             }
 
             $createdByUserId = $teacher->profile?->user?->id ?? $adminUserId;
 
-            if (!$createdByUserId) {
+            if (! $createdByUserId) {
                 continue;
             }
 

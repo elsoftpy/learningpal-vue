@@ -4,10 +4,10 @@ use App\Http\Middleware\InvalidateSessionMiddleware;
 use App\Http\Middleware\ServeSpaOnBrowserNavigation;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->renderable(function ( AuthenticationException $e, $request) {
+        $exceptions->renderable(function (AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return ResponseService::unauthenticated(
                     message: __('Unauthenticated.'),
@@ -72,6 +72,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 message: __('The given data was invalid.'),
                 errors: $e->errors()
             );
-            
+
         });
     })->create();

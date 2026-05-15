@@ -14,8 +14,7 @@ class ClassNotification extends Notification
         public string $hora,
         public string $url,
         public string $greeting,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

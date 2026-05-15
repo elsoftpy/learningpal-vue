@@ -6,6 +6,7 @@ use App\Enums\AttendanceStatusEnum;
 use App\Models\ClassScheduleDetail;
 use App\Services\Utilities\DateTimeService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -23,35 +24,35 @@ class ClassRecordRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'teacher_id' => [
-                'required', 
+                'required',
                 'exists:teachers,id',
             ],
             'class_schedule_detail_id' => [
-                'required', 
+                'required',
                 'exists:class_schedule_details,id',
             ],
             'date' => [
-                'required', 
+                'required',
                 'date',
             ],
             'start_time' => [
-                'required', 
+                'required',
                 'date',
             ],
             'end_time' => [
-                'required', 
-                'date', 
+                'required',
+                'date',
                 'after:start_time',
             ],
             'duration_minutes' => [
-                'required', 
-                'integer', 
+                'required',
+                'integer',
                 'min:1',
             ],
             'student_attendances' => [
@@ -70,8 +71,8 @@ class ClassRecordRequest extends FormRequest
                 Rule::in(AttendanceStatusEnum::values()),
             ],
             'comments' => [
-                'required', 
-                'string', 
+                'required',
+                'string',
                 'max:255',
             ],
             'details' => [
@@ -140,7 +141,7 @@ class ClassRecordRequest extends FormRequest
             $classScheduleDetailId = $this->input('class_schedule_detail_id');
             $studentAttendances = collect($this->input('student_attendances', []));
 
-            if (!$classScheduleDetailId || $studentAttendances->isEmpty()) {
+            if (! $classScheduleDetailId || $studentAttendances->isEmpty()) {
                 return;
             }
 
@@ -150,7 +151,7 @@ class ClassRecordRequest extends FormRequest
 
             $courseId = $classScheduleDetail?->classSchedule?->course_id;
 
-            if (!$courseId) {
+            if (! $courseId) {
                 return;
             }
 
@@ -165,7 +166,7 @@ class ClassRecordRequest extends FormRequest
             foreach ($studentAttendances as $index => $item) {
                 $studentId = (int) ($item['student_id'] ?? 0);
 
-                if (!in_array($studentId, $validStudentIds, true)) {
+                if (! in_array($studentId, $validStudentIds, true)) {
                     $validator->errors()->add(
                         "student_attendances.{$index}.student_id",
                         __('The selected student does not belong to this course.')
@@ -181,7 +182,7 @@ class ClassRecordRequest extends FormRequest
             $endTime = $this->input('end_time');
             $durationMinutes = $this->input('duration_minutes');
 
-            if (!$startTime || !$endTime || $durationMinutes === null) {
+            if (! $startTime || ! $endTime || $durationMinutes === null) {
                 return;
             }
 
@@ -214,7 +215,7 @@ class ClassRecordRequest extends FormRequest
         if ($this->has('details') && is_array($this->details)) {
             $details = collect($this->details)
                 ->map(function ($detail) {
-                    if (!is_array($detail)) {
+                    if (! is_array($detail)) {
                         return $detail;
                     }
 
@@ -236,7 +237,7 @@ class ClassRecordRequest extends FormRequest
         if ($this->has('student_attendances') && is_array($this->student_attendances)) {
             $normalizedAttendances = collect($this->student_attendances)
                 ->map(function ($item) {
-                    if (!is_array($item)) {
+                    if (! is_array($item)) {
                         return $item;
                     }
 

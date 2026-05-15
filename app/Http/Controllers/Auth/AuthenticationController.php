@@ -26,7 +26,7 @@ class AuthenticationController extends Controller
         }
 
         $request->session()->regenerate();
-        
+
         $userData = $this->userData(Auth::user());
 
         return ResponseService::success(
@@ -38,12 +38,12 @@ class AuthenticationController extends Controller
     }
 
     public function register(RegisterRequest $request, AuthService $authService)
-    {   
+    {
         $user = $authService->registerUser($request);
 
         // Auto-login after registration
         Auth::login($user);
-        
+
         $userData = $this->userData($user);
 
         return ResponseService::created(
@@ -53,14 +53,13 @@ class AuthenticationController extends Controller
             ]
         );
     }
-    
 
     public function logout(Request $request)
     {
         Auth::logout();
- 
+
         $request->session()->invalidate();
-    
+
         $request->session()->regenerateToken();
 
         return ResponseService::success(
@@ -76,11 +75,11 @@ class AuthenticationController extends Controller
         $user = $request->user();
 
         $userData = $this->userData($user);
-        
+
         return ResponseService::success(
             message: __('Authenticated user retrieved successfully.'),
             data: [
-                'user' => $userData
+                'user' => $userData,
             ]
         );
     }

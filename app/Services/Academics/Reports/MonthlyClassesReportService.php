@@ -4,6 +4,7 @@ namespace App\Services\Academics\Reports;
 
 use App\Enums\AttendanceStatusEnum;
 use App\Enums\ClassScheduleStatusEnum;
+use App\Models\ClassRecordAttendance;
 use App\Models\ClassSchedule;
 use App\Models\ClassScheduleDetail;
 use App\Models\Course;
@@ -73,7 +74,7 @@ class MonthlyClassesReportService
         $monthEnd = $monthStart->copy()->endOfMonth();
         $schedule = $this->resolveSchedule($courseId, $monthStart);
         $course = $schedule->course;
-        $courseDisplayName = (new CourseService())->getCourseDisplayName($course);
+        $courseDisplayName = (new CourseService)->getCourseDisplayName($course);
 
         $studentIds = $this->resolveReportStudentIds($course, $monthStart, $monthEnd, $studentId);
         $students = Student::query()
@@ -154,7 +155,7 @@ class MonthlyClassesReportService
 
     private function attendanceStudentIdsForMonth(int $courseId, Carbon $monthStart, Carbon $monthEnd): Collection
     {
-        return \App\Models\ClassRecordAttendance::query()
+        return ClassRecordAttendance::query()
             ->select('student_id')
             ->whereHas('classRecord', function ($query) use ($courseId, $monthStart, $monthEnd) {
                 $query

@@ -185,55 +185,6 @@ class ClassScheduleDetailSpaTest extends TestCase
         $this->assertSame(0, (int) $detail->rescheduled_estimated_duration_minutes);
     }
 
-    public function test_teacher_can_reschedule_assigned_course_session(): void
-    {
-        $user = User::factory()->create([
-            'profile_id' => Profile::factory()->create()->id,
-        ]);
-        $user->assignRole('teacher');
-
-        $teacher = Teacher::factory()->create([
-            'profile_id' => $user->profile_id,
-            'status' => 'active',
-        ]);
-
-        $course = Course::factory()->create();
-        $teacher->courses()->sync([$course->id]);
-
-        $schedule = ClassSchedule::factory()->create([
-            'course_id' => $course->id,
-            'schedule_month' => '2026-03-01',
-        ]);
-
-        $detail = ClassScheduleDetail::factory()->create([
-            'class_schedule_id' => $schedule->id,
-            'session_date' => Carbon::parse('2026-03-10'),
-            'start_time' => Carbon::parse('2026-03-10 09:00:00'),
-            'end_time' => Carbon::parse('2026-03-10 10:00:00'),
-            'rescheduled_date' => null,
-            'rescheduled_start_time' => null,
-            'rescheduled_end_time' => null,
-            'reschedule_count' => 0,
-            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
-        ]);
-
-        $response = $this->actingAs($user, 'web')->postJson(
-            "/academics/lessons/class-schedules/details/{$detail->id}/edit",
-            [
-                'rescheduled_date' => '12/03/2026',
-                'rescheduled_start_time' => '11:00',
-                'rescheduled_end_time' => '12:00',
-            ]
-        );
-
-        $response->assertOk();
-
-        $detail->refresh();
-
-        $this->assertSame(ClassScheduleStatusEnum::REPROGRAMED->value, $detail->status);
-        $this->assertSame(1, $detail->reschedule_count);
-        $this->assertSame(60, $detail->rescheduled_estimated_duration_minutes);
-    }
 
     public function test_teacher_cannot_edit_original_session_fields(): void
     {

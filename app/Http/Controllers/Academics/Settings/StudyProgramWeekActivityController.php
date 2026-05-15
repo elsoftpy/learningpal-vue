@@ -14,7 +14,7 @@ class StudyProgramWeekActivityController extends Controller
 {
     public function createData(StudyProgramWeek $week, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $week->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $week->studyProgram?->language_level_id);
 
         return ResponseService::success(
             data: [
@@ -25,7 +25,7 @@ class StudyProgramWeekActivityController extends Controller
 
     public function store(StudyProgramWeekActivityRequest $request, StudyProgramWeek $week, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId($request->user(), $week->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId($request->user(), $week->studyProgram?->language_level_id);
 
         $activity = $studyProgramService->createStudyProgramWeekActivity(
             $week,
@@ -43,7 +43,7 @@ class StudyProgramWeekActivityController extends Controller
 
     public function data(StudyProgramWeekActivity $activity, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $activity->studyProgramWeek?->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $activity->studyProgramWeek?->studyProgram?->language_level_id);
 
         return ResponseService::success(
             data: [
@@ -54,7 +54,7 @@ class StudyProgramWeekActivityController extends Controller
 
     public function update(StudyProgramWeekActivityRequest $request, StudyProgramWeekActivity $activity, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId($request->user(), $activity->studyProgramWeek?->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId($request->user(), $activity->studyProgramWeek?->studyProgram?->language_level_id);
 
         $activity = $studyProgramService->updateStudyProgramWeekActivity(
             $activity,
@@ -72,7 +72,7 @@ class StudyProgramWeekActivityController extends Controller
 
     public function destroy(StudyProgramWeekActivity $activity, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $activity->studyProgramWeek?->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $activity->studyProgramWeek?->studyProgram?->language_level_id);
 
         if ($activity->studyProgramWeek()->withCount('activities')->first()?->activities_count <= 1) {
             return ResponseService::failedValidationResponse(

@@ -19,12 +19,12 @@ trait UserProfileTrait
     public function userData(User $user): array
     {
         $roles = $user->getRoleNames()->toArray();
-        $translatedRoles = array_map(fn($role) => ucfirst(__($role)), $roles);
+        $translatedRoles = array_map(fn ($role) => ucfirst(__($role)), $roles);
         $profile = $user->profile;
         $avatar = $profile?->getFirstMedia('avatar');
         $paymentReceipt = $profile?->getFirstMedia('payment_receipt');
 
-        $permissions = $user->getAllPermissions()->pluck('name'); 
+        $permissions = $user->getAllPermissions()->pluck('name');
 
         return [
             'id' => $user->id,

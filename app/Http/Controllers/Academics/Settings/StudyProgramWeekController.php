@@ -14,7 +14,7 @@ class StudyProgramWeekController extends Controller
 {
     public function createData(StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $studyProgram->language_level_id);
 
         return ResponseService::success(
             data: [
@@ -25,7 +25,7 @@ class StudyProgramWeekController extends Controller
 
     public function store(StudyProgramWeekRequest $request, StudyProgram $studyProgram, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId($request->user(), $studyProgram->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId($request->user(), $studyProgram->language_level_id);
 
         $week = $studyProgramService->createStudyProgramWeek($studyProgram, $request->validated());
 
@@ -39,7 +39,7 @@ class StudyProgramWeekController extends Controller
 
     public function data(StudyProgramWeek $week, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $week->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $week->studyProgram?->language_level_id);
 
         return ResponseService::success(
             data: [
@@ -50,7 +50,7 @@ class StudyProgramWeekController extends Controller
 
     public function update(StudyProgramWeekRequest $request, StudyProgramWeek $week, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId($request->user(), $week->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId($request->user(), $week->studyProgram?->language_level_id);
 
         $week = $studyProgramService->updateStudyProgramWeek($week, $request->validated());
 
@@ -64,7 +64,7 @@ class StudyProgramWeekController extends Controller
 
     public function destroy(StudyProgramWeek $week, StudyProgramService $studyProgramService)
     {
-        (new CourseVisibilityService())->authorizeLanguageLevelId(request()->user(), $week->studyProgram?->language_level_id);
+        (new CourseVisibilityService)->authorizeLanguageLevelId(request()->user(), $week->studyProgram?->language_level_id);
 
         if ($week->studyProgram()->withCount('weeks')->first()?->weeks_count <= 1) {
             return ResponseService::failedValidationResponse(

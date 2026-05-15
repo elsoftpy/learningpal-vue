@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\GenderEnum;
 use App\Enums\ProfileTypeEnum;
+use App\Models\Profile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Profile>
+ * @extends Factory<Profile>
  */
 class ProfileFactory extends Factory
 {
@@ -21,7 +22,7 @@ class ProfileFactory extends Factory
         $firstName = fake()->firstName();
         $lastName = fake()->lastName();
         $fullName = "{$firstName} {$lastName}";
-        
+
         return [
             'type' => ProfileTypeEnum::PERSON->value,
             'first_name' => $firstName,

@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use App\Enums\StatusEnum;
 use App\Http\Requests\Traits\ProfileValidationTrait;
 use App\Services\Utilities\DateTimeService;
-use Carbon\Carbon;
-use Exception;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class TeacherRequest extends FormRequest
 {
     use ProfileValidationTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,7 +24,7 @@ class TeacherRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -33,8 +33,8 @@ class TeacherRequest extends FormRequest
             [
                 'status' => [
                     'sometimes',
-                    'required', 
-                    'string', 
+                    'required',
+                    'string',
                     Rule::in(StatusEnum::values()),
                 ],
             ]

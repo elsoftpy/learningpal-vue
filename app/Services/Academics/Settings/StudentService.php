@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services\Academics\Settings;
 
@@ -9,7 +9,7 @@ class StudentService
 {
     public function createStudent(array $studentData, array $profileData, bool $canEditExistingProfile = false): Student
     {
-        $profile = (new ProfileService())->resolveProfile($profileData, $canEditExistingProfile);
+        $profile = (new ProfileService)->resolveProfile($profileData, $canEditExistingProfile);
 
         $student = $profile->student()->create($studentData);
 
@@ -22,7 +22,7 @@ class StudentService
     {
         $changes = $student->courses()->sync($courseIds);
 
-        $enrollmentService = new DistanceActivityEnrollmentService();
+        $enrollmentService = new DistanceActivityEnrollmentService;
 
         $detachedCourseIds = array_map('intval', $changes['detached'] ?? []);
 
@@ -41,16 +41,16 @@ class StudentService
     {
         $profile = $student->profile;
 
-        (new ProfileService())->updateProfile($profile, $profileData);
+        (new ProfileService)->updateProfile($profile, $profileData);
     }
 
     public function studentData(Student $student)
     {
         $profile = $student->profile;
 
-        $courses = $student->courses;   
+        $courses = $student->courses;
         $coursesData = $courses->pluck('id');
-        $coursesDisplayNames = (new CourseService())->getCoursesDisplayNames($courses);
+        $coursesDisplayNames = (new CourseService)->getCoursesDisplayNames($courses);
 
         return [
             'id' => $student->id,
@@ -65,11 +65,11 @@ class StudentService
             'phone' => $profile->phone ?? null,
             'address' => $profile->address ?? null,
             'gender' => $profile->gender ?? null,
-            'birth_date' => $profile->birth_date?->format(match(app()->getLocale()) {
-                        'es', 'pt' => 'd/m/Y',
-                        'en' => 'm-d-Y',
-                        default => 'Y-m-d',
-                    }) ?? null,
+            'birth_date' => $profile->birth_date?->format(match (app()->getLocale()) {
+                'es', 'pt' => 'd/m/Y',
+                'en' => 'm-d-Y',
+                default => 'Y-m-d',
+            }) ?? null,
             'full_name' => $profile->full_name ?? null,
             'email' => $profile->email,
             'email_alt' => $profile->email_alt ?? null,

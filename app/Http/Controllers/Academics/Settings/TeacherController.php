@@ -31,8 +31,8 @@ class TeacherController extends Controller
         if ($search) {
             $teachersQuery->where(function ($query) use ($search) {
                 $query->whereHas('profile', function ($q) use ($search) {
-                    $q->where('full_name', 'like', '%' . $search . '%')
-                        ->orWhere('email', 'like', '%' . $search . '%');
+                    $q->where('full_name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%');
                 });
             });
         }
@@ -56,7 +56,7 @@ class TeacherController extends Controller
         $paginated = $teachersQuery->paginate($perPage, ['*'], 'page', $page);
 
         $teachers = $paginated->getCollection()->map(function ($teacher) {
-            return (new TeacherService())->teacherData($teacher);
+            return (new TeacherService)->teacherData($teacher);
         });
 
         return ResponseService::success(
@@ -78,7 +78,7 @@ class TeacherController extends Controller
 
         $teacher = DB::transaction(function () use ($profileData, $teacherData, $teacherService, $canEditExistingProfile) {
             $teacher = $teacherService->createTeacher($teacherData, $profileData, $canEditExistingProfile);
-            
+
             return $teacher;
         });
 
@@ -105,13 +105,13 @@ class TeacherController extends Controller
         $profileData = collect($validated)->except(['status', 'courses', 'profile'])->all();
         $teacherData = collect($validated)->only(['status'])->all();
         $teacher->courses()->sync($request->courses ?? []);
-        
+
         DB::transaction(function () use ($teacher, $profileData, $teacherData, $teacherService) {
-        
+
             $teacherService->updateTeacherProfile($teacher, $profileData);
             $teacher->update($teacherData);
         });
-        
+
         return ResponseService::success(
             message: __('Teacher profile updated successfully.'),
             data: [

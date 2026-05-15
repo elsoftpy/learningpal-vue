@@ -4,9 +4,9 @@ namespace App\Enums;
 
 enum AttendanceStatusEnum: string
 {
-    case PRESENT = "1.0";
-    case ABSENT = "0.0";
-    case LATE = "0.5";
+    case PRESENT = '1.0';
+    case ABSENT = '0.0';
+    case LATE = '0.5';
 
     public static function values(): array
     {

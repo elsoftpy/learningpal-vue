@@ -32,7 +32,7 @@ class LevelContentService
         ]);
 
         return $levelContent;
-    }   
+    }
 
     public function updateLevelContent(LevelContent $levelContent, array $data): LevelContent
     {

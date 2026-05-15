@@ -14,7 +14,7 @@ class StatusListController extends Controller
     public function __invoke(Request $request)
     {
         return array_map(
-            fn($value) => ['value' => $value, 'name' => strtoupper(__($value))],
+            fn ($value) => ['value' => $value, 'name' => strtoupper(__($value))],
             StatusEnum::values()
         );
     }

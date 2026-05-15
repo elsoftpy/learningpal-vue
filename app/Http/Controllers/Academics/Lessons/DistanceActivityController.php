@@ -224,7 +224,23 @@ class DistanceActivityController extends Controller
 
     public function recordVideoOpen(Request $request, DistanceActivityDetail $detail, DistanceActivityService $distanceActivityService)
     {
-        $studentDetail = $distanceActivityService->recordVideoOpen($detail, $request->user());
+        $request->validate([
+            'link_index' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        try {
+            $studentDetail = $distanceActivityService->recordVideoOpen(
+                $detail,
+                $request->user(),
+                $request->integer('link_index')
+            );
+        } catch (\RuntimeException $exception) {
+            return ResponseService::failedValidationResponse(
+                errors: ['link' => [$exception->getMessage()]],
+                message: __('Unable to start the link timer.')
+            );
+        }
+
         if (! $studentDetail) {
             return ResponseService::unauthorized(__('You are not authorized to update this video activity.'));
         }

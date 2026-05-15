@@ -6,10 +6,7 @@ use App\Enums\ProfileTypeEnum;
 use App\Enums\StatusEnum;
 use App\Models\Profile;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class UserProfileSpaTest extends TestCase
@@ -22,7 +19,7 @@ class UserProfileSpaTest extends TestCase
 
         $user->assignRole('student');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('settings.users.profile.update', ['user' => $user->id]), [
@@ -88,7 +85,7 @@ class UserProfileSpaTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('settings.users.index'));
@@ -117,7 +114,7 @@ class UserProfileSpaTest extends TestCase
                         'status',
                         'roles',
                         'avatar_url',
-                        'payment_receipt'
+                        'payment_receipt',
                     ],
                 ],
             ],
@@ -128,13 +125,13 @@ class UserProfileSpaTest extends TestCase
     {
         $user = User::factory()->create();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->getJson(route('settings.users.index'));
 
         $response->assertStatus(403);
-    }  
+    }
 
     public function test_unauthenticated_user_cannot_create_user()
     {
@@ -151,7 +148,7 @@ class UserProfileSpaTest extends TestCase
 
         $adminUser->assignRole('admin');
 
-        /** @var \App\Models\User $adminUser */
+        /** @var User $adminUser */
         $this->actingAs($adminUser, 'web');
 
         $response = $this->postJson(route('settings.users.store'), [
@@ -182,14 +179,14 @@ class UserProfileSpaTest extends TestCase
                     'ruc',
                     'email',
                     'phone',
-                    'address',  
+                    'address',
                     'gender',
                     'birth_date',
                     'full_name',
                     'status',
                     'roles',
                     'avatar_url',
-                    'payment_receipt'
+                    'payment_receipt',
                 ],
             ],
         ]);
@@ -259,7 +256,7 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('settings.users.store'), [
@@ -273,7 +270,7 @@ class UserProfileSpaTest extends TestCase
             'status' => StatusEnum::ACTIVE->value,
             'email' => 'john.doe@example.com',
         ]);
-    
+
         $response->assertStatus(403);
 
     }
@@ -305,7 +302,7 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        /** @var \App\Models\User $adminUser */
+        /** @var User $adminUser */
         $this->actingAs($adminUser, 'web');
 
         $response = $this->postJson(route('settings.users.profile.update', ['user' => $user->id]), [
@@ -318,7 +315,7 @@ class UserProfileSpaTest extends TestCase
             'roles' => ['teacher'],
             'status' => 'active',
         ]);
- 
+
         $response->assertStatus(200);
 
         $response->assertJsonStructure([
@@ -342,7 +339,7 @@ class UserProfileSpaTest extends TestCase
                     'status',
                     'roles',
                     'avatar_url',
-                    'payment_receipt'
+                    'payment_receipt',
                 ],
             ],
         ]);
@@ -415,7 +412,7 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        /** @var \App\Models\User $user1 */
+        /** @var User $user1 */
         $this->actingAs($user1, 'web');
 
         $response = $this->postJson(route('settings.users.profile.update', ['user' => $user2->id]), [
@@ -430,8 +427,8 @@ class UserProfileSpaTest extends TestCase
         ]);
 
         $response->assertStatus(403);
-    } 
-    
+    }
+
     public function test_unauthenticated_user_cannot_delete_users()
     {
         $user = User::factory()->create();
@@ -456,7 +453,7 @@ class UserProfileSpaTest extends TestCase
         $userId = $user->id;
         $profileId = $user->profile->id;
 
-        /** @var \App\Models\User $adminUser */
+        /** @var User $adminUser */
         $this->actingAs($adminUser, 'web');
 
         $response = $this->postJson(route('settings.users.profile.destroy', ['user' => $user->id]));
@@ -470,7 +467,7 @@ class UserProfileSpaTest extends TestCase
         $this->assertDatabaseMissing('profiles', [
             'id' => $profileId,
         ]);
-    }   
+    }
 
     public function test_forbidden_user_cannot_delete_user()
     {
@@ -482,7 +479,7 @@ class UserProfileSpaTest extends TestCase
             'profile_id' => Profile::factory()->create()->id,
         ]);
 
-        /** @var \App\Models\User $student */
+        /** @var User $student */
         $this->actingAs($student, 'web');
 
         $response = $this->postJson(route('settings.users.profile.destroy', ['user' => $user2->id]));
@@ -493,5 +490,4 @@ class UserProfileSpaTest extends TestCase
             'id' => $user2->id,
         ]);
     }
-    
 }

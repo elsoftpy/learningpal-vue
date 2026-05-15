@@ -32,10 +32,10 @@ class LanguageLevelController extends Controller
             ->with('language');
 
         if ($search) {
-            $languageLevelsQuery->where('description', 'like', '%' . $search . '%')
-                ->orWhere('level', 'like', '%' . $search . '%')
+            $languageLevelsQuery->where('description', 'like', '%'.$search.'%')
+                ->orWhere('level', 'like', '%'.$search.'%')
                 ->orWhereHas('language', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%');
                 });
         }
 
@@ -60,7 +60,7 @@ class LanguageLevelController extends Controller
         $paginated = $languageLevelsQuery->paginate($perPage, ['*'], 'page', $page);
 
         $languageLevels = $paginated->getCollection()->map(function (LanguageLevel $languageLevel) {
-            return (new LanguageLevelService())->languageLevelData($languageLevel);
+            return (new LanguageLevelService)->languageLevelData($languageLevel);
         });
 
         return ResponseService::success(

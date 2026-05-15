@@ -51,7 +51,7 @@ class MonthlyClassesReportController extends Controller
             'course_id' => ['required', 'integer', 'exists:courses,id'],
         ]);
 
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), (int) $validated['course_id']);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), (int) $validated['course_id']);
 
         return ResponseService::success(
             message: __('Monthly report months retrieved successfully.'),
@@ -68,7 +68,7 @@ class MonthlyClassesReportController extends Controller
             'month' => ['nullable', 'date_format:Y-m'],
         ]);
 
-        (new CourseVisibilityService())->authorizeCourseId($request->user(), (int) $validated['course_id']);
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), (int) $validated['course_id']);
 
         return ResponseService::success(
             message: __('Monthly report students retrieved successfully.'),

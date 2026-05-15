@@ -19,40 +19,40 @@ trait ProfileValidationTrait
             ],
             'type' => ['required', Rule::in(ProfileTypeEnum::values())],
             'first_name' => [
-                'nullable', 
-                'string', 
-                'max:255', 
+                'nullable',
+                'string',
+                'max:255',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::PERSON->value),
             ],
             'last_name' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:255',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::PERSON->value),
             ],
             'company_name' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:255',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::COMPANY->value),
             ],
             'personal_id' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:20',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::PERSON->value),
             ],
             'ruc' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:20',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::COMPANY->value),
             ],
             'email' => [
-                'required', 
-                'string', 
-                'email', 
-                'max:255', 
+                'required',
+                'string',
+                'email',
+                'max:255',
                 Rule::unique('profiles', 'email')->ignore($this->profile?->id),
             ],
             'email_alt' => [
@@ -63,18 +63,18 @@ trait ProfileValidationTrait
                 Rule::unique('profiles', 'email_alt')->ignore($this->profile?->id),
             ],
             'phone' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:20',
             ],
             'address' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:500',
             ],
             'gender' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 Rule::in(GenderEnum::values()),
             ],
             'avatar' => [
@@ -139,20 +139,20 @@ trait ProfileValidationTrait
         ];
     }
 
-    public function profileByIdNumber(string $idNumber): Profile|null
+    public function profileByIdNumber(string $idNumber): ?Profile
     {
         return Profile::where('personal_id', $idNumber)
             ->orWhere('ruc', $idNumber)
             ->first();
     }
 
-    public function profileByReference(?int $profileId, ?string $idNumber): Profile|null
+    public function profileByReference(?int $profileId, ?string $idNumber): ?Profile
     {
         if ($profileId) {
             return Profile::find($profileId);
         }
 
-        if (!$idNumber) {
+        if (! $idNumber) {
             return null;
         }
 
@@ -172,6 +172,7 @@ trait ProfileValidationTrait
 
             if (! is_string($value)) {
                 $normalized[$field] = $value;
+
                 continue;
             }
 

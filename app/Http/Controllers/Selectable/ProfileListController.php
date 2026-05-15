@@ -30,7 +30,7 @@ class ProfileListController extends Controller
             });
         }
 
-        $profileService = new ProfileService();
+        $profileService = new ProfileService;
 
         return $query
             ->orderBy('full_name')

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Services\Utilities\DateTimeService;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ClassScheduleRequest extends FormRequest
@@ -18,7 +19,7 @@ class ClassScheduleRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -29,16 +30,16 @@ class ClassScheduleRequest extends FormRequest
                 'max:255',
             ],
             'course_id' => [
-                'required', 
+                'required',
                 'exists:courses,id',
             ],
             'schedule_month' => [
-                'required', 
+                'required',
                 'date',
             ],
             'details' => [
-                'required', 
-                'array', 
+                'required',
+                'array',
                 'min:1',
             ],
             'details.*.id' => [
@@ -47,26 +48,26 @@ class ClassScheduleRequest extends FormRequest
                 'exists:class_schedule_details,id',
             ],
             'details.*.session_date' => [
-                'required', 
+                'required',
                 'date',
             ],
             'details.*.start_time' => [
-                'required', 
+                'required',
                 'date',
             ],
             'details.*.end_time' => [
-                'required', 
-                'date', 
+                'required',
+                'date',
                 'after:details.*.start_time',
             ],
             'details.*.topic' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:500',
             ],
             'details.*.activity' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 'max:500',
             ],
         ];
@@ -93,12 +94,12 @@ class ClassScheduleRequest extends FormRequest
                 }
 
                 if (isset($detail['start_time'])) {
-                    $startTime = $sessionDateString . ' ' . $detail['start_time'].':00';
+                    $startTime = $sessionDateString.' '.$detail['start_time'].':00';
                     $detail['start_time'] = DateTimeService::dateTimeFromLocalizedString($startTime);
                 }
 
                 if (isset($detail['end_time'])) {
-                    $endTime = $sessionDateString . ' ' . $detail['end_time'].':00';
+                    $endTime = $sessionDateString.' '.$detail['end_time'].':00';
                     $detail['end_time'] = DateTimeService::dateTimeFromLocalizedString($endTime);
                 }
 

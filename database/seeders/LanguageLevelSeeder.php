@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\StatusEnum;
 use App\Models\LanguageLevel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class LanguageLevelSeeder extends Seeder

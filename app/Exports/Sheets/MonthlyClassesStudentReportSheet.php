@@ -20,9 +20,7 @@ class MonthlyClassesStudentReportSheet implements WithEvents, WithTitle
 
     private const COLOR_BORDER = 'FFD1D5DB';
 
-    public function __construct(private readonly array $report)
-    {
-    }
+    public function __construct(private readonly array $report) {}
 
     public function title(): string
     {
@@ -80,7 +78,7 @@ class MonthlyClassesStudentReportSheet implements WithEvents, WithTitle
                 $sheet->mergeCells('E2:F2');
                 $sheet->mergeCells('J1:P1');
                 $sheet->mergeCells('J3:N3');
-                $sheet->mergeCells("J5:P5");
+                $sheet->mergeCells('J5:P5');
                 $sheet->mergeCells("J6:P{$feedbackEndRow}");
 
                 $sheet->setCellValue('A1', 'DETALLE MENSUAL DE CLASES');
@@ -135,13 +133,13 @@ class MonthlyClassesStudentReportSheet implements WithEvents, WithTitle
                 $sheet->setCellValue('J5', 'FEEDBACK');
                 $sheet->setCellValue('J6', $this->report['feedback'] ?? '');
 
-                $sheet->getStyle("A1:F1")->applyFromArray($this->titleStyle(self::COLOR_GRAY));
-                $sheet->getStyle("J1:P1")->applyFromArray($this->titleStyle(self::COLOR_BLUE));
-                $sheet->getStyle("A2:F2")->applyFromArray($this->titleStyle(self::COLOR_BLUE));
-                $sheet->getStyle("A4:F4")->applyFromArray($this->titleStyle(self::COLOR_GRAY));
-                $sheet->getStyle("A5:F5")->applyFromArray($this->titleStyle(self::COLOR_BLUE));
-                $sheet->getStyle("J2:P6")->applyFromArray($this->titleStyle(self::COLOR_BLUE));
-                $sheet->getStyle("A3:F3")->applyFromArray($this->bodyStyle());
+                $sheet->getStyle('A1:F1')->applyFromArray($this->titleStyle(self::COLOR_GRAY));
+                $sheet->getStyle('J1:P1')->applyFromArray($this->titleStyle(self::COLOR_BLUE));
+                $sheet->getStyle('A2:F2')->applyFromArray($this->titleStyle(self::COLOR_BLUE));
+                $sheet->getStyle('A4:F4')->applyFromArray($this->titleStyle(self::COLOR_GRAY));
+                $sheet->getStyle('A5:F5')->applyFromArray($this->titleStyle(self::COLOR_BLUE));
+                $sheet->getStyle('J2:P6')->applyFromArray($this->titleStyle(self::COLOR_BLUE));
+                $sheet->getStyle('A3:F3')->applyFromArray($this->bodyStyle());
                 $sheet->getStyle("A6:F{$sessionEndRow}")->applyFromArray($this->bodyStyle());
                 $sheet->getStyle("D{$totalsRow}:F{$labelsRow}")->applyFromArray($this->bodyStyle());
                 $sheet->getStyle("J6:P{$feedbackEndRow}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);

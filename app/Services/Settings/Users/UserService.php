@@ -11,7 +11,7 @@ class UserService
     {
         $userName = $this->buildBaseUsername($profileData);
 
-        $existingUserCount = User::where('name', 'like', $userName . '%')->count();
+        $existingUserCount = User::where('name', 'like', $userName.'%')->count();
 
         if ($existingUserCount > 0) {
             $userName .= str_pad($existingUserCount + 1, 3, '0', STR_PAD_LEFT);
@@ -23,7 +23,7 @@ class UserService
     protected function normalizeString(?string $value): ?string
     {
         $transliterator = Transliterator::create('Any-Latin; Latin-ASCII');
-        
+
         return $transliterator->transliterate($value);
     }
 
@@ -49,7 +49,7 @@ class UserService
 
     public function createUser(array $userData, array $profileData, bool $canEditExistingProfile = false): User
     {
-        $profileService = new ProfileService();
+        $profileService = new ProfileService;
         $profile = $profileService->resolveProfile($profileData, $canEditExistingProfile);
 
         if (empty($userData['name'])) {
@@ -60,9 +60,9 @@ class UserService
                 'company_name' => $profile->company_name,
                 'full_name' => $profile->full_name,
             ]);
-        
+
         }
-        
+
         $userData['status'] = $userData['status'] ?? 'pending';
 
         $user = $profile->user()->create($userData);
@@ -87,7 +87,7 @@ class UserService
     public function updateUserProfile($user, array $profileData): void
     {
         $profile = $user->profile;
-        (new ProfileService())->updateProfile($profile, $profileData);
+        (new ProfileService)->updateProfile($profile, $profileData);
 
         if (array_key_exists('avatar', $profileData) && $profileData['avatar'] !== null) {
             $profile->addMedia($profileData['avatar'])
@@ -108,12 +108,12 @@ class UserService
 
     public function updateUserData($user, array $userData): void
     {
-        if (!empty($userData['password'])) {
+        if (! empty($userData['password'])) {
             $userData['password'] = bcrypt($userData['password']);
         } else {
             unset($userData['password']);
         }
-        
+
         $user->update($userData);
 
         if (isset($userData['roles'])) {

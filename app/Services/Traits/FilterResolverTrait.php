@@ -12,6 +12,7 @@ trait FilterResolverTrait
 
         if (is_string($filters)) {
             $decoded = json_decode($filters, true);
+
             return is_array($decoded) ? $decoded : [];
         }
 

@@ -80,7 +80,7 @@ class StudyProgramService
 
             $this->syncWeeks($studyProgram, $data['weeks']);
 
-            (new StudyProgramReplicationService())->propagateStudyProgramCreated($studyProgram);
+            (new StudyProgramReplicationService)->propagateStudyProgramCreated($studyProgram);
 
             return $studyProgram->fresh(['languageLevel.language', 'weeks.activities.levelContent']);
         });
@@ -185,7 +185,7 @@ class StudyProgramService
             'status' => $data['status'],
         ]);
 
-        (new StudyProgramReplicationService())->propagateWeekCreated($week);
+        (new StudyProgramReplicationService)->propagateWeekCreated($week);
 
         return $week->fresh(['studyProgram.languageLevel.language']);
     }
@@ -198,7 +198,7 @@ class StudyProgramService
             'status' => $data['status'],
         ]);
 
-        (new StudyProgramReplicationService())->propagateWeekUpdated($week);
+        (new StudyProgramReplicationService)->propagateWeekUpdated($week);
 
         return $week->fresh(['studyProgram.languageLevel.language']);
     }
@@ -307,8 +307,7 @@ class StudyProgramService
         StudyProgramWeek $week,
         array $data,
         ?UploadedFile $studyMaterialFile = null
-    ): StudyProgramWeekActivity
-    {
+    ): StudyProgramWeekActivity {
         $activity = $week->activities()->create([
             'level_content_id' => $data['level_content_id'] ?? null,
             'free_content' => $data['free_content'] ?? null,
@@ -319,7 +318,7 @@ class StudyProgramService
         ]);
 
         $this->syncStudyProgramWeekActivityStudyMaterial($activity, $studyMaterialFile);
-        (new StudyProgramReplicationService())->propagateWeekActivityCreated($activity);
+        (new StudyProgramReplicationService)->propagateWeekActivityCreated($activity);
 
         return $activity->fresh(['studyProgramWeek.studyProgram.languageLevel.language', 'levelContent', 'media']);
     }
@@ -328,8 +327,7 @@ class StudyProgramService
         StudyProgramWeekActivity $activity,
         array $data,
         ?UploadedFile $studyMaterialFile = null
-    ): StudyProgramWeekActivity
-    {
+    ): StudyProgramWeekActivity {
         $activity->update([
             'level_content_id' => $data['level_content_id'] ?? null,
             'free_content' => $data['free_content'] ?? null,
@@ -340,7 +338,7 @@ class StudyProgramService
         ]);
 
         $this->syncStudyProgramWeekActivityStudyMaterial($activity, $studyMaterialFile);
-        (new StudyProgramReplicationService())->propagateWeekActivityUpdated($activity);
+        (new StudyProgramReplicationService)->propagateWeekActivityUpdated($activity);
 
         return $activity->fresh(['studyProgramWeek.studyProgram.languageLevel.language', 'levelContent', 'media']);
     }
@@ -353,9 +351,8 @@ class StudyProgramService
     protected function syncStudyProgramWeekActivityStudyMaterial(
         StudyProgramWeekActivity $activity,
         ?UploadedFile $studyMaterialFile = null
-    ): void
-    {
-        if (!$studyMaterialFile) {
+    ): void {
+        if (! $studyMaterialFile) {
             return;
         }
 

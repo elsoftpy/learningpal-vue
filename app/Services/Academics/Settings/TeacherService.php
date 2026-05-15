@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services\Academics\Settings;
 
@@ -9,10 +9,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TeacherService
 {
-
     public function createTeacher(array $teacherData, array $profileData, bool $canEditExistingProfile = false): Teacher
     {
-        $profile = (new ProfileService())->resolveProfile($profileData, $canEditExistingProfile);
+        $profile = (new ProfileService)->resolveProfile($profileData, $canEditExistingProfile);
 
         $teacher = $profile->teacher()->create($teacherData);
 
@@ -25,15 +24,15 @@ class TeacherService
     {
         $profile = $teacher->profile;
 
-        (new ProfileService())->updateProfile($profile, $profileData);
+        (new ProfileService)->updateProfile($profile, $profileData);
     }
 
     public function applyTeacherCoursesFilter(User $user, Builder $query, string $relation): Builder
     {
-        if (!$user->can('view all students')) {    
+        if (! $user->can('view all students')) {
             $courses = $user->profile?->teacher?->courses->pluck('id')->toArray() ?? [];
-                $query->whereHas($relation, function ($q) use ($courses) {
-                    $q->whereIn('course_id', $courses);
+            $query->whereHas($relation, function ($q) use ($courses) {
+                $q->whereIn('course_id', $courses);
             });
         }
 
@@ -52,7 +51,7 @@ class TeacherService
         $courses = $teacher->courses;
 
         $coursesData = $courses->pluck('id');
-        $coursesDisplayNames = (new CourseService())->getCoursesDisplayNames($courses);
+        $coursesDisplayNames = (new CourseService)->getCoursesDisplayNames($courses);
 
         return [
             'id' => $teacher->id,
@@ -67,11 +66,11 @@ class TeacherService
             'phone' => $profile->phone ?? null,
             'address' => $profile->address ?? null,
             'gender' => $profile->gender ?? null,
-            'birth_date' => $profile->birth_date?->format(match(app()->getLocale()) {
-                        'es', 'pt' => 'd/m/Y',
-                        'en' => 'm-d-Y',
-                        default => 'Y-m-d',
-                    }) ?? null,
+            'birth_date' => $profile->birth_date?->format(match (app()->getLocale()) {
+                'es', 'pt' => 'd/m/Y',
+                'en' => 'm-d-Y',
+                default => 'Y-m-d',
+            }) ?? null,
             'full_name' => $profile->full_name ?? null,
             'email' => $profile->email,
             'email_alt' => $profile->email_alt ?? null,

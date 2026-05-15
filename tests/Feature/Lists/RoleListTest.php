@@ -4,9 +4,6 @@ namespace Tests\Feature\Lists;
 
 use App\Models\Profile;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RoleListTest extends TestCase
@@ -19,7 +16,7 @@ class RoleListTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user);
 
         $response = $this->postJson(route('lists.roles', ['search' => 'Est']));
@@ -44,7 +41,7 @@ class RoleListTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('lists.roles', ['search' => 'Stu']));
@@ -65,7 +62,7 @@ class RoleListTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('lists.roles', ['search' => 'Est']));
@@ -86,9 +83,8 @@ class RoleListTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
-
 
         $response = $this->postJson(route('lists.roles', ['search' => 'Est']));
 
@@ -108,7 +104,7 @@ class RoleListTest extends TestCase
 
         $user->assignRole('admin');
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $this->actingAs($user, 'web');
 
         $response = $this->postJson(route('lists.roles'));
@@ -124,5 +120,4 @@ class RoleListTest extends TestCase
                 'label' => 'Teacher',
             ]);
     }
-        
 }

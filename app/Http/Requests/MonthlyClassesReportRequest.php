@@ -46,11 +46,12 @@ class MonthlyClassesReportRequest extends FormRequest
                 }
             }
 
-            if (!(new CourseVisibilityService())->canAccessCourseId($this->user(), $courseId)) {
+            if (! (new CourseVisibilityService)->canAccessCourseId($this->user(), $courseId)) {
                 $validator->errors()->add(
                     'course_id',
                     __('The selected course is not available.')
                 );
+
                 return;
             }
 

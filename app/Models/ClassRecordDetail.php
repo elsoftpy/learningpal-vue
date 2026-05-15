@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ClassRecordDetailFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class ClassRecordDetail extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\ClassRecordDetailFactory> */
+    /** @use HasFactory<ClassRecordDetailFactory> */
     use HasFactory, InteractsWithMedia;
 
     protected $table = 'class_record_details';

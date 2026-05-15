@@ -23,14 +23,14 @@ class CourseSeeder extends Seeder
             ->where('level', 'A1')
             ->first();
 
-        if (!$languageLevel) {
+        if (! $languageLevel) {
             $languageLevel = LanguageLevel::query()
                 ->whereHas('studyProgram.weeks.activities')
                 ->orderBy('id')
                 ->first();
         }
 
-        if (!$languageLevel) {
+        if (! $languageLevel) {
             return;
         }
 
@@ -95,11 +95,11 @@ class CourseSeeder extends Seeder
                         $activity->delete();
                     });
 
-                (new StudyProgramReplicationService())->replicateToCourse($course, $teacherUser);
+                (new StudyProgramReplicationService)->replicateToCourse($course, $teacherUser);
             }
 
             foreach ($students as $student) {
-                (new DistanceActivityEnrollmentService())->syncStudentEnrollments($student, [$course->id]);
+                (new DistanceActivityEnrollmentService)->syncStudentEnrollments($student, [$course->id]);
             }
         }
     }

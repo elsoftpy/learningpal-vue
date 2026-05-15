@@ -3,8 +3,8 @@
 namespace App\Services\Academics\Lessons;
 
 use App\Enums\AttendanceStatusEnum;
-use App\Models\ClassRecordAttendance;
 use App\Models\ClassRecord;
+use App\Models\ClassRecordAttendance;
 use App\Models\ClassRecordDetail;
 use App\Models\Course;
 use App\Services\Academics\Settings\CourseService;
@@ -103,7 +103,7 @@ class ClassRecordService
                     'links' => $detailData['links'] ?? null,
                 ];
 
-                if (!empty($detailData['id'])) {
+                if (! empty($detailData['id'])) {
                     $existingDetail = $classRecord->details()->where('id', (int) $detailData['id'])->first();
                     if ($existingDetail) {
                         $existingDetail->update($payload);
@@ -113,6 +113,7 @@ class ClassRecordService
                         }
                         $this->syncDetailStudents($existingDetail, $courseStudents);
                     }
+
                     continue;
                 }
 
@@ -132,7 +133,7 @@ class ClassRecordService
     public function classRecordData(ClassRecord $classRecord)
     {
         $course = $classRecord->course;
-        $courseName = (new CourseService())->getCourseDisplayName($course);
+        $courseName = (new CourseService)->getCourseDisplayName($course);
         $classScheduleDetail = $classRecord->classScheduleDetail;
         $attendances = $classRecord->relationLoaded('attendances')
             ? $classRecord->attendances
@@ -180,7 +181,7 @@ class ClassRecordService
             'user' => $classRecord->user?->name,
             'class_schedule_detail_id' => $classRecord->class_schedule_detail_id,
             'class_schedule_detail_label' => $detailLabel,
-            'class_schedule_detail' => $classScheduleDetail ? (new ClassScheduleDetailService())->classScheduleDetailData($classScheduleDetail) : null,
+            'class_schedule_detail' => $classScheduleDetail ? (new ClassScheduleDetailService)->classScheduleDetailData($classScheduleDetail) : null,
             'comments' => $classRecord->comments,
             'mode' => $classRecord->mode,
             'student_attendances' => $attendances
@@ -205,7 +206,7 @@ class ClassRecordService
                 ->orderBy('id')
                 ->get()
                 ->map(function ($detail) {
-                    return (new ClassRecordDetailService())->classRecordDetailData($detail);
+                    return (new ClassRecordDetailService)->classRecordDetailData($detail);
                 }),
         ];
     }
@@ -289,7 +290,7 @@ class ClassRecordService
             );
         }
 
-        if (!empty($courseStudentIds)) {
+        if (! empty($courseStudentIds)) {
             $classRecord->attendances()
                 ->whereNotIn('student_id', $courseStudentIds)
                 ->delete();

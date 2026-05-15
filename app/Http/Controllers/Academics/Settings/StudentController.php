@@ -30,8 +30,8 @@ class StudentController extends Controller
             ->with('profile');
 
         $user = $request->user();
-        $studentsQuery = (new TeacherService())->applyTeacherCoursesFilter(
-            user: $user, 
+        $studentsQuery = (new TeacherService)->applyTeacherCoursesFilter(
+            user: $user,
             query: $studentsQuery,
             relation: 'courses'
         );
@@ -39,8 +39,8 @@ class StudentController extends Controller
         if ($search) {
             $studentsQuery->where(function ($query) use ($search) {
                 $query->whereHas('profile', function ($q) use ($search) {
-                    $q->where('full_name', 'like', '%' . $search . '%')
-                        ->orWhere('email', 'like', '%' . $search . '%');
+                    $q->where('full_name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%');
                 });
             });
         }
@@ -64,7 +64,7 @@ class StudentController extends Controller
         $paginated = $studentsQuery->paginate($perPage, ['*'], 'page', $page);
 
         $students = $paginated->getCollection()->map(function ($student) {
-            return (new StudentService())->studentData($student);
+            return (new StudentService)->studentData($student);
         });
 
         return ResponseService::success(
@@ -86,7 +86,7 @@ class StudentController extends Controller
 
         $student = DB::transaction(function () use ($profileData, $studentData, $studentService, $canEditExistingProfile) {
             $student = $studentService->createStudent($studentData, $profileData, $canEditExistingProfile);
-            
+
             return $student;
         });
 
@@ -112,16 +112,16 @@ class StudentController extends Controller
         $validated = $request->validated();
         $profileData = collect($validated)->except(['status', 'courses', 'profile'])->all();
         $studentData = collect($validated)->only(['status', 'courses'])->all();
-        
+
         DB::transaction(function () use ($student, $profileData, $studentData, $studentService) {
-        
+
             $studentService->updateStudentProfile($student, $profileData);
             $student->update([
                 'status' => $studentData['status'] ?? $student->status,
             ]);
             $studentService->syncCourses($student, $studentData['courses'] ?? []);
         });
-        
+
         return ResponseService::success(
             message: __('Student profile updated successfully.'),
             data: [

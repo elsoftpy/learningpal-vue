@@ -2,6 +2,7 @@
 
 namespace App\Services\Academics\Lessons;
 
+use App\Enums\StudyProgramActivityTypeEnum;
 use App\Models\DistanceActivity;
 use App\Models\DistanceActivityDetail;
 use App\Models\DistanceActivityDetailStudent;
@@ -215,6 +216,9 @@ class DistanceActivityService
                 $studentDetail = $student
                     ? $detail->students->firstWhere('student_id', $student->id)
                     : null;
+                $activeLinkTimer = ($isStudentView && $student)
+                    ? $this->activeDetailLinkTimer($detail, $student->id)
+                    : null;
                 $studyMaterial = $detail->studyProgramWeekActivity?->getFirstMedia('study-materials');
                 $detailStudents = $detail->students;
                 $completedStudentsCount = $detailStudents->where('completed', true)->count();
@@ -237,6 +241,7 @@ class DistanceActivityService
                         : ($assignedStudentsCount > 0 && $completedStudentsCount === $assignedStudentsCount),
                     'completed_at' => $isStudentView ? $studentDetail?->completed_at : null,
                     'video_opened_at' => $isStudentView ? $studentDetail?->video_opened_at : null,
+                    'active_link_timer_started_at' => $isStudentView ? ($activeLinkTimer['started_at'] ?? null) : null,
                     'study_material_url' => $studyMaterial?->getUrl(),
                     'study_material_name' => $studyMaterial?->file_name,
                     'student_production_media' => $studentDetail
@@ -293,11 +298,6 @@ class DistanceActivityService
             if ($completionRequirementError) {
                 throw new \RuntimeException($completionRequirementError);
             }
-
-            $lockError = $this->validatePreviousVideoGate($detail, $studentDetail->student_id);
-            if ($lockError) {
-                throw new \RuntimeException($lockError);
-            }
         }
 
         $studentDetail->update([
@@ -310,13 +310,13 @@ class DistanceActivityService
         return $this->findAccessibleActivity($detail->distanceActivity, $user);
     }
 
-    public function recordVideoOpen(DistanceActivityDetail $detail, User $user): ?DistanceActivityDetailStudent
+    public function recordVideoOpen(DistanceActivityDetail $detail, User $user, ?int $linkIndex = null): ?DistanceActivityDetailStudent
     {
         if (! $user->can('complete own distance activity tasks')) {
             return null;
         }
 
-        if ($detail->type->value !== 'video') {
+        if (! in_array($detail->type->value, [StudyProgramActivityTypeEnum::VIDEO->value, StudyProgramActivityTypeEnum::EXERCISE->value], true)) {
             return null;
         }
 
@@ -330,9 +330,50 @@ class DistanceActivityService
             return null;
         }
 
+        $links = $this->parseLinks($detail->links);
+        if ($links === []) {
+            throw new \RuntimeException(__('This task does not have links available.'));
+        }
+
+        $linkOpenedAtMap = $this->normalizeLinkOpenedAtMap($studentDetail->link_opened_at_map);
+        $targetLinkIndex = $linkIndex ?? 0;
+        if (! array_key_exists($targetLinkIndex, $links)) {
+            throw new \RuntimeException(__('The selected link is invalid.'));
+        }
+
+        $targetLinkKey = (string) $targetLinkIndex;
+
+        $existingOpenedAt = $linkOpenedAtMap[$targetLinkKey] ?? null;
+        if ($existingOpenedAt) {
+            $unlockAt = Carbon::parse($existingOpenedAt)->addMinutes($this->videoCompletionLockMinutes());
+
+            if ($unlockAt->isFuture()) {
+                return $studentDetail->fresh();
+            }
+        }
+
+        $activeTimer = $this->activeTimerForStudent($detail->distance_activity_id, $studentDetail->student_id);
+        if (
+            $activeTimer
+            && ! (
+                $activeTimer['detail_id'] === $detail->id
+                && (string) $activeTimer['link_index'] === $targetLinkKey
+            )
+        ) {
+            throw new \RuntimeException(__('You already have an active timer. Please wait until it finishes before opening another link.'));
+        }
+
         if (! $studentDetail->video_opened_at) {
             $studentDetail->update([
                 'video_opened_at' => now(),
+            ]);
+        }
+
+        if (! isset($linkOpenedAtMap[$targetLinkKey])) {
+            $linkOpenedAtMap[$targetLinkKey] = now()->toISOString();
+
+            $studentDetail->update([
+                'link_opened_at_map' => $linkOpenedAtMap,
             ]);
         }
 
@@ -484,6 +525,7 @@ class DistanceActivityService
                 'completed' => false,
                 'completed_at' => null,
                 'video_opened_at' => null,
+                'link_opened_at_map' => [],
             ]
         );
     }
@@ -536,16 +578,10 @@ class DistanceActivityService
         DistanceActivityDetail $detail,
         DistanceActivityDetailStudent $studentDetail
     ): ?string {
-        if ($detail->type->value === 'video') {
-            if (! $studentDetail->video_opened_at) {
-                return __('You must open the video before marking this task as completed.');
-            }
-
-            $unlockAt = $this->videoUnlockAt($studentDetail->video_opened_at);
-            if ($unlockAt && now()->lt($unlockAt)) {
-                return __('You must wait :minutes minutes after opening the video before marking this task as completed.', [
-                    'minutes' => $this->videoCompletionLockMinutes(),
-                ]);
+        if (in_array($detail->type->value, [StudyProgramActivityTypeEnum::VIDEO->value, StudyProgramActivityTypeEnum::EXERCISE->value], true)) {
+            $linkRequirementError = $this->validateLinkTimerCompletionRequirements($detail, $studentDetail);
+            if ($linkRequirementError) {
+                return $linkRequirementError;
             }
         }
 
@@ -559,11 +595,47 @@ class DistanceActivityService
         return null;
     }
 
+    protected function validateLinkTimerCompletionRequirements(
+        DistanceActivityDetail $detail,
+        DistanceActivityDetailStudent $studentDetail
+    ): ?string {
+        $links = $this->parseLinks($detail->links);
+        if ($links === []) {
+            return null;
+        }
+
+        $linkOpenedAtMap = $this->normalizeLinkOpenedAtMap($studentDetail->link_opened_at_map);
+
+        foreach ($links as $index => $unusedLink) {
+            $openedAt = $linkOpenedAtMap[(string) $index] ?? null;
+
+            if (! $openedAt) {
+                return __('You must open every link before marking this task as completed.');
+            }
+
+            $unlockAt = Carbon::parse($openedAt)->addMinutes($this->videoCompletionLockMinutes());
+            if ($unlockAt->isFuture()) {
+                return __('You must wait :minutes minutes after opening each link before marking this task as completed.', [
+                    'minutes' => $this->videoCompletionLockMinutes(),
+                ]);
+            }
+        }
+
+        return null;
+    }
+
     protected function nextCompletionLockedUntil(DistanceActivityDetail $detail, $orderedDetails, User $user): ?string
     {
         $student = $this->resolveStudent($user);
         if (! $student) {
             return null;
+        }
+
+        if (in_array($detail->type->value, [StudyProgramActivityTypeEnum::VIDEO->value, StudyProgramActivityTypeEnum::EXERCISE->value], true)) {
+            $activeTimer = $this->activeDetailLinkTimer($detail, $student->id);
+            if ($activeTimer !== null) {
+                return $activeTimer['unlock_at'];
+            }
         }
 
         $currentStudentDetail = $detail->students->firstWhere('student_id', $student->id);
@@ -606,6 +678,32 @@ class DistanceActivityService
         $student = $this->resolveStudent($user);
         if (! $student) {
             return null;
+        }
+
+        if (in_array($detail->type->value, [StudyProgramActivityTypeEnum::VIDEO->value, StudyProgramActivityTypeEnum::EXERCISE->value], true)) {
+            $studentDetail = $detail->students->firstWhere('student_id', $student->id)
+                ?? DistanceActivityDetailStudent::query()
+                    ->where('distance_activity_detail_id', $detail->id)
+                    ->where('student_id', $student->id)
+                    ->first();
+
+            if ($studentDetail) {
+                $links = $this->parseLinks($detail->links);
+                $linkOpenedAtMap = $this->normalizeLinkOpenedAtMap($studentDetail->link_opened_at_map);
+
+                foreach ($links as $index => $unusedLink) {
+                    if (! isset($linkOpenedAtMap[(string) $index])) {
+                        return __('Open every link before marking this task as completed.');
+                    }
+                }
+
+                $activeTimer = $this->activeDetailLinkTimer($detail, $student->id);
+                if ($activeTimer !== null) {
+                    return __('You must wait :minutes minutes after opening each link before marking this task as completed.', [
+                        'minutes' => $this->videoCompletionLockMinutes(),
+                    ]);
+                }
+            }
         }
 
         $currentStudentDetail = $detail->students->firstWhere('student_id', $student->id);
@@ -657,6 +755,94 @@ class DistanceActivityService
     public function videoCompletionLockMinutes(): int
     {
         return (int) config('academics.distance_activities.video_completion_lock_minutes', 1);
+    }
+
+    protected function parseLinks(?string $links): array
+    {
+        if (! $links) {
+            return [];
+        }
+
+        return collect(preg_split('/\r?\n|\|/', $links) ?: [])
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeLinkOpenedAtMap(mixed $rawValue): array
+    {
+        if (! is_array($rawValue)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($rawValue as $index => $openedAt) {
+            if (! is_scalar($openedAt)) {
+                continue;
+            }
+
+            $normalized[(string) $index] = (string) $openedAt;
+        }
+
+        return $normalized;
+    }
+
+    protected function activeTimerForStudent(int $distanceActivityId, int $studentId): ?array
+    {
+        $studentDetails = DistanceActivityDetailStudent::query()
+            ->where('student_id', $studentId)
+            ->whereHas('distanceActivityDetail', function (Builder $query) use ($distanceActivityId) {
+                $query->where('distance_activity_id', $distanceActivityId);
+            })
+            ->get(['id', 'distance_activity_detail_id', 'link_opened_at_map']);
+
+        foreach ($studentDetails as $studentDetail) {
+            $linkOpenedAtMap = $this->normalizeLinkOpenedAtMap($studentDetail->link_opened_at_map);
+
+            foreach ($linkOpenedAtMap as $index => $openedAt) {
+                $unlockAt = Carbon::parse($openedAt)->addMinutes($this->videoCompletionLockMinutes());
+
+                if ($unlockAt->isFuture()) {
+                    return [
+                        'detail_id' => $studentDetail->distance_activity_detail_id,
+                        'link_index' => (int) $index,
+                        'started_at' => Carbon::parse($openedAt)->toISOString(),
+                        'unlock_at' => $unlockAt->toISOString(),
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function activeDetailLinkTimer(DistanceActivityDetail $detail, int $studentId): ?array
+    {
+        $studentDetail = $detail->students->firstWhere('student_id', $studentId)
+            ?? DistanceActivityDetailStudent::query()
+                ->where('distance_activity_detail_id', $detail->id)
+                ->where('student_id', $studentId)
+                ->first();
+
+        if (! $studentDetail) {
+            return null;
+        }
+
+        $linkOpenedAtMap = $this->normalizeLinkOpenedAtMap($studentDetail->link_opened_at_map);
+        foreach ($linkOpenedAtMap as $index => $openedAt) {
+            $unlockAt = Carbon::parse($openedAt)->addMinutes($this->videoCompletionLockMinutes());
+            if ($unlockAt->isFuture()) {
+                return [
+                    'link_index' => (int) $index,
+                    'started_at' => Carbon::parse($openedAt)->toISOString(),
+                    'unlock_at' => $unlockAt->toISOString(),
+                ];
+            }
+        }
+
+        return null;
     }
 
     protected function syncDistanceActivityStudentCompletion(DistanceActivity $activity, int $studentId): void
