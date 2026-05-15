@@ -54,12 +54,22 @@
                                         @click="handleEdit(session)"
                                     />
                                     <Button 
+                                        v-if="canUseRecordAction(session)"
                                         type="button"
                                         size="small"
-                                        :label="$t('Record')"
+                                        :label="recordLabel(session)"
                                         icon="pi pi-upload"
                                         :severity="recordSeverity(session)"
                                         @click="handleRecord(session)"
+                                    />
+                                    <Button
+                                        v-if="canDeleteClassRecordAction(session)"
+                                        type="button"
+                                        size="small"
+                                        :label="$t('Delete Record')"
+                                        icon="pi pi-trash"
+                                        severity="warn"
+                                        @click="handleDeleteRecord(session)"
                                     />
                                     <Button
                                         v-if="canDeleteDetail"
@@ -137,6 +147,9 @@ const { can } = usePermissions();
 
 const canEditDetail = computed(() => can(['edit class schedule details', 'reschedule class']));
 const canDeleteDetail = computed(() => can('delete class schedule details'));
+const canCreateClassRecord = computed(() => can('create class records'));
+const canViewClassRecord = computed(() => can('view class records'));
+const canDeleteClassRecord = computed(() => can('delete class records'));
 
 const historyDialogVisible = ref(false);
 const historyLoading = ref(false);
@@ -149,7 +162,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['edit-detail', 'delete-detail']);
+const emit = defineEmits(['edit-detail', 'delete-detail', 'delete-record']);
 
 const statusSeverity = (status) => {
     switch (status) {
@@ -178,9 +191,31 @@ const handleDelete = (session) => {
     emit('delete-detail', session);
 };
 
+const handleDeleteRecord = (session) => {
+    emit('delete-record', session);
+};
+
 const isSessionCompleted = (session) => session?.status === 'completed';
 
+const canUseRecordAction = (session) => {
+    if (isSessionCompleted(session) && session?.class_record_id) {
+        return canViewClassRecord.value;
+    }
+
+    return canCreateClassRecord.value;
+};
+
+const canDeleteClassRecordAction = (session) => Boolean(session?.class_record_id) && canDeleteClassRecord.value;
+
 const recordSeverity = (session) => (isSessionCompleted(session) ? 'success' : 'warn');
+
+const recordLabel = (session) => {
+    if (isSessionCompleted(session) && session?.class_record_id) {
+        return $t('View Record');
+    }
+
+    return $t('Upload Record');
+};
 
 const handleRecord = (session) => {
     if (isSessionCompleted(session) && session?.class_record_id) {

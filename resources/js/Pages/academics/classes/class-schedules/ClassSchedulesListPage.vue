@@ -15,6 +15,7 @@
                 :details="data.details"
                 @edit-detail="handleDetailEdit(data.id, $event)"
                 @delete-detail="handleDetailDelete($event)"
+                @delete-record="handleDetailRecordDelete($event)"
             />
             <div
                 v-else
@@ -30,6 +31,13 @@
         :message="detailDeleteDialogConfig.message"
         :onDelete="detailDeleteDialogConfig.onDelete"
         :loading="detailDeleteDialogConfig.loading"
+    />
+    <DeleteDialog
+        v-if="detailRecordDeleteDialogVisible"
+        v-model:visible="detailRecordDeleteDialogVisible"
+        :message="detailRecordDeleteDialogConfig.message"
+        :onDelete="detailRecordDeleteDialogConfig.onDelete"
+        :loading="detailRecordDeleteDialogConfig.loading"
     />
     <FeedbackDialog
         v-if="selectedSchedule"
@@ -129,8 +137,22 @@ const detailActions = useRowActions({
     }
 });
 
+const detailRecordActions = useRowActions({
+    deleteEndpoint: '/academics/lessons/class-records/:id/destroy',
+    onDeleteSuccess: () => {
+        table.refresh();
+    },
+    messages: {
+        successMessage: $t('Class record deleted successfully.'),
+        errorMessage: $t('An error occurred while deleting the class record.'),
+        confirmMessage: $t('Are you sure you want to delete this class record?'),
+    }
+});
+
 const detailDeleteDialogVisible = detailActions.deleteDialogVisible;
 const detailDeleteDialogConfig = detailActions.deleteDialogConfig;
+const detailRecordDeleteDialogVisible = detailRecordActions.deleteDialogVisible;
+const detailRecordDeleteDialogConfig = detailRecordActions.deleteDialogConfig;
 
 const selectedScheduleHasFeedback = computed(() => Boolean(selectedSchedule.value?.feedback?.trim()));
 const feedbackDialogReadonly = computed(() => {
@@ -251,6 +273,14 @@ const handleDetailDelete = (detail) => {
     }
 
     detailActions.handleDelete(detail.id);
+};
+
+const handleDetailRecordDelete = (detail) => {
+    if (!detail?.class_record_id) {
+        return;
+    }
+
+    detailRecordActions.handleDelete(detail.class_record_id);
 };
 
 const openFeedbackDialog = (schedule) => {
