@@ -6,17 +6,64 @@ use App\Enums\ClassScheduleStatusEnum;
 use App\Models\ClassReminderAction;
 use App\Models\ClassScheduleDetail;
 use App\Models\ClassScheduleDetailStatusHistory;
+use App\Models\EmailLog;
 use App\Models\Profile;
 use App\Models\Student;
 use App\Notifications\ClassStudentActionToTeacherNotification;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
-use App\Models\EmailLog;
+use Illuminate\Support\Facades\Notification;
 
 class ClassSessionActionService
 {
+    /**
+     * Validate whether a student action is still allowed based on session timing rules.
+     *
+     * @return array{allowed: bool, message: string}
+     */
+    public function validateActionWindow(ClassScheduleDetail $detail, string $actionType): array
+    {
+        if (! in_array($actionType, ['pending', 'upload_task'], true)) {
+            return [
+                'allowed' => false,
+                'message' => 'This session cannot be modified at this time.',
+            ];
+        }
+
+        $startAt = $this->sessionStartAt($detail);
+        $endAt = $this->sessionEndAt($detail);
+
+        if (! $startAt || ! $endAt) {
+            return [
+                'allowed' => false,
+                'message' => 'This session cannot be modified at this time.',
+            ];
+        }
+
+        $now = now();
+        $cutoff = $actionType === 'pending'
+            ? $startAt->copy()->subHour()
+            : $endAt->copy()->subMinutes(10);
+
+        if ($now->greaterThan($cutoff)) {
+            $message = $actionType === 'pending'
+                ? 'This session can only be set to pending up to 1 hour before the start time.'
+                : 'You can only request class record upload up to 10 minutes before the session end time.';
+
+            return [
+                'allowed' => false,
+                'message' => $message,
+            ];
+        }
+
+        return [
+            'allowed' => true,
+            'message' => '',
+        ];
+    }
+
     /**
      * Perform a student-initiated session action (pending or upload_task).
      * Returns true if action was performed, false if already processed.
@@ -187,6 +234,34 @@ class ClassSessionActionService
         }
 
         return $query->first();
+    }
+
+    private function sessionStartAt(ClassScheduleDetail $detail): ?Carbon
+    {
+        return $detail->rescheduled_start_time ?? $detail->start_time;
+    }
+
+    private function sessionEndAt(ClassScheduleDetail $detail): ?Carbon
+    {
+        $explicitEndAt = $detail->rescheduled_end_time ?? $detail->end_time;
+
+        if ($explicitEndAt) {
+            return $explicitEndAt;
+        }
+
+        $startAt = $this->sessionStartAt($detail);
+
+        if (! $startAt) {
+            return null;
+        }
+
+        $durationMinutes = (int) ($detail->rescheduled_estimated_duration_minutes
+            ?? $detail->estimated_duration_minutes
+            ?? 0);
+
+        return $durationMinutes > 0
+            ? $startAt->copy()->addMinutes($durationMinutes)
+            : null;
     }
 
     private function resolveProfileEmail(Profile $profile): ?string

@@ -71,7 +71,16 @@ class StudentSessionActionController extends Controller
             ], 422);
         }
 
-        $performed = (new ClassSessionActionService)->performAction($detail, $studentModel, $validated['action_type']);
+        $classSessionActionService = new ClassSessionActionService;
+        $windowValidation = $classSessionActionService->validateActionWindow($detail, $validated['action_type']);
+
+        if (! $windowValidation['allowed']) {
+            return response()->json([
+                'message' => __($windowValidation['message']),
+            ], 422);
+        }
+
+        $performed = $classSessionActionService->performAction($detail, $studentModel, $validated['action_type']);
 
         if (! $performed) {
             return response()->json([

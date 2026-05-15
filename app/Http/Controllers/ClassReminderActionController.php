@@ -7,6 +7,7 @@ use App\Models\ClassReminderAction;
 use App\Models\ClassScheduleDetail;
 use App\Models\Profile;
 use App\Notifications\ClassStudentActionToTeacherNotification;
+use App\Services\Academics\Lessons\ClassSessionActionService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -107,6 +108,15 @@ class ClassReminderActionController extends Controller
     private function processAction(int $detailId, int $studentId, string $actionType): RedirectResponse
     {
         $detail = $this->findAuthorizedDetail($detailId, $studentId);
+        $windowValidation = (new ClassSessionActionService)->validateActionWindow($detail, $actionType);
+
+        if (! $windowValidation['allowed']) {
+            return redirect()->route('email.class-reminder.done', ['locale' => app()->getLocale()])
+                ->with('done_status', 'unavailable')
+                ->with('done_message', __($windowValidation['message']))
+                ->with('action_context', $this->buildActionContext($detail, $studentId));
+        }
+
         $course = $detail->classSchedule?->course;
         $existingAction = null;
         $createdAction = null;

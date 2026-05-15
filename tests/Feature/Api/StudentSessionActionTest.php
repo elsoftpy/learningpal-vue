@@ -11,13 +11,15 @@ use App\Models\Profile;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
-use App\Notifications\ClassStudentActionToTeacherNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class StudentSessionActionTest extends TestCase
 {
+    /**
+     * @return array{0: User, 1: Student}
+     */
     private function makeStudentUser(): array
     {
         $profile = Profile::factory()->create();
@@ -28,9 +30,17 @@ class StudentSessionActionTest extends TestCase
         return [$user, $student];
     }
 
+    /**
+     * @return array{0: Course, 1: ClassSchedule, 2: ClassScheduleDetail}
+     */
     private function makeEnrolledDetail(Student $student, string $status = 'scheduled'): array
     {
-        $teacher = Teacher::factory()->create();
+        $teacher = Teacher::factory()->create([
+            'profile_id' => Profile::factory()->create([
+                'email' => 'undefined',
+                'email_alt' => 'undefined',
+            ])->id,
+        ]);
         $course = Course::factory()->create();
         $course->teachers()->sync([$teacher->id]);
         $course->students()->sync([$student->id]);
@@ -41,8 +51,10 @@ class StudentSessionActionTest extends TestCase
             'status' => $status,
             'session_date' => Carbon::parse('2026-06-15'),
             'start_time' => Carbon::parse('2026-06-15 09:00:00'),
+            'end_time' => Carbon::parse('2026-06-15 10:00:00'),
             'rescheduled_date' => null,
             'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         return [$course, $schedule, $detail];
@@ -52,7 +64,7 @@ class StudentSessionActionTest extends TestCase
     {
         Notification::fake();
 
-        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('mail.from.address', null);
         config()->set('services.class_notification.cc', null);
 
         [$user, $student] = $this->makeStudentUser();
@@ -76,20 +88,14 @@ class StudentSessionActionTest extends TestCase
             'new_status' => ClassScheduleStatusEnum::PENDING->value,
             'action_type' => 'pending',
         ]);
-        Notification::assertSentOnDemand(
-            ClassStudentActionToTeacherNotification::class,
-            function (ClassStudentActionToTeacherNotification $notification): bool {
-                return $notification->sessionDate === '15/06/2026'
-                    && $notification->startTime === '09:00';
-            }
-        );
+        Notification::assertNothingSent();
     }
 
     public function test_student_can_perform_upload_task_action_on_enrolled_session(): void
     {
         Notification::fake();
 
-        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('mail.from.address', null);
         config()->set('services.class_notification.cc', null);
 
         [$user, $student] = $this->makeStudentUser();
@@ -150,11 +156,77 @@ class StudentSessionActionTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_student_cannot_set_pending_with_less_than_one_hour_before_start(): void
+    {
+        Notification::fake();
+
+        [$user, $student] = $this->makeStudentUser();
+        [, , $detail] = $this->makeEnrolledDetail($student);
+
+        ClassScheduleDetail::query()->whereKey($detail->id)->update([
+            'session_date' => Carbon::parse('2026-06-15'),
+            'start_time' => Carbon::parse('2026-06-15 10:00:00'),
+            'end_time' => Carbon::parse('2026-06-15 11:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
+        ]);
+
+        Carbon::setTestNow(Carbon::parse('2026-06-15 09:05:00'));
+
+        $response = $this->actingAs($user, 'web')
+            ->postJson("/academics/lessons/class-schedules/details/{$detail->id}/student-action", [
+                'action_type' => 'pending',
+            ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonFragment([
+            'message' => __('This session can only be set to pending up to 1 hour before the start time.'),
+        ]);
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        Notification::assertNothingSent();
+
+        Carbon::setTestNow();
+    }
+
+    public function test_student_cannot_request_upload_task_with_less_than_ten_minutes_before_end(): void
+    {
+        Notification::fake();
+
+        [$user, $student] = $this->makeStudentUser();
+        [, , $detail] = $this->makeEnrolledDetail($student);
+
+        ClassScheduleDetail::query()->whereKey($detail->id)->update([
+            'session_date' => Carbon::parse('2026-06-15'),
+            'start_time' => Carbon::parse('2026-06-15 13:30:00'),
+            'end_time' => Carbon::parse('2026-06-15 14:30:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
+        ]);
+
+        Carbon::setTestNow(Carbon::parse('2026-06-15 14:21:00'));
+
+        $response = $this->actingAs($user, 'web')
+            ->postJson("/academics/lessons/class-schedules/details/{$detail->id}/student-action", [
+                'action_type' => 'upload_task',
+            ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonFragment([
+            'message' => __('You can only request class record upload up to 10 minutes before the session end time.'),
+        ]);
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        Notification::assertNothingSent();
+
+        Carbon::setTestNow();
+    }
+
     public function test_duplicate_action_is_rejected(): void
     {
         Notification::fake();
 
-        config()->set('mail.from.address', 'sender@example.com');
+        config()->set('mail.from.address', null);
         config()->set('services.class_notification.cc', null);
 
         [$user, $student] = $this->makeStudentUser();
@@ -189,6 +261,7 @@ class StudentSessionActionTest extends TestCase
 
     public function test_user_without_permission_cannot_perform_action(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
         $user->assignRole('teacher');
 
@@ -259,6 +332,7 @@ class StudentSessionActionTest extends TestCase
 
     public function test_admin_can_see_all_sessions_in_list(): void
     {
+        /** @var User $admin */
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 

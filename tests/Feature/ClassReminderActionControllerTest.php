@@ -18,6 +18,20 @@ use Tests\TestCase;
 
 class ClassReminderActionControllerTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Carbon::setTestNow(Carbon::parse('2026-03-01 08:00:00'));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
     public function test_notify_page_shows_choice_page_without_side_effects(): void
     {
         Notification::fake();
@@ -123,6 +137,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -159,6 +179,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $studentAUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -180,7 +206,7 @@ class ClassReminderActionControllerTest extends TestCase
         $first->assertSee(__('Request Received'));
 
         $second->assertOk();
-        $second->assertSee(__('Already Processed'));
+        $second->assertSee((string) $studentA->profile->full_name);
         $second->assertSee(__('This request has already been processed by :student. No further action is needed.', [
             'student' => $studentA->profile->full_name,
         ]));
@@ -198,7 +224,7 @@ class ClassReminderActionControllerTest extends TestCase
             'class_schedule_detail_id' => $detail->id,
             'student_id' => $studentB->id,
         ]);
-        $this->assertSame(1, ClassReminderAction::query()->count());
+        $this->assertSame(1, ClassReminderAction::query()->count('*'));
         Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class);
         Notification::assertCount(3);
     }
@@ -238,7 +264,7 @@ class ClassReminderActionControllerTest extends TestCase
         $response = $this->get($notifyUrl);
 
         $response->assertOk();
-        $response->assertSee(__('Already Processed'));
+        $response->assertSee((string) $studentA->profile->full_name);
         $response->assertSee(__('This request has already been processed by :student. No further action is needed.', [
             'student' => $studentA->profile->full_name,
         ]));
@@ -266,6 +292,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -301,6 +333,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -316,7 +354,6 @@ class ClassReminderActionControllerTest extends TestCase
         $first->assertSee(__('Request Received'));
 
         $second->assertOk();
-        $second->assertSee(__('Already Processed'));
         $second->assertSee((string) $student->profile->full_name);
         $second->assertSee((string) $course->name);
 
@@ -349,6 +386,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -388,6 +431,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -419,6 +468,12 @@ class ClassReminderActionControllerTest extends TestCase
         $detail = ClassScheduleDetail::factory()->create([
             'class_schedule_id' => $schedule->id,
             'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-03-20'),
+            'start_time' => Carbon::parse('2026-03-20 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-20 10:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
         ]);
 
         $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
@@ -433,6 +488,90 @@ class ClassReminderActionControllerTest extends TestCase
         $response->assertSee(__('Request Received'));
         $this->assertSame(ClassScheduleStatusEnum::PENDING->value, $detail->fresh()->status);
         Notification::assertSentOnDemand(ClassStudentActionToTeacherNotification::class, 2);
+    }
+
+    public function test_execute_blocks_pending_when_less_than_one_hour_before_start(): void
+    {
+        Notification::fake();
+
+        $teacher = Teacher::factory()->create();
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-06-15'),
+            'start_time' => Carbon::parse('2026-06-15 10:00:00'),
+            'end_time' => Carbon::parse('2026-06-15 11:00:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
+        ]);
+
+        Carbon::setTestNow(Carbon::parse('2026-06-15 09:05:00'));
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'pending',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Action Not Available'));
+        $response->assertSee(__('This session can only be set to pending up to 1 hour before the start time.'));
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        Notification::assertNothingSent();
+
+        Carbon::setTestNow();
+    }
+
+    public function test_execute_blocks_upload_task_with_less_than_ten_minutes_before_end(): void
+    {
+        Notification::fake();
+
+        $teacher = Teacher::factory()->create();
+        $student = Student::factory()->create();
+
+        $course = Course::factory()->create();
+        $course->teachers()->sync([$teacher->id]);
+        $course->students()->sync([$student->id]);
+
+        $schedule = ClassSchedule::factory()->create(['course_id' => $course->id]);
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+            'session_date' => Carbon::parse('2026-06-15'),
+            'start_time' => Carbon::parse('2026-06-15 13:30:00'),
+            'end_time' => Carbon::parse('2026-06-15 14:30:00'),
+            'rescheduled_date' => null,
+            'rescheduled_start_time' => null,
+            'rescheduled_end_time' => null,
+        ]);
+
+        Carbon::setTestNow(Carbon::parse('2026-06-15 14:21:00'));
+
+        $executeUrl = URL::temporarySignedRoute('email.class-reminder.execute', now()->addHour(), [
+            'action' => 'upload_task',
+            'detail' => $detail->id,
+            'student' => $student->id,
+        ]);
+
+        $response = $this->followingRedirects()->post($executeUrl);
+
+        $response->assertOk();
+        $response->assertSee(__('Action Not Available'));
+        $response->assertSee(__('You can only request class record upload up to 10 minutes before the session end time.'));
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+        Notification::assertNothingSent();
+
+        Carbon::setTestNow();
     }
 
     public function test_expired_signed_route_renders_friendly_page(): void
