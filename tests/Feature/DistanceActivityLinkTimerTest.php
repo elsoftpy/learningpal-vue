@@ -66,7 +66,7 @@ class DistanceActivityLinkTimerTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonPath('success', false);
-        $response->assertJsonPath('errors.link.0', 'You already have an active timer. Please wait until it finishes before opening another link.');
+        $response->assertJsonPath('errors.link.0', __('You already have an active timer. Please wait until it finishes before opening another link.'));
     }
 
     public function test_student_must_open_all_exercise_links_and_wait_one_minute_before_completion(): void
@@ -92,7 +92,7 @@ class DistanceActivityLinkTimerTest extends TestCase
                     'completed' => true,
                 ])
                 ->assertStatus(422)
-                ->assertJsonPath('errors.completed.0', 'You must open every link before marking this task as completed.');
+                ->assertJsonPath('errors.completed.0', __('You must open every link before marking this task as completed.'));
 
             $this->actingAs($studentUser, 'web')
                 ->postJson("/academics/lessons/distance-activities/details/{$detail->id}/video-open", [
@@ -105,7 +105,9 @@ class DistanceActivityLinkTimerTest extends TestCase
                     'completed' => true,
                 ])
                 ->assertStatus(422)
-                ->assertJsonPath('errors.completed.0', 'You must wait 1 minutes after opening each link before marking this task as completed.');
+                ->assertJsonPath('errors.completed.0', __('You must wait :minutes minutes after opening each link before marking this task as completed.', [
+                    'minutes' => config('academics.distance_activities.video_completion_lock_minutes', 1),
+                ]));
 
             Carbon::setTestNow(Carbon::parse('2026-05-15 12:02:10'));
 
