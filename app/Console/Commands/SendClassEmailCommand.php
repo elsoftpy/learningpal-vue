@@ -150,13 +150,13 @@ class SendClassEmailCommand extends Command
                             ));
                     }
 
-                    EmailLog::create([
-                        'email_destino' => $email,
-                        'greeting' => $greeting,
-                        'hora' => $classTime,
-                        'url' => $url,
-                        'estado' => 'Enviado',
-                    ]);
+                    EmailLog::recordNotification(
+                        emailDestino: $email,
+                        greeting: $greeting,
+                        hora: $classTime,
+                        estado: 'Enviado',
+                        url: $url,
+                    );
 
                     $sent++;
                 } catch (\Throwable $exception) {
@@ -168,14 +168,14 @@ class SendClassEmailCommand extends Command
                         'error' => $exception->getMessage(),
                     ]);
 
-                    EmailLog::create([
-                        'email_destino' => $email,
-                        'greeting' => $greeting,
-                        'hora' => $classTime,
-                        'url' => $url,
-                        'estado' => 'Error',
-                        'error' => $exception->getMessage(),
-                    ]);
+                    EmailLog::recordNotification(
+                        emailDestino: $email,
+                        greeting: $greeting,
+                        hora: $classTime,
+                        estado: 'Error',
+                        url: $url,
+                        error: $exception->getMessage(),
+                    );
                 }
             }
         }

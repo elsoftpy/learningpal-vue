@@ -181,7 +181,6 @@ class ClassSessionActionService
                 'teacher_name' => $teacherName,
                 'student_name' => $studentName,
                 'action_type' => $actionType,
-                'email_destino' => $email,
             ];
             try {
                 Notification::route('mail', $email)
@@ -194,25 +193,24 @@ class ClassSessionActionService
                         actionType: $actionType,
                     ));
 
-                EmailLog::create([
-                    'email_destino' => $email,
-                    'greeting' => $teacherName,
-                    'hora' => $classTime,
-                    'url' => null,
-                    'estado' => 'Enviado',
-                    'error' => null,
-                ] + $logData);
+                EmailLog::recordNotification(
+                    emailDestino: $email,
+                    greeting: $teacherName,
+                    hora: $classTime,
+                    estado: 'Enviado',
+                    context: $logData,
+                );
 
                 Log::info('ClassStudentActionToTeacherNotification sent', $logData + ['estado' => 'Enviado']);
             } catch (\Throwable $exception) {
-                EmailLog::create([
-                    'email_destino' => $email,
-                    'greeting' => $teacherName,
-                    'hora' => $classTime,
-                    'url' => null,
-                    'estado' => 'Error',
-                    'error' => $exception->getMessage(),
-                ] + $logData);
+                EmailLog::recordNotification(
+                    emailDestino: $email,
+                    greeting: $teacherName,
+                    hora: $classTime,
+                    estado: 'Error',
+                    error: $exception->getMessage(),
+                    context: $logData,
+                );
 
                 Log::error('ClassStudentActionToTeacherNotification failed', $logData + [
                     'estado' => 'Error',

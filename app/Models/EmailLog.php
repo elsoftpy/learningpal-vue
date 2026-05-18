@@ -37,4 +37,37 @@ class EmailLog extends Model
             'rescheduled_date' => 'date',
         ];
     }
+
+    /**
+     * @param  array{
+     *     class_schedule_detail_id?: int,
+     *     course_id?: int,
+     *     course_name?: string,
+     *     session_date?: string,
+     *     start_time?: string,
+     *     rescheduled_date?: string,
+     *     rescheduled_start_time?: string,
+     *     teacher_name?: string,
+     *     student_name?: string,
+     *     action_type?: string
+     * }  $context
+     */
+    public static function recordNotification(
+        string $emailDestino,
+        string $greeting,
+        string $hora,
+        string $estado,
+        ?string $url = null,
+        ?string $error = null,
+        array $context = []
+    ): self {
+        return self::query()->create([
+            'email_destino' => $emailDestino,
+            'greeting' => $greeting,
+            'hora' => $hora,
+            'url' => $url,
+            'estado' => $estado,
+            'error' => $error,
+        ] + $context);
+    }
 }
