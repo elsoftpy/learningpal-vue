@@ -41,7 +41,9 @@ class StudentSessionActionTest extends TestCase
                 'email_alt' => 'undefined',
             ])->id,
         ]);
-        $course = Course::factory()->create();
+        $course = Course::factory()->create([
+            'chat_room_link' => 'https://meet.google.com/paf-jfsv-qvf',
+        ]);
         $course->teachers()->sync([$teacher->id]);
         $course->students()->sync([$student->id]);
 
@@ -121,7 +123,7 @@ class StudentSessionActionTest extends TestCase
         ]);
     }
 
-    public function test_student_action_logs_email_even_when_url_is_null(): void
+    public function test_student_action_logs_email_with_course_chat_room_url(): void
     {
         Notification::fake();
 
@@ -142,7 +144,7 @@ class StudentSessionActionTest extends TestCase
             'class_schedule_detail_id' => $detail->id,
             'email_destino' => 'noreply@example.com',
             'action_type' => 'upload_task',
-            'url' => null,
+            'url' => 'https://meet.google.com/paf-jfsv-qvf',
             'estado' => 'Enviado',
         ]);
     }

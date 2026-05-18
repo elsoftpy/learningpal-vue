@@ -168,6 +168,7 @@ class ClassSessionActionService
         $courseName = $course->name;
         $detailId = $detail->id;
         $courseId = $course?->id;
+        $classUrl = $course?->chat_room_link;
 
         foreach ($recipients as $email) {
             $logData = [
@@ -198,6 +199,7 @@ class ClassSessionActionService
                     greeting: $teacherName,
                     hora: $classTime,
                     estado: 'Enviado',
+                    url: $classUrl,
                     context: $logData,
                 );
 
@@ -208,6 +210,7 @@ class ClassSessionActionService
                     greeting: $teacherName,
                     hora: $classTime,
                     estado: 'Error',
+                    url: $classUrl,
                     error: $exception->getMessage(),
                     context: $logData,
                 );

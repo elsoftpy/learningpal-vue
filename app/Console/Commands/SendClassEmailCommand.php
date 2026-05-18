@@ -37,6 +37,7 @@ class SendClassEmailCommand extends Command
         if ($detailId) {
             $detail = ClassScheduleDetail::with([
                 'classSchedule.course.students.profile.user',
+                'classSchedule.course.teachers.profile',
             ])->find($detailId);
 
             if (! $detail) {
@@ -53,6 +54,7 @@ class SendClassEmailCommand extends Command
             $classes = ClassScheduleDetail::query()
                 ->with([
                     'classSchedule.course.students.profile.user',
+                    'classSchedule.course.teachers.profile',
                 ])
                 ->whereNotIn('status', [
                     ClassScheduleStatusEnum::PENDING->value,
@@ -156,6 +158,7 @@ class SendClassEmailCommand extends Command
                         hora: $classTime,
                         estado: 'Enviado',
                         url: $url,
+                        context: $this->emailLogContext($classDetail, $student->id),
                     );
 
                     $sent++;
@@ -175,6 +178,7 @@ class SendClassEmailCommand extends Command
                         estado: 'Error',
                         url: $url,
                         error: $exception->getMessage(),
+                        context: $this->emailLogContext($classDetail, $student->id),
                     );
                 }
             }
@@ -184,6 +188,45 @@ class SendClassEmailCommand extends Command
         $this->info($summary);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return array{
+     *     class_schedule_detail_id: int,
+     *     course_id: int|null,
+     *     course_name: string|null,
+     *     session_date: string|null,
+     *     start_time: string|null,
+     *     rescheduled_date: string|null,
+     *     rescheduled_start_time: string|null,
+     *     teacher_name: string,
+     *     student_name: string
+     * }
+     */
+    private function emailLogContext(ClassScheduleDetail $classDetail, int $studentId): array
+    {
+        $course = $classDetail->classSchedule?->course;
+        $teacherName = $course?->teachers
+            ->map(fn ($teacher): string => $teacher->profile?->full_name ?? '')
+            ->filter()
+            ->values()
+            ->join(', ') ?: '';
+        $studentName = $course?->students
+            ->find($studentId)
+            ?->profile
+            ?->full_name ?? '';
+
+        return [
+            'class_schedule_detail_id' => $classDetail->id,
+            'course_id' => $course?->id,
+            'course_name' => $course?->name,
+            'session_date' => $classDetail->session_date?->toDateString(),
+            'start_time' => $classDetail->start_time?->format('H:i'),
+            'rescheduled_date' => $classDetail->rescheduled_date?->toDateString(),
+            'rescheduled_start_time' => $classDetail->rescheduled_start_time?->format('H:i'),
+            'teacher_name' => $teacherName,
+            'student_name' => $studentName,
+        ];
     }
 
     private function sanitizeEmail(mixed $value): ?string
