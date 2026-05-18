@@ -121,6 +121,32 @@ class StudentSessionActionTest extends TestCase
         ]);
     }
 
+    public function test_student_action_logs_email_even_when_url_is_null(): void
+    {
+        Notification::fake();
+
+        config()->set('mail.from.address', 'noreply@example.com');
+        config()->set('services.class_notification.cc', null);
+
+        [$user, $student] = $this->makeStudentUser();
+        [, , $detail] = $this->makeEnrolledDetail($student);
+
+        $response = $this->actingAs($user, 'web')
+            ->postJson("/academics/lessons/class-schedules/details/{$detail->id}/student-action", [
+                'action_type' => 'upload_task',
+            ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('email_logs', [
+            'class_schedule_detail_id' => $detail->id,
+            'email_destino' => 'noreply@example.com',
+            'action_type' => 'upload_task',
+            'url' => null,
+            'estado' => 'Enviado',
+        ]);
+    }
+
     public function test_student_cannot_act_on_session_from_unenrolled_course(): void
     {
         Notification::fake();
