@@ -40,28 +40,21 @@
             font-size: 9px;
             color: #475569;
         }
-        .report-page {
-            page-break-inside: avoid;
-        }
         .report-page + .report-page {
             page-break-before: always;
         }
         .layout {
-            display: table;
+            position: relative;
             width: 100%;
-            table-layout: fixed;
         }
         .left-pane {
-            display: table-cell;
-            width: 68%;
-            vertical-align: top;
-            padding-right: 10px;
-            box-sizing: border-box;
+            margin-right: 33%;
         }
         .right-pane {
-            display: table-cell;
+            position: absolute;
+            top: 0;
+            right: 0;
             width: 32%;
-            vertical-align: top;
         }
         table {
             width: 100%;
@@ -137,69 +130,6 @@
         </div>
 
         <div class="layout">
-            <div class="left-pane">
-                    <table>
-                        <tr>
-                            <th colspan="6" class="title-gray">DETALLE MENSUAL DE CLASES</th>
-                        </tr>
-                        <tr class="header-blue center">
-                            <th>Level</th>
-                            <th>Student</th>
-                            <th>Hours per class</th>
-                            <th>Classes in month</th>
-                            <th colspan="2">Previous carryover</th>
-                        </tr>
-                        <tr>
-                            <td>{{ $report['level'] ?? '' }}</td>
-                            <td>{{ $report['student_name'] ?? '' }}</td>
-                            <td class="center">{{ number_format((float) ($report['hours_per_class'] ?? 0), 2, '.', '') }}</td>
-                            <td class="center">{{ $report['classes_in_month'] ?? 0 }}</td>
-                            <td colspan="2" class="center">{{ $report['previous_carryover'] ?? 0 }}</td>
-                        </tr>
-                        <tr class="title-gray center">
-                            <td>{{ $report['month_name'] ?? '' }}</td>
-                            <td>Total hours</td>
-                            <td>{{ number_format((float) ($report['total_hours_in_month'] ?? 0), 2, '.', '') }}</td>
-                            <td>Hours in favor</td>
-                            <td>{{ number_format((float) ($report['hours_in_favor'] ?? 0), 2, '.', '') }}</td>
-                            <td>&nbsp;</td>
-                        </tr>
-                        <tr class="header-blue center">
-                            <th>Teacher</th>
-                            <th>Course</th>
-                            <th>Date</th>
-                            <th>Hours</th>
-                            <th>Attendance</th>
-                            <th>Progress</th>
-                        </tr>
-                        @forelse(($report['sessions'] ?? []) as $session)
-                            <tr class="sessions">
-                                <td>{{ $session['teacher'] ?? '' }}</td>
-                                <td>{{ $session['course'] ?? '' }}</td>
-                                <td>{{ $session['display_date'] ?? '' }}</td>
-                                <td>{{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }}</td>
-                                <td>{{ $session['attendance'] ?? '' }}</td>
-                                <td>{{ $session['progress'] ?? '' }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="center">No session records</td>
-                            </tr>
-                        @endforelse
-                        <tr>
-                            <td colspan="3"></td>
-                            <td class="center">{{ number_format((float) ($report['totals']['hours'] ?? 0), 2, '.', '') }}</td>
-                            <td class="center">{{ number_format((float) ($report['totals']['attendance'] ?? 0), 2, '.', '') }}</td>
-                            <td class="center">{{ number_format((float) ($report['totals']['attendance_percentage'] ?? 0), 2, '.', '') }}%</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"></td>
-                            <td class="center"><strong>Hours</strong></td>
-                            <td class="center"><strong>Attendance</strong></td>
-                            <td class="center"><strong>Attendance %</strong></td>
-                        </tr>
-                    </table>
-            </div>
             <div class="right-pane">
                     <table>
                         <tr>
@@ -224,6 +154,77 @@
                         <tr>
                             <td colspan="7" class="feedback-box">{{ $report['feedback'] ?? '' }}</td>
                         </tr>
+                    </table>
+            </div>
+            <div class="left-pane">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th colspan="6" class="title-gray">DETALLE MENSUAL DE CLASES</th>
+                            </tr>
+                            <tr class="header-blue center">
+                                <th>Level</th>
+                                <th>Student</th>
+                                <th>Hours per class</th>
+                                <th>Classes in month</th>
+                                <th colspan="2">Previous carryover</th>
+                            </tr>
+                            <tr>
+                                <td>{{ $report['level'] ?? '' }}</td>
+                                <td>{{ $report['student_name'] ?? '' }}</td>
+                                <td class="center">{{ number_format((float) ($report['hours_per_class'] ?? 0), 2, '.', '') }}</td>
+                                <td class="center">{{ $report['classes_in_month'] ?? 0 }}</td>
+                                <td colspan="2" class="center">{{ $report['previous_carryover'] ?? 0 }}</td>
+                            </tr>
+                            <tr class="title-gray center">
+                                <td>{{ $report['month_name'] ?? '' }}</td>
+                                <td>Total hours</td>
+                                <td>{{ number_format((float) ($report['total_hours_in_month'] ?? 0), 2, '.', '') }}</td>
+                                <td>Hours in favor</td>
+                                <td>{{ number_format((float) ($report['hours_in_favor'] ?? 0), 2, '.', '') }}</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table>
+                        <thead>
+                            <tr class="header-blue center">
+                                <th>Teacher</th>
+                                <th>Course</th>
+                                <th>Date</th>
+                                <th>Hours</th>
+                                <th>Attendance</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse(($report['sessions'] ?? []) as $session)
+                                <tr class="sessions">
+                                    <td>{{ $session['teacher'] ?? '' }}</td>
+                                    <td>{{ $session['course'] ?? '' }}</td>
+                                    <td>{{ $session['display_date'] ?? '' }}</td>
+                                    <td>{{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }}</td>
+                                    <td>{{ $session['attendance'] ?? '' }}</td>
+                                    <td>{{ $session['progress'] ?? '' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="center">No session records</td>
+                                </tr>
+                            @endforelse
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="center">{{ number_format((float) ($report['totals']['hours'] ?? 0), 2, '.', '') }}</td>
+                                <td class="center">{{ number_format((float) ($report['totals']['attendance'] ?? 0), 2, '.', '') }}</td>
+                                <td class="center">{{ number_format((float) ($report['totals']['attendance_percentage'] ?? 0), 2, '.', '') }}%</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="center"><strong>Hours</strong></td>
+                                <td class="center"><strong>Attendance</strong></td>
+                                <td class="center"><strong>Attendance %</strong></td>
+                            </tr>
+                        </tbody>
                     </table>
             </div>
         </div>
