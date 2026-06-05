@@ -217,6 +217,7 @@ class MonthlyClassesReportService
             $record = $detail->classRecord;
             $attendance = $record?->attendances?->firstWhere('student_id', $student->id);
             $sessionHours = round($this->effectiveDurationMinutes($detail) / 60, 2);
+            $isPending = $detail->status === ClassScheduleStatusEnum::PENDING->value;
 
             return [
                 'teacher' => $record?->teacher?->profile?->full_name ?? $teacherNames,
@@ -228,13 +229,17 @@ class MonthlyClassesReportService
                     default => 'Y-m-d',
                 }),
                 'hours' => $sessionHours,
+                'is_pending' => $isPending,
+                'status_label' => ClassScheduleStatusEnum::label($detail->status),
                 'attendance' => $attendance ? number_format((float) $attendance->attendance, 1, '.', '') : '',
                 'attendance_label' => $attendance ? AttendanceStatusEnum::label((string) $attendance->attendance) : '',
                 'progress' => $record?->comments ?? '',
             ];
         })->values();
 
-        $totalHours = round($scheduleDetails->sum(fn (ClassScheduleDetail $detail) => $this->effectiveDurationMinutes($detail)) / 60, 2);
+        $totalHours = round($scheduleDetails
+            ->filter(fn (ClassScheduleDetail $detail) => $detail->status !== ClassScheduleStatusEnum::PENDING->value)
+            ->sum(fn (ClassScheduleDetail $detail) => $this->effectiveDurationMinutes($detail)) / 60, 2);
         $attendanceSum = round($sessions->sum(fn (array $session) => (float) ($session['attendance'] !== '' ? $session['attendance'] : 0)), 2);
         $attendancePercentage = $scheduleDetails->count() > 0
             ? round(($attendanceSum * 100) / $scheduleDetails->count(), 2)

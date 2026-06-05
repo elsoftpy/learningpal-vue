@@ -108,13 +108,18 @@ class MonthlyClassesStudentReportSheet implements WithEvents, WithTitle
 
                 foreach (($this->report['sessions'] ?? []) as $index => $session) {
                     $row = $sessionStartRow + $index;
+                    $isPending = (bool) ($session['is_pending'] ?? false);
 
                     $sheet->setCellValue("A{$row}", $session['teacher'] ?? '');
                     $sheet->setCellValue("B{$row}", $session['course'] ?? '');
                     $sheet->setCellValue("C{$row}", $session['display_date'] ?? $session['date'] ?? '');
-                    $sheet->setCellValue("D{$row}", $this->formatDecimal($session['hours'] ?? 0));
+                    $sheet->setCellValue("D{$row}", $isPending
+                        ? "({$this->formatDecimal($session['hours'] ?? 0)})"
+                        : $this->formatDecimal($session['hours'] ?? 0));
                     $sheet->setCellValue("E{$row}", $session['attendance'] ?? '');
-                    $sheet->setCellValue("F{$row}", $session['progress'] ?? '');
+                    $sheet->setCellValue("F{$row}", $isPending
+                        ? ($session['status_label'] ?? '')
+                        : ($session['progress'] ?? ''));
                 }
 
                 $sheet->setCellValue("D{$totalsRow}", $this->formatDecimal($this->report['totals']['hours'] ?? 0));

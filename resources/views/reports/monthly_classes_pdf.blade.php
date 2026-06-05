@@ -88,7 +88,9 @@
             text-align: right;
         }
         .sessions td:nth-child(4),
-        .sessions td:nth-child(5),
+        .sessions td:nth-child(5) {
+            text-align: right;
+        }
         .sessions td:nth-child(6) {
             text-align: center;
         }
@@ -188,13 +190,13 @@
                     </table>
                     <table>
                         <thead>
-                            <tr class="header-blue center">
+                            <tr class="header-blue">
                                 <th>Teacher</th>
                                 <th>Course</th>
                                 <th>Date</th>
-                                <th>Hours</th>
-                                <th>Attendance</th>
-                                <th>Progress</th>
+                                <th class="right">Hours</th>
+                                <th class="right">Attendance</th>
+                                <th class="center">Progress</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -203,9 +205,21 @@
                                     <td>{{ $session['teacher'] ?? '' }}</td>
                                     <td>{{ $session['course'] ?? '' }}</td>
                                     <td>{{ $session['display_date'] ?? '' }}</td>
-                                    <td>{{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }}</td>
+                                    <td>
+                                        @if($session['is_pending'] ?? false)
+                                            ({{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }})
+                                        @else
+                                            {{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }}
+                                        @endif
+                                    </td>
                                     <td>{{ $session['attendance'] ?? '' }}</td>
-                                    <td>{{ $session['progress'] ?? '' }}</td>
+                                    <td>
+                                        @if($session['is_pending'] ?? false)
+                                            {{ $session['status_label'] ?? '' }}
+                                        @else
+                                            {{ $session['progress'] ?? '' }}
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -214,15 +228,9 @@
                             @endforelse
                             <tr>
                                 <td colspan="3"></td>
-                                <td class="center">{{ number_format((float) ($report['totals']['hours'] ?? 0), 2, '.', '') }}</td>
-                                <td class="center">{{ number_format((float) ($report['totals']['attendance'] ?? 0), 2, '.', '') }}</td>
+                                <td class="right">{{ number_format((float) ($report['totals']['hours'] ?? 0), 2, '.', '') }}</td>
+                                <td class="right">{{ number_format((float) ($report['totals']['attendance'] ?? 0), 2, '.', '') }}</td>
                                 <td class="center">{{ number_format((float) ($report['totals']['attendance_percentage'] ?? 0), 2, '.', '') }}%</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3"></td>
-                                <td class="center"><strong>Hours</strong></td>
-                                <td class="center"><strong>Attendance</strong></td>
-                                <td class="center"><strong>Attendance %</strong></td>
                             </tr>
                         </tbody>
                     </table>

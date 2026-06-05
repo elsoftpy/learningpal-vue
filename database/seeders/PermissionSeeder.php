@@ -116,6 +116,7 @@ class PermissionSeeder extends Seeder
             'delete class records',
             'view monthly classes report',
             'view teacher hours report',
+            'view email logs report',
             'list other teachers',
             'view assigned distance activities',
             'view own distance activities',

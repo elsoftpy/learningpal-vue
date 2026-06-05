@@ -139,6 +139,12 @@
                                 baseRoute="academics.reports"
                                 :title="$t('Teacher Hours')"
                             />
+                            <PlainMenuItem
+                                v-if="can('view email logs report')"
+                                :route="{ name: 'academics.reports.email-logs' }"
+                                baseRoute="academics.reports"
+                                :title="$t('Email Logs')"
+                            />
                         </template>
                     </SubmoduleMenuItem>
                 </template>

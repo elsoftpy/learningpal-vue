@@ -1,8 +1,10 @@
 <template>
     <PageContainer>
         <template #body>
+            <!-- Before table slot -->
+            <slot name="before" />
             <!-- Loading Skeleton -->
-            <TableLoadingState 
+            <TableLoadingState
                 :is-loading="table.isLoading.value" 
                 :rows="table.perPage.value"
                 :skeleton-count="3"

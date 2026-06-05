@@ -441,6 +441,10 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
     });
 
     Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/email-logs', 'App\\Http\\Controllers\\Academics\\Reports\\EmailLogReportController@index')
+            ->name('email-logs')
+            ->middleware('can:view email logs report');
+
         Route::post('/monthly-classes', [MonthlyClassesReportController::class, 'index'])
             ->name('monthly-classes')
             ->middleware('can:view teacher hours report');

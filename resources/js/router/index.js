@@ -630,6 +630,20 @@ const routes = [
       crud: 'read',
     },
   },
+  {
+    path: '/academics/reports/email-logs',
+    name: 'academics.reports.email-logs',
+    component: () => import('../Pages/academics/reports/EmailLogReportPage.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'view email logs report',
+      module: 'academics',
+      submodule: 'reports',
+      title: 'Email Logs Report',
+      headerIcon: 'inbox',
+      crud: 'read',
+    },
+  },
   /* Fallback Route */
   {
     path: '/:pathMatch(.*)*',
