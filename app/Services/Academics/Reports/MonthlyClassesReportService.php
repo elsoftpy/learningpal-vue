@@ -218,6 +218,7 @@ class MonthlyClassesReportService
             $attendance = $record?->attendances?->firstWhere('student_id', $student->id);
             $sessionHours = round($this->effectiveDurationMinutes($detail) / 60, 2);
             $isPending = $detail->status === ClassScheduleStatusEnum::PENDING->value;
+            $isReprogrammed = $detail->status === ClassScheduleStatusEnum::REPROGRAMED->value;
 
             return [
                 'teacher' => $record?->teacher?->profile?->full_name ?? $teacherNames,
@@ -230,6 +231,8 @@ class MonthlyClassesReportService
                 }),
                 'hours' => $sessionHours,
                 'is_pending' => $isPending,
+                'is_reprogrammed' => $isReprogrammed,
+                'rescheduled_label' => $isReprogrammed ? $this->buildRescheduledLabel($detail) : null,
                 'status_label' => ClassScheduleStatusEnum::label($detail->status),
                 'attendance' => $attendance ? number_format((float) $attendance->attendance, 1, '.', '') : '',
                 'attendance_label' => $attendance ? AttendanceStatusEnum::label((string) $attendance->attendance) : '',
@@ -238,7 +241,10 @@ class MonthlyClassesReportService
         })->values();
 
         $totalHours = round($scheduleDetails
-            ->filter(fn (ClassScheduleDetail $detail) => $detail->status !== ClassScheduleStatusEnum::PENDING->value)
+            ->filter(fn (ClassScheduleDetail $detail) => ! in_array($detail->status, [
+                ClassScheduleStatusEnum::PENDING->value,
+                ClassScheduleStatusEnum::REPROGRAMED->value,
+            ]))
             ->sum(fn (ClassScheduleDetail $detail) => $this->effectiveDurationMinutes($detail)) / 60, 2);
         $attendanceSum = round($sessions->sum(fn (array $session) => (float) ($session['attendance'] !== '' ? $session['attendance'] : 0)), 2);
         $attendancePercentage = $scheduleDetails->count() > 0
@@ -268,6 +274,25 @@ class MonthlyClassesReportService
                 'attendance_percentage' => $attendancePercentage,
             ],
         ];
+    }
+
+    private function buildRescheduledLabel(ClassScheduleDetail $detail): string
+    {
+        if (! $detail->rescheduled_date) {
+            return __('Rescheduled for :datetime', ['datetime' => '']);
+        }
+
+        $formattedDate = $detail->rescheduled_date->format(match (app()->getLocale()) {
+            'es', 'pt' => 'd/m/Y',
+            'en' => 'm-d-Y',
+            default => 'Y-m-d',
+        });
+
+        $formattedTime = $detail->rescheduled_start_time?->format('H:i') ?? '';
+
+        $datetime = $formattedTime ? "{$formattedDate} {$formattedTime}" : $formattedDate;
+
+        return __('Rescheduled for :datetime', ['datetime' => $datetime]);
     }
 
     private function effectiveDurationMinutes(ClassScheduleDetail $detail): int

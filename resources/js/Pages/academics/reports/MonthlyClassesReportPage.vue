@@ -190,11 +190,13 @@
                         <td class="px-3 py-2 text-slate-700 dark:text-slate-200">{{ session.course || '-' }}</td>
                         <td class="px-3 py-2 text-slate-700 dark:text-slate-200">{{ session.display_date || '-' }}</td>
                         <td class="px-3 py-2 text-right text-slate-700 dark:text-slate-200">
-                          {{ session.is_pending ? `(${formatDecimal(session.hours)})` : formatDecimal(session.hours) }}
+                          {{ (session.is_pending || session.is_reprogrammed) ? `(${formatDecimal(session.hours)})` : formatDecimal(session.hours) }}
                         </td>
                         <td class="px-3 py-2 text-right text-slate-700 dark:text-slate-200">{{ session.attendance || '-' }}</td>
                         <td class="px-3 py-2 text-slate-700 dark:text-slate-200">
-                          {{ session.is_pending ? (session.status_label || '-') : (session.progress || '-') }}
+                          <template v-if="session.is_reprogrammed">{{ session.rescheduled_label || '-' }}</template>
+                          <template v-else-if="session.is_pending">{{ session.status_label || '-' }}</template>
+                          <template v-else>{{ session.progress || '-' }}</template>
                         </td>
                       </tr>
                     </tbody>

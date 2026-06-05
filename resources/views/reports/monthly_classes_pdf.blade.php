@@ -206,7 +206,7 @@
                                     <td>{{ $session['course'] ?? '' }}</td>
                                     <td>{{ $session['display_date'] ?? '' }}</td>
                                     <td>
-                                        @if($session['is_pending'] ?? false)
+                                        @if(($session['is_pending'] ?? false) || ($session['is_reprogrammed'] ?? false))
                                             ({{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }})
                                         @else
                                             {{ number_format((float) ($session['hours'] ?? 0), 2, '.', '') }}
@@ -214,7 +214,9 @@
                                     </td>
                                     <td>{{ $session['attendance'] ?? '' }}</td>
                                     <td>
-                                        @if($session['is_pending'] ?? false)
+                                        @if($session['is_reprogrammed'] ?? false)
+                                            {{ $session['rescheduled_label'] ?? '' }}
+                                        @elseif($session['is_pending'] ?? false)
                                             {{ $session['status_label'] ?? '' }}
                                         @else
                                             {{ $session['progress'] ?? '' }}
