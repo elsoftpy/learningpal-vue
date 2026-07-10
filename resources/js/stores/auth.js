@@ -2,9 +2,11 @@ import { defineStore } from 'pinia';
 
 import {
     csrfCookie,
+    forgotPasswordRequest,
     loginRequest,
     registerRequest,
     logoutRequest,
+    resetPasswordRequest,
     fetchUser,
 } from '../api/auth';
 
@@ -160,6 +162,34 @@ export const useAuthStore = defineStore('auth', {
                 throw error;
             }
             finally {
+                this.loading = false;
+            }
+        },
+
+        async requestPasswordResetLink(data) {
+            this.loading = true;
+
+            try {
+                await this.ensureCsrf();
+
+                const response = await forgotPasswordRequest(data);
+
+                return response.data;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async resetPassword(data) {
+            this.loading = true;
+
+            try {
+                await this.ensureCsrf();
+
+                const response = await resetPasswordRequest(data);
+
+                return response.data;
+            } finally {
                 this.loading = false;
             }
         },

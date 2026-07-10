@@ -12,6 +12,14 @@ export async function registerRequest(data) {
   return axios.post('/auth/register', data);
 }
 
+export async function forgotPasswordRequest(data) {
+  return axios.post('/api/v1/auth/forgot-password', data);
+}
+
+export async function resetPasswordRequest(data) {
+  return axios.post('/api/v1/auth/reset-password', data);
+}
+
 export async function logoutRequest() {
   return axios.post('/auth/logout');
 }

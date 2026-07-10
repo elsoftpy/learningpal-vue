@@ -1,5 +1,9 @@
 <template>
   <div class="w-full">
+    <Message v-if="status" severity="success" size="small" variant="outlined">
+      {{ status }}
+    </Message>
+
     <!-- PrimeVue Form Component -->
     <Form
       v-slot="$form"
@@ -135,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler'
 import { useI18n } from 'vue-i18n'
@@ -159,6 +163,7 @@ const authStore = useAuthStore()
 const loginSchema = computed(() => createLoginSchema($t))
 const resolver = zodResolver(loginSchema.value)
 const hasPasswordReset = ref(true)
+const status = ref('')
 
 
 const form = reactive({
@@ -171,6 +176,10 @@ const { errors, isLoading, setErrors, clearErrors } = useFormSubmitter({
   name: '',
   password: '',
   general: '',
+})
+
+onMounted(() => {
+  status.value = typeof route.query.status === 'string' ? route.query.status : ''
 })
 
 

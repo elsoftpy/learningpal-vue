@@ -39,6 +39,15 @@ const routes = [
       title: 'Forgot Password', 
     },
   },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('../Pages/Auth/ResetPasswordPage.vue'),
+    meta: {
+      guestOnly: true,
+      title: 'Reset Password',
+    },
+  },
   /* Protected Routes */
   {
     path: '/dashboard',

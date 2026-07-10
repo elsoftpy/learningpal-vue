@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\Auth\ApiAuthenticationController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::post('/register', [ApiAuthenticationController::class, 'register'])
             ->name('register');
+
+        Route::middleware(['guest'])->group(function () {
+            Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+                ->name('password.email');
+
+            Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
+                ->name('password.update');
+        });
     });
 });
 
