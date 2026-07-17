@@ -24,6 +24,8 @@
     "Class record retrieved successfully.": "Class record retrieved successfully.",
     "Class record updated successfully.": "Class record updated successfully.",
     "Class records retrieved successfully.": "Class records retrieved successfully.",
+    "One or more links are too long. Please use shorter links or remove tracking parameters and try again.": "One or more links are too long. Please use shorter links or remove tracking parameters and try again.",
+    "Some text in the form is too long. Please shorten it and try again.": "Some text in the form is too long. Please shorten it and try again.",
     "Class reminder": "Class reminder",
     "Class schedule created successfully.": "Class schedule created successfully.",
     "Class schedule deleted successfully.": "Class schedule deleted successfully.",

@@ -2,8 +2,10 @@
 
 use App\Http\Middleware\InvalidateSessionMiddleware;
 use App\Http\Middleware\ServeSpaOnBrowserNavigation;
+use App\Services\Utilities\DatabaseErrorMessageResolver;
 use App\Services\Utilities\ResponseService;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -73,5 +75,21 @@ return Application::configure(basePath: dirname(__DIR__))
                 errors: $e->errors()
             );
 
+        });
+
+        $exceptions->renderable(function (QueryException $e, $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            $friendlyMessage = DatabaseErrorMessageResolver::userMessageFor($e);
+            if (! $friendlyMessage) {
+                return null;
+            }
+
+            return ResponseService::error(
+                message: $friendlyMessage,
+                statusCode: 422
+            );
         });
     })->create();

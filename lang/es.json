@@ -24,6 +24,8 @@
     "Class record retrieved successfully.": "Registro de clase recuperado exitosamente.",
     "Class record updated successfully.": "Registro de clase actualizado exitosamente.",
     "Class records retrieved successfully.": "Registros de clase recuperados exitosamente.",
+    "One or more links are too long. Please use shorter links or remove tracking parameters and try again.": "Uno o más enlaces son demasiado largos. Usa enlaces más cortos o elimina los parámetros de seguimiento e inténtalo de nuevo.",
+    "Some text in the form is too long. Please shorten it and try again.": "Parte del texto del formulario es demasiado largo. Acórtalo e inténtalo de nuevo.",
     "Class reminder": "Recordatorio de clase",
     "Class schedule created successfully.": "Horario de clase creado exitosamente.",
     "Class schedule deleted successfully.": "Horario de clase eliminado exitosamente.",

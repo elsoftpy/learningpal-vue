@@ -110,6 +110,8 @@
     "Class record deleted successfully.": "Class record deleted successfully.",
     "Class record detail updated successfully.": "Class record detail updated successfully.",
     "Class record updated successfully.": "Class record updated successfully.",
+    "One or more links are too long. Please use shorter links or remove tracking parameters and try again.": "One or more links are too long. Please use shorter links or remove tracking parameters and try again.",
+    "Some text in the form is too long. Please shorten it and try again.": "Some text in the form is too long. Please shorten it and try again.",
     "Class schedule deleted successfully.": "Class schedule deleted successfully.",
     "Class schedule detail is required.": "Class schedule detail is required.",
     "Classes": "Classes",
