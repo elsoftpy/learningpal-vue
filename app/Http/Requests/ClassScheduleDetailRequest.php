@@ -27,13 +27,14 @@ class ClassScheduleDetailRequest extends FormRequest
     {
         $canEditStatus = (bool) $this->user()?->can('change schedule detail status');
         $canEditDetails = (bool) $this->user()?->can('edit class schedule details');
+        $statusInput = $this->input('status');
         $hasAnyRescheduleValue = collect([
             'rescheduled_date',
             'rescheduled_start_time',
             'rescheduled_end_time',
         ])->contains(fn (string $field) => $this->filled($field));
-        $requiresReschedule = $this->input('status') === ClassScheduleStatusEnum::REPROGRAMED->value
-            || $hasAnyRescheduleValue;
+        $requiresReschedule = $statusInput === ClassScheduleStatusEnum::REPROGRAMED->value
+            || ($hasAnyRescheduleValue && $statusInput !== ClassScheduleStatusEnum::CANCELED->value);
 
         return [
             'session_date' => Rule::when(
@@ -76,24 +77,6 @@ class ClassScheduleDetailRequest extends FormRequest
                 ['prohibited']
             ),
         ];
-    }
-
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            $hasAnyRescheduleValue = collect([
-                'rescheduled_date',
-                'rescheduled_start_time',
-                'rescheduled_end_time',
-            ])->contains(fn (string $field) => $this->filled($field));
-
-            if ($hasAnyRescheduleValue && $this->input('status') === ClassScheduleStatusEnum::CANCELED->value) {
-                $validator->errors()->add(
-                    'rescheduled_date',
-                    __('Cannot reschedule a cancelled session. Please change the status first.')
-                );
-            }
-        });
     }
 
     public function prepareForValidation()

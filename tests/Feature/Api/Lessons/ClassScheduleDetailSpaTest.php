@@ -136,7 +136,7 @@ class ClassScheduleDetailSpaTest extends TestCase
         $this->assertSame(60, $detail->rescheduled_estimated_duration_minutes);
     }
 
-    public function test_canceled_session_cannot_be_rescheduled_without_status_change(): void
+    public function test_reprogrammed_session_can_be_canceled_without_clearing_reschedule_fields(): void
     {
         $user = User::factory()->create();
 
@@ -154,12 +154,12 @@ class ClassScheduleDetailSpaTest extends TestCase
             'session_date' => Carbon::parse('2026-03-10'),
             'start_time' => Carbon::parse('2026-03-10 09:00:00'),
             'end_time' => Carbon::parse('2026-03-10 10:00:00'),
-            'rescheduled_date' => null,
-            'rescheduled_start_time' => null,
-            'rescheduled_end_time' => null,
-            'rescheduled_estimated_duration_minutes' => 0,
-            'reschedule_count' => 0,
-            'status' => ClassScheduleStatusEnum::CANCELED->value,
+            'rescheduled_date' => Carbon::parse('2026-03-12'),
+            'rescheduled_start_time' => Carbon::parse('2026-03-12 11:00:00'),
+            'rescheduled_end_time' => Carbon::parse('2026-03-12 12:00:00'),
+            'rescheduled_estimated_duration_minutes' => 60,
+            'reschedule_count' => 1,
+            'status' => ClassScheduleStatusEnum::REPROGRAMED->value,
         ]);
 
         $response = $this->actingAs($user, 'web')->postJson(
@@ -176,21 +176,95 @@ class ClassScheduleDetailSpaTest extends TestCase
             ]
         );
 
-        $response->assertStatus(422)->assertJsonValidationErrors(['rescheduled_date']);
+        $response->assertOk();
 
         $detail->refresh();
 
         $this->assertSame(ClassScheduleStatusEnum::CANCELED->value, $detail->status);
-        $this->assertSame(0, (int) $detail->reschedule_count);
-        $this->assertSame(0, (int) $detail->rescheduled_estimated_duration_minutes);
+        $this->assertSame('2026-03-12', $detail->rescheduled_date?->toDateString());
+        $this->assertSame('11:00', $detail->rescheduled_start_time?->format('H:i'));
+        $this->assertSame('12:00', $detail->rescheduled_end_time?->format('H:i'));
     }
 
+    public function test_authorized_user_can_update_session_status_from_status_endpoint(): void
+    {
+        $user = User::factory()->create();
+
+        /** @var User $user */
+        $user->assignRole('admin');
+
+        $course = Course::factory()->create();
+        $schedule = ClassSchedule::factory()->create([
+            'course_id' => $course->id,
+            'schedule_month' => '2026-03-01',
+        ]);
+
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'session_date' => Carbon::parse('2026-03-10'),
+            'start_time' => Carbon::parse('2026-03-10 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-10 10:00:00'),
+            'rescheduled_date' => Carbon::parse('2026-03-12'),
+            'rescheduled_start_time' => Carbon::parse('2026-03-12 11:00:00'),
+            'rescheduled_end_time' => Carbon::parse('2026-03-12 12:00:00'),
+            'status' => ClassScheduleStatusEnum::REPROGRAMED->value,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->postJson(
+            "/academics/lessons/class-schedules/details/{$detail->id}/status",
+            [
+                'status' => ClassScheduleStatusEnum::CANCELED->value,
+            ]
+        );
+
+        $response->assertOk();
+
+        $detail->refresh();
+
+        $this->assertSame(ClassScheduleStatusEnum::CANCELED->value, $detail->status);
+        $this->assertSame('2026-03-12', $detail->rescheduled_date?->toDateString());
+    }
+
+    public function test_user_without_status_permission_cannot_update_status_from_status_endpoint(): void
+    {
+        $user = User::factory()->create();
+
+        /** @var User $user */
+        $user->assignRole('teacher');
+
+        $course = Course::factory()->create();
+        $schedule = ClassSchedule::factory()->create([
+            'course_id' => $course->id,
+            'schedule_month' => '2026-03-01',
+        ]);
+
+        $detail = ClassScheduleDetail::factory()->create([
+            'class_schedule_id' => $schedule->id,
+            'session_date' => Carbon::parse('2026-03-10'),
+            'start_time' => Carbon::parse('2026-03-10 09:00:00'),
+            'end_time' => Carbon::parse('2026-03-10 10:00:00'),
+            'status' => ClassScheduleStatusEnum::SCHEDULED->value,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->postJson(
+            "/academics/lessons/class-schedules/details/{$detail->id}/status",
+            [
+                'status' => ClassScheduleStatusEnum::CANCELED->value,
+            ]
+        );
+
+        $response->assertForbidden();
+
+        $this->assertSame(ClassScheduleStatusEnum::SCHEDULED->value, $detail->fresh()->status);
+    }
 
     public function test_teacher_cannot_edit_original_session_fields(): void
     {
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
         ]);
+
+        /** @var User $user */
         $user->assignRole('teacher');
 
         $teacher = Teacher::factory()->create([
@@ -237,6 +311,8 @@ class ClassScheduleDetailSpaTest extends TestCase
         $user = User::factory()->create([
             'profile_id' => Profile::factory()->create()->id,
         ]);
+
+        /** @var User $user */
         $user->assignRole('teacher');
 
         $teacher = Teacher::factory()->create([

@@ -8,6 +8,8 @@ use App\Http\Requests\ClassScheduleDetailRequest;
 use App\Models\ClassScheduleDetail;
 use App\Services\Authorization\CourseVisibilityService;
 use App\Services\Utilities\ResponseService;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ClassScheduleDetailController extends Controller
 {
@@ -49,10 +51,30 @@ class ClassScheduleDetailController extends Controller
     {
         (new CourseVisibilityService)->authorizeCourseId(request()->user(), $detail->classSchedule?->course_id);
 
-        $detail->delete();
+        ClassScheduleDetail::query()->whereKey($detail->id)->delete();
 
         return ResponseService::success(
             message: __('Class schedule detail deleted successfully.')
+        );
+    }
+
+    public function updateStatus(Request $request, ClassScheduleDetail $detail)
+    {
+        if (! $request->user()?->can('change schedule detail status')) {
+            abort(403);
+        }
+
+        (new CourseVisibilityService)->authorizeCourseId($request->user(), $detail->classSchedule?->course_id);
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in(ClassScheduleStatusEnum::values())],
+        ]);
+
+        $detail->status = $validated['status'];
+        $detail->save();
+
+        return ResponseService::success(
+            message: __('Class schedule detail status updated successfully.')
         );
     }
 }

@@ -75,7 +75,7 @@
         </div>
 
         <div class="mt-5 flex flex-wrap justify-end gap-2">
-          <template v-if="can('perform student session action') && activeEventPopover.actionable">
+          <template v-if="can('perform student session action') && activeEventPopover.studentActionable">
             <button
               type="button"
               :disabled="sessionActionLoading"
@@ -93,6 +93,15 @@
               {{ sessionActionLoading ? $t('Sending…') : $t('Request Class Record Upload') }}
             </button>
           </template>
+          <button
+            v-if="can('change schedule detail status') && activeEventPopover.statusActionable"
+            type="button"
+            :disabled="statusActionLoading"
+            class="inline-flex items-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50 dark:bg-rose-700 dark:hover:bg-rose-600"
+            @click="performStatusAction('canceled')"
+          >
+            {{ statusActionLoading ? $t('Sending…') : $t('Cancel Session') }}
+          </button>
           <a
             v-if="activeEventPopover.chatRoomUrl"
             :href="activeEventPopover.chatRoomUrl"
@@ -163,6 +172,7 @@ const themeStore = useThemeStore();
 const sessionsLoading = ref(false);
 const sessionsError = ref('');
 const sessionActionLoading = ref(false);
+const statusActionLoading = ref(false);
 const courseLookupByName = ref({});
 const courseLookupById = ref({});
 const calendarDefinitions = ref({ ...defaultCalendars });
@@ -328,7 +338,8 @@ const openEventPopover = (eventData) => {
     return;
   }
 
-  const actionableStatuses = ['scheduled', 'reprogramed'];
+  const studentActionableStatuses = ['scheduled', 'reprogramed'];
+  const statusActionableStatuses = ['scheduled', 'reprogramed', 'pending', 'ongoing'];
 
   activeEventPopover.value = {
     id: eventData.id,
@@ -337,7 +348,8 @@ const openEventPopover = (eventData) => {
     displayTime: eventData.displayTime ?? '',
     statusLabel: eventData.statusLabel ?? '',
     status: eventData.status ?? '',
-    actionable: actionableStatuses.includes(eventData.status ?? ''),
+    studentActionable: studentActionableStatuses.includes(eventData.status ?? ''),
+    statusActionable: statusActionableStatuses.includes(eventData.status ?? ''),
     description: eventData.sessionDescription ?? '',
     chatRoomUrl: eventData.chatRoomUrl ?? '',
   };
@@ -365,6 +377,31 @@ const performSessionAction = async (actionType) => {
     alert(message);
   } finally {
     sessionActionLoading.value = false;
+  }
+};
+
+const performStatusAction = async (status) => {
+  if (!activeEventPopover.value?.id || statusActionLoading.value) return;
+
+  statusActionLoading.value = true;
+
+  try {
+    await api.post(
+      `/academics/lessons/class-schedules/details/${activeEventPopover.value.id}/status`,
+      { status },
+    );
+
+    closeEventPopover();
+
+    const currentRange = calendarAppRef?.$app?.calendarState?.range?.value;
+    if (currentRange) {
+      fetchSessionsForRange(currentRange);
+    }
+  } catch (error) {
+    const message = error?.response?.data?.message ?? 'Unable to perform action.';
+    alert(message);
+  } finally {
+    statusActionLoading.value = false;
   }
 };
 

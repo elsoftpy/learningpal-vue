@@ -369,17 +369,7 @@ const createDetailSchema = (t) => z.object({
     status: z.string().optional(),
 }).superRefine((data, ctx) => {
     const hasAnyRescheduleValue = Boolean(data.rescheduled_date || data.rescheduled_start_time || data.rescheduled_end_time);
-    const requiresReschedule = data.status === 'reprogramed' || hasAnyRescheduleValue;
-
-    // Check if user is trying to reschedule a cancelled session
-    if (hasAnyRescheduleValue && data.status === 'canceled') {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['status'],
-            message: t('Cannot reschedule a cancelled session. Please change the status first.'),
-        });
-        return;
-    }
+    const requiresReschedule = data.status === 'reprogramed' || (hasAnyRescheduleValue && data.status !== 'canceled');
 
     if (!requiresReschedule) {
         return;

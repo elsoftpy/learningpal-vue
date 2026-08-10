@@ -337,6 +337,9 @@ Route::prefix('academics')->name('academics.')->middleware(['spa.navigation', 'a
                 Route::post('/{detail}/edit', [ClassScheduleDetailController::class, 'update'])
                     ->name('edit');
 
+                Route::post('/{detail}/status', [ClassScheduleDetailController::class, 'updateStatus'])
+                    ->name('status');
+
                 Route::post('/{detail}/destroy', [ClassScheduleDetailController::class, 'destroy'])
                     ->name('destroy')
                     ->middleware('can:delete class schedule details');
