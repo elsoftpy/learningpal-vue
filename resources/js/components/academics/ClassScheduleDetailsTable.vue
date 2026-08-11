@@ -5,6 +5,7 @@
                 <table class="w-full text-sm">
                     <thead class="bg-blue-50 dark:bg-gray-800 rounded-lg">
                         <tr class="text-left text-xs uppercase tracking-wide text-slate-600 dark:text-slate-100">
+                            <th class="py-2 px-2" style="width: 1%"></th>
                             <th class="py-2 px-2 text-left">{{ $t('Date') }}</th>
                             <th class="py-2 px-2 text-left">{{ $t('Start') }}</th>
                             <th class="py-2 px-2 text-left">{{ $t('Rescheduled') }}</th>
@@ -15,74 +16,109 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr
-                            v-for="session in details"
-                            :key="session.id"
-                            class="border-t border-slate-200 dark:border-slate-700"
-                        >
-                            <td class="py-2 px-2 text-left">
-                                {{ session.session_date }}
-                            </td>
-                            <td class="py-2 px-2 text-left">
-                                {{ session.start_time }}
-                            </td>
-                            <td class="py-2 px-2 text-left">
-                                {{ session.rescheduled_date }}
-                            </td>
-                            <td class="py-2 px-2 text-left">
-                                {{ session.rescheduled_start_time }}
-                            </td>
-                            <td class="py-2 px-2 text-right">
-                                {{ session.reschedule_count || null }}
-                            </td>
-                            <td class="py-2 px-2">
-                               <Tag
-                                    :value="session.display_status"
-                                    :severity="statusSeverity(session.status)"
-                                    class="cursor-pointer"
-                                    @click="openHistory(session)"
-                                />
-                            </td>
-                            <td class="py-2 pr-4">
-                                <div class="flex space-x-2">
-                                    <Button 
-                                        v-if="canEditDetail"
-                                        type="button"
-                                        size="small"
-                                        :label="$t('Edit')"
-                                        icon="pi pi-pencil"
-                                        @click="handleEdit(session)"
-                                    />
-                                    <Button 
-                                        v-if="canUseRecordAction(session)"
-                                        type="button"
-                                        size="small"
-                                        :label="recordLabel(session)"
-                                        icon="pi pi-upload"
-                                        :severity="recordSeverity(session)"
-                                        @click="handleRecord(session)"
-                                    />
+                        <template v-for="session in details" :key="session.id">
+                            <tr class="border-t border-slate-200 dark:border-slate-700">
+                                <td class="py-2 px-2 text-center align-top">
                                     <Button
-                                        v-if="canDeleteClassRecordAction(session)"
+                                        v-if="canExpandClassRecord(session)"
                                         type="button"
                                         size="small"
-                                        :label="$t('Delete Record')"
-                                        icon="pi pi-trash"
-                                        severity="warn"
-                                        @click="handleDeleteRecord(session)"
+                                        text
+                                        rounded
+                                        :icon="isSessionExpanded(session.id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                                        :aria-label="$t('Toggle details')"
+                                        @click="toggleSessionExpansion(session)"
                                     />
-                                    <Button
-                                        v-if="canDeleteDetail"
-                                        type="button"
-                                        size="small"
-                                        :label="$t('Delete')"
-                                        icon="pi pi-trash"
-                                        severity="danger"
-                                        @click="handleDelete(session)"
+                                </td>
+                                <td class="py-2 px-2 text-left">
+                                    {{ session.session_date }}
+                                </td>
+                                <td class="py-2 px-2 text-left">
+                                    {{ session.start_time }}
+                                </td>
+                                <td class="py-2 px-2 text-left">
+                                    {{ session.rescheduled_date }}
+                                </td>
+                                <td class="py-2 px-2 text-left">
+                                    {{ session.rescheduled_start_time }}
+                                </td>
+                                <td class="py-2 px-2 text-right">
+                                    {{ session.reschedule_count || null }}
+                                </td>
+                                <td class="py-2 px-2">
+                                   <Tag
+                                        :value="session.display_status"
+                                        :severity="statusSeverity(session.status)"
+                                        class="cursor-pointer"
+                                        @click="openHistory(session)"
                                     />
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td class="py-2 pr-4">
+                                    <div class="flex space-x-2">
+                                        <Button
+                                            v-if="canEditDetail"
+                                            type="button"
+                                            size="small"
+                                            :label="$t('Edit')"
+                                            icon="pi pi-pencil"
+                                            @click="handleEdit(session)"
+                                        />
+                                        <Button
+                                            v-if="canUseRecordAction(session)"
+                                            type="button"
+                                            size="small"
+                                            :label="recordLabel(session)"
+                                            :icon="recordIcon(session)"
+                                            :severity="recordSeverity(session)"
+                                            @click="handleRecord(session)"
+                                        />
+                                        <Button
+                                            v-if="canDeleteClassRecordAction(session)"
+                                            type="button"
+                                            size="small"
+                                            :label="$t('Delete Record')"
+                                            icon="pi pi-trash"
+                                            severity="warn"
+                                            @click="handleDeleteRecord(session)"
+                                        />
+                                        <Button
+                                            v-if="canDeleteDetail"
+                                            type="button"
+                                            size="small"
+                                            :label="$t('Delete')"
+                                            icon="pi pi-trash"
+                                            severity="danger"
+                                            @click="handleDelete(session)"
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr
+                                v-if="isSessionExpanded(session.id)"
+                                class="border-t border-slate-200 dark:border-slate-700"
+                            >
+                                <td colspan="8" class="bg-slate-100 px-2 py-3 dark:bg-slate-900/60">
+                                    <div
+                                        v-if="isClassRecordLoading(session.id)"
+                                        class="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-300"
+                                    >
+                                        {{ $t('Loading class record details...') }}
+                                    </div>
+                                    <div
+                                        v-else-if="!classRecordDetails(session.id).length"
+                                        class="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-300"
+                                    >
+                                        {{ $t('No class record details available.') }}
+                                    </div>
+                                    <ClassRecordDetailsTable
+                                        v-else
+                                        :details="classRecordDetails(session.id)"
+                                        :show-detail-actions="false"
+                                        :show-student-production-section="false"
+                                    />
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -127,6 +163,23 @@
             </li>
         </ol>
     </Dialog>
+
+    <Dialog
+        v-model:visible="recordCommentsDialogVisible"
+        :header="$t('Class Record Comment')"
+        :style="{ width: '32rem' }"
+        modal
+    >
+        <div v-if="recordCommentsLoading" class="py-4 text-center text-sm text-slate-500">
+            {{ $t('Loading…') }}
+        </div>
+        <div v-else-if="!recordCommentsText" class="py-4 text-center text-sm text-slate-500">
+            {{ $t('No comments available.') }}
+        </div>
+        <p v-else class="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+            {{ recordCommentsText }}
+        </p>
+    </Dialog>
 </template>
 
 <script setup>
@@ -138,6 +191,7 @@ import { usePermissions } from '@/composables/usePermissions.js';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Dialog from 'primevue/dialog';
+import ClassRecordDetailsTable from '@/components/academics/ClassRecordDetailsTable.vue';
 import api from '@/axios';
 
 const { t: $t } = useI18n();
@@ -154,6 +208,12 @@ const canDeleteClassRecord = computed(() => can('delete class records'));
 const historyDialogVisible = ref(false);
 const historyLoading = ref(false);
 const historyEntries = ref([]);
+const expandedSessionIds = ref([]);
+const classRecordDataBySessionId = ref({});
+const classRecordLoadingBySessionId = ref({});
+const recordCommentsDialogVisible = ref(false);
+const recordCommentsLoading = ref(false);
+const recordCommentsText = ref('');
 
 const props = defineProps({
     details: {
@@ -195,10 +255,8 @@ const handleDeleteRecord = (session) => {
     emit('delete-record', session);
 };
 
-const isSessionCompleted = (session) => session?.status === 'completed';
-
 const canUseRecordAction = (session) => {
-    if (isSessionCompleted(session) && session?.class_record_id) {
+    if (hasClassRecord(session)) {
         return canViewClassRecord.value;
     }
 
@@ -207,24 +265,98 @@ const canUseRecordAction = (session) => {
 
 const canDeleteClassRecordAction = (session) => Boolean(session?.class_record_id) && canDeleteClassRecord.value;
 
-const recordSeverity = (session) => (isSessionCompleted(session) ? 'success' : 'warn');
+const hasClassRecord = (session) => Boolean(session?.class_record_id);
+
+const recordSeverity = (session) => (hasClassRecord(session) ? 'info' : 'warn');
 
 const recordLabel = (session) => {
-    if (isSessionCompleted(session) && session?.class_record_id) {
-        return $t('View Record');
+    if (hasClassRecord(session)) {
+        return $t('View Comment');
     }
 
     return $t('Upload Record');
 };
 
+const recordIcon = (session) => (hasClassRecord(session) ? 'pi pi-comments' : 'pi pi-upload');
+
+const canExpandClassRecord = (session) => hasClassRecord(session) && canViewClassRecord.value;
+
+const isSessionExpanded = (sessionId) => expandedSessionIds.value.includes(sessionId);
+
+const isClassRecordLoading = (sessionId) => Boolean(classRecordLoadingBySessionId.value[sessionId]);
+
+const classRecordDetails = (sessionId) => {
+    const record = classRecordDataBySessionId.value[sessionId];
+
+    return Array.isArray(record?.details) ? record.details : [];
+};
+
+const setClassRecordLoading = (sessionId, isLoading) => {
+    classRecordLoadingBySessionId.value = {
+        ...classRecordLoadingBySessionId.value,
+        [sessionId]: isLoading,
+    };
+};
+
+const cacheClassRecord = (sessionId, classRecord) => {
+    classRecordDataBySessionId.value = {
+        ...classRecordDataBySessionId.value,
+        [sessionId]: classRecord,
+    };
+};
+
+const loadClassRecord = async (session) => {
+    if (!session?.id || !session?.class_record_id) {
+        return null;
+    }
+
+    const cached = classRecordDataBySessionId.value[session.id];
+    if (cached) {
+        return cached;
+    }
+
+    setClassRecordLoading(session.id, true);
+
+    try {
+        const { data } = await api.post(`/academics/lessons/class-records/${session.class_record_id}/data`);
+        const classRecord = data?.data?.class_record ?? null;
+        cacheClassRecord(session.id, classRecord);
+
+        return classRecord;
+    } catch (error) {
+        const status = error?.response?.status;
+        if (status !== 401 && status !== 419) {
+            toast.add({
+                severity: 'error',
+                summary: $t('Error'),
+                detail: $t('Unable to load class record details.'),
+                life: 4000,
+            });
+        }
+
+        return null;
+    } finally {
+        setClassRecordLoading(session.id, false);
+    }
+};
+
+const toggleSessionExpansion = async (session) => {
+    if (!canExpandClassRecord(session)) {
+        return;
+    }
+
+    if (isSessionExpanded(session.id)) {
+        expandedSessionIds.value = expandedSessionIds.value.filter((id) => id !== session.id);
+        return;
+    }
+
+    expandedSessionIds.value = [...expandedSessionIds.value, session.id];
+    await loadClassRecord(session);
+};
+
 const handleRecord = (session) => {
-    if (isSessionCompleted(session) && session?.class_record_id) {
-        router.push({
-            name: 'academics.classes.class-records.show',
-            params: {
-                id: session.class_record_id,
-            },
-        });
+    if (hasClassRecord(session)) {
+        openRecordComments(session);
         return;
     }
 
@@ -234,6 +366,17 @@ const handleRecord = (session) => {
             classScheduleDetailId: session.id,
         },
     });
+};
+
+const openRecordComments = async (session) => {
+    recordCommentsDialogVisible.value = true;
+    recordCommentsLoading.value = true;
+    recordCommentsText.value = '';
+
+    const classRecord = await loadClassRecord(session);
+
+    recordCommentsText.value = classRecord?.comments ?? '';
+    recordCommentsLoading.value = false;
 };
 
 const avatarInitials = (name = '') => {
@@ -295,7 +438,7 @@ const openHistory = async (session) => {
 
 .table-expand-enter-to,
 .table-expand-leave-from {
-    max-height: 480px;
+    max-height: 1800px;
     opacity: 1;
 }
 </style>

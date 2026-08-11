@@ -75,7 +75,7 @@
                 </table>
             </div>
 
-            <div class="border-t border-slate-200 dark:border-slate-700 p-4 space-y-3">
+            <div v-if="showStudentProductionSection" class="border-t border-slate-200 dark:border-slate-700 p-4 space-y-3">
                 <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-100">{{ $t('Student Production') }}</h4>
 
                 <div v-if="allowStudentProductionUpload" class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -190,6 +190,10 @@ const props = defineProps({
     showDetailActions: {
         type: Boolean,
         default: false,
+    },
+    showStudentProductionSection: {
+        type: Boolean,
+        default: true,
     },
 });
 

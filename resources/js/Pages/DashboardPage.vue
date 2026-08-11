@@ -75,7 +75,7 @@
         </div>
 
         <div class="mt-5 flex flex-wrap justify-end gap-2">
-          <template v-if="can('perform student session action') && activeEventPopover.studentActionable">
+          <template v-if="canPerformStudentSessionAction && activeEventPopover.studentActionable">
             <button
               type="button"
               :disabled="sessionActionLoading"
@@ -93,6 +93,15 @@
               {{ sessionActionLoading ? $t('Sending…') : $t('Request Class Record Upload') }}
             </button>
           </template>
+          <button
+            v-if="can('change schedule detail status') && activeEventPopover.studentActionable"
+            type="button"
+            :disabled="statusActionLoading"
+            class="inline-flex items-center rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50 dark:bg-amber-600 dark:hover:bg-amber-500"
+            @click="performStatusAction('pending')"
+          >
+            {{ statusActionLoading ? $t('Sending…') : $t('Leave Pending') }}
+          </button>
           <button
             v-if="can('change schedule detail status') && activeEventPopover.statusActionable"
             type="button"
@@ -112,7 +121,7 @@
             {{ $t('Join Event') }}
           </a>
           <span
-            v-if="!activeEventPopover.chatRoomUrl && !can('perform student session action')"
+            v-if="!activeEventPopover.chatRoomUrl && !canPerformStudentSessionAction"
             class="text-xs text-slate-500 dark:text-slate-400"
           >
             {{ $t('No event link available') }}
@@ -128,6 +137,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useI18n } from 'vue-i18n';
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { usePermissions } from '@/composables/usePermissions.js';
+import { useAuthStore } from '@/stores/auth';
 import { ScheduleXCalendar } from "@schedule-x/vue";
 import {
   createCalendar,
@@ -145,6 +155,7 @@ import api from '@/axios';
 
 const { t: $t } = useI18n();
 const { can } = usePermissions();
+const auth = useAuthStore();
 const appName = import.meta.env.VITE_APP_NAME || 'LearningPal';
 const appVersion = import.meta.env.VITE_APP_VERSION || 'N/A';
 const appLocale = import.meta.env.VITE_APP_LOCALE + '-ES'|| 'en-US';
@@ -182,6 +193,17 @@ const activeEventPopover = ref(null);
 
 let activeSessionsController;
 let calendarAppRef = null;
+
+const isStudentRole = computed(() => {
+  const roles = Array.isArray(auth.user?.roles) ? auth.user.roles : [];
+  const roleNames = roles
+    .map((role) => (typeof role === 'object' ? role?.name : role))
+    .filter(Boolean);
+
+  return roleNames.includes('student') || roleNames.includes('annual_student');
+});
+
+const canPerformStudentSessionAction = computed(() => can('perform student session action') && isStudentRole.value);
 
 const sessionStatusOptions = computed(() => ([
   { value: 'all', label: $t('All') },
@@ -373,7 +395,10 @@ const performSessionAction = async (actionType) => {
       fetchSessionsForRange(currentRange);
     }
   } catch (error) {
-    const message = error?.response?.data?.message ?? 'Unable to perform action.';
+    const rawMessage = error?.response?.data?.message;
+    const message = typeof rawMessage === 'string' && rawMessage.trim()
+      ? rawMessage
+      : 'Unable to perform action.';
     alert(message);
   } finally {
     sessionActionLoading.value = false;
@@ -398,7 +423,10 @@ const performStatusAction = async (status) => {
       fetchSessionsForRange(currentRange);
     }
   } catch (error) {
-    const message = error?.response?.data?.message ?? 'Unable to perform action.';
+    const rawMessage = error?.response?.data?.message;
+    const message = typeof rawMessage === 'string' && rawMessage.trim()
+      ? rawMessage
+      : 'Unable to perform action.';
     alert(message);
   } finally {
     statusActionLoading.value = false;

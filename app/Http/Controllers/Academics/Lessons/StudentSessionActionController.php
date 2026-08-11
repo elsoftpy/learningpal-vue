@@ -49,7 +49,10 @@ class StudentSessionActionController extends Controller
         $studentModel = $user->profile?->student;
 
         if (! $studentModel) {
-            abort(403);
+            return ResponseService::error(
+                message: __('Only students can perform this action.'),
+                statusCode: 403
+            );
         }
 
         $detail->loadMissing([
@@ -60,7 +63,10 @@ class StudentSessionActionController extends Controller
         $course = $detail->classSchedule?->course;
 
         if (! $course || ! $course->students->contains('id', $studentModel->id)) {
-            abort(403);
+            return ResponseService::error(
+                message: __('You do not have permission to perform this action.'),
+                statusCode: 403
+            );
         }
 
         $actionableStatuses = ['scheduled', 'reprogramed'];
