@@ -47,7 +47,7 @@
                         <Button
                             type="button"
                             icon="pi pi-arrow-left"
-                            :label="$t('Back to distance activities')"
+                            :label="$t('Back to weeks')"
                             @click="goBack"
                         />
                     </div>
@@ -694,7 +694,12 @@ const fetchDistanceActivity = async () => {
 };
 
 const goBack = () => {
-    router.push({ name: 'academics.classes.distance-activities.list' });
+    const languageLevelId = route.query.language_level_id ? parseInt(route.query.language_level_id) : null;
+
+    router.push({
+        name: 'academics.classes.distance-activities.weeks',
+        ...(languageLevelId ? { query: { language_level_id: languageLevelId } } : {}),
+    });
 };
 
 const isStudentView = computed(() => distanceActivity.viewer_mode === 'student');

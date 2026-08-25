@@ -106,6 +106,11 @@ const openDetail = (id) => {
     router.push({
         name: 'academics.classes.distance-activities.detail',
         params: { id },
+        query: {
+            ...(weekId ? { week_id: weekId } : {}),
+            ...(weekTitle ? { week_title: weekTitle } : {}),
+            ...(weekLanguageLevelId ? { language_level_id: weekLanguageLevelId } : {}),
+        },
     });
 };
 

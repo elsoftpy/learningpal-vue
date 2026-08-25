@@ -6,17 +6,21 @@
                     <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">
                         {{ $t('Distance Activities') }}
                     </h1>
-                    <Select
-                        v-if="languageLevelOptions.length"
-                        v-model="selectedLanguageLevelId"
-                        :options="languageLevelOptions"
-                        option-label="label"
-                        option-value="value"
-                        :placeholder="$t('All Language Levels')"
-                        show-clear
-                        class="w-full md:w-56"
-                        size="small"
-                    />
+                    <div v-if="languageLevelOptions.length" class="flex flex-col gap-1 md:items-end">
+                        <Select
+                            v-model="selectedLanguageLevelId"
+                            :options="languageLevelOptions"
+                            option-label="label"
+                            option-value="value"
+                            :placeholder="$t('All Language Levels')"
+                            show-clear
+                            class="w-full md:w-56"
+                            size="small"
+                        />
+                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                            {{ $t('To view activities from previous language levels, select a level.') }}
+                        </span>
+                    </div>
                 </div>
 
                 <Message v-if="loadError" severity="error" size="small" variant="simple">
