@@ -36,10 +36,23 @@
                             :show-clear="false"
                             :loading="coursesLoading"
                             @filter="onCoursesFilter"
-                            class="w-full"
+                            class="w-full courses-multiselect"
                             display="chip"
-                            :max-selected-label="3"
                         >
+                            <template #chip="{ value, removeCallback }">
+                                <div class="inline-flex max-w-full items-center gap-1 rounded-md bg-primary-100 px-2 py-1 text-sm text-primary-900 dark:bg-primary-900/30 dark:text-primary-100">
+                                    <span class="max-w-48 truncate">{{ getCourseLabel(value) }}</span>
+                                    <button
+                                        type="button"
+                                        class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-primary-700 hover:bg-primary-200 dark:text-primary-200 dark:hover:bg-primary-800"
+                                        :aria-label="$t('Remove course')"
+                                        @click="removeCallback"
+                                    >
+                                        <i class="pi pi-times text-xs" />
+                                    </button>
+                                </div>
+                            </template>
+
                             <template #empty>
                                 <div class="p-3 text-center text-gray-500">
                                     {{ $t('No results found.') }}
@@ -113,6 +126,19 @@
     </Form>
 </template>
 
+<style scoped>
+.courses-multiselect :deep(.p-multiselect-label) {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 0.375rem;
+    max-height: 8rem;
+    min-height: 2.75rem;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+</style>
+
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -148,6 +174,7 @@ const selectedProfileOption = ref(null);
 
 const statusList = ref([]);
 const coursesOptions = ref([]);
+const courseLabels = ref(new Map());
 const coursesLoading = ref(false);
 const teacherData = ref(null);
 const formKey = ref(0);
@@ -282,6 +309,7 @@ const fetchCourses = async (query = '') => {
         const params = query ? { search: query } : {};
         const response = await axios.post('/lists/courses', { params });
         coursesOptions.value = response.data.data || response.data || [];
+        coursesOptions.value.forEach((course) => courseLabels.value.set(course.id, course.name));
 
     } catch (error) {
         console.error('Error fetching courses:', error);
@@ -294,7 +322,19 @@ const fetchCourses = async (query = '') => {
 const fetchTeacherData = async () => {
     try {
         const response = await axios.post(`/academics/settings/teachers/${teacherId}/data`);
-        teacherData.value = response.data.data.teacher || response.data.teacher || {};
+        const teacher = response.data.data.teacher || response.data.teacher || {};
+        teacherData.value = teacher;
+
+        if (Array.isArray(teacher.courses) && Array.isArray(teacher.display_courses)) {
+            teacher.courses.forEach((courseId, index) => {
+                const courseName = teacher.display_courses[index] ?? String(courseId);
+                courseLabels.value.set(courseId, courseName);
+
+                if (!coursesOptions.value.some((course) => course.id === courseId)) {
+                    coursesOptions.value.push({ id: courseId, name: courseName });
+                }
+            });
+        }
     } catch (error) {
         console.error('Error fetching teacher data:', error);
         teacherData.value = null;
@@ -305,6 +345,12 @@ const fetchTeacherData = async () => {
             life: 5000 
         });
     }
+};
+
+const getCourseLabel = (course) => {
+    const courseId = typeof course === 'object' ? course?.id : course;
+
+    return courseLabels.value.get(courseId) ?? String(courseId);
 };
 
 const getCourseNames = (courses) => {
