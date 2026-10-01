@@ -49,7 +49,7 @@
         </div>
 
         <div class="text-xs text-slate-500 dark:text-slate-400">
-            {{ $t('Duration') }}: {{ formattedDuration }}
+            {{ $t('Duration') }}: {{ formattedDuration }} / {{ formattedMaxDuration }}
             <span v-if="isProcessing"> - {{ $t('Preparing audio...') }}</span>
         </div>
 
@@ -81,7 +81,7 @@ const props = defineProps({
     },
     bitRate: {
         type: Number,
-        default: 128,
+        default: 32,
     },
 });
 
@@ -100,12 +100,16 @@ let mediaStream = null;
 let recordedChunks = [];
 let timerInterval = null;
 let selectedMimeType = 'audio/webm';
+let recordingStartedAt = null;
 
-const formattedDuration = computed(() => {
-    const mins = String(Math.floor(durationSeconds.value / 60)).padStart(2, '0');
-    const secs = String(durationSeconds.value % 60).padStart(2, '0');
+const formatSeconds = (totalSeconds) => {
+    const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+    const secs = String(totalSeconds % 60).padStart(2, '0');
     return `${mins}:${secs}`;
-});
+};
+
+const formattedDuration = computed(() => formatSeconds(durationSeconds.value));
+const formattedMaxDuration = computed(() => formatSeconds(props.maxDurationSeconds));
 
 const audioFileName = computed(() => audioFile.value?.name || '');
 
@@ -144,6 +148,29 @@ const stopTimer = () => {
     }
 };
 
+// Elapsed time is derived from the wall clock because mobile browsers throttle
+// or freeze intervals while the screen is locked, but keep recording.
+const syncElapsedTime = () => {
+    if (!isRecording.value || recordingStartedAt === null) {
+        return;
+    }
+
+    durationSeconds.value = Math.min(
+        Math.floor((Date.now() - recordingStartedAt) / 1000),
+        props.maxDurationSeconds
+    );
+
+    if (durationSeconds.value >= props.maxDurationSeconds) {
+        stopRecording();
+    }
+};
+
+const onVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+        syncElapsedTime();
+    }
+};
+
 const revokeAudioUrl = () => {
     if (audioUrl.value) {
         URL.revokeObjectURL(audioUrl.value);
@@ -179,9 +206,10 @@ const startRecording = async () => {
         permissionState.value = 'granted';
 
         selectedMimeType = chooseMimeType() || 'audio/webm';
-        mediaRecorder = selectedMimeType
-            ? new MediaRecorder(mediaStream, { mimeType: selectedMimeType })
-            : new MediaRecorder(mediaStream);
+        mediaRecorder = new MediaRecorder(mediaStream, {
+            mimeType: selectedMimeType,
+            audioBitsPerSecond: props.bitRate * 1000,
+        });
 
         recordedChunks = [];
 
@@ -224,12 +252,8 @@ const startRecording = async () => {
         mediaRecorder.start();
         isRecording.value = true;
         durationSeconds.value = 0;
-        timerInterval = setInterval(() => {
-            durationSeconds.value += 1;
-            if (durationSeconds.value >= props.maxDurationSeconds && isRecording.value) {
-                stopRecording();
-            }
-        }, 1000);
+        recordingStartedAt = Date.now();
+        timerInterval = setInterval(syncElapsedTime, 1000);
     } catch {
         permissionState.value = 'denied';
         errorMessage.value = $t('Microphone access is required to record audio.');
@@ -256,9 +280,11 @@ const discardAudio = () => {
 
 onMounted(() => {
     refreshPermissionState();
+    document.addEventListener('visibilitychange', onVisibilityChange);
 });
 
 onBeforeUnmount(() => {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     stopTimer();
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();

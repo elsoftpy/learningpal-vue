@@ -41,12 +41,14 @@ trait ProfileValidationTrait
                 'string',
                 'max:20',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::PERSON->value),
+                Rule::unique('profiles', 'personal_id')->ignore($this->targetProfileId()),
             ],
             'ruc' => [
                 'nullable',
                 'string',
                 'max:20',
                 Rule::requiredIf(fn () => $this->input('type') === ProfileTypeEnum::COMPANY->value),
+                Rule::unique('profiles', 'ruc')->ignore($this->targetProfileId()),
             ],
             'email' => [
                 'required',
@@ -110,9 +112,11 @@ trait ProfileValidationTrait
             'personal_id.required' => __('Identity document is required.'),
             'personal_id.string' => __('Identity document must be a valid string.'),
             'personal_id.max' => __('Identity document may not be greater than :max characters.'),
+            'personal_id.unique' => __('This identity document is already registered.'),
             'ruc.required' => __('RUC is required.'),
             'ruc.string' => __('RUC must be a valid string.'),
             'ruc.max' => __('RUC may not be greater than :max characters.'),
+            'ruc.unique' => __('This RUC is already registered.'),
             'email.required' => __('Email is required.'),
             'email.string' => __('Email must be a valid string.'),
             'email.email' => __('Please provide a valid email address.'),
@@ -137,6 +141,32 @@ trait ProfileValidationTrait
             'payment_receipt.max' => __('Payment receipt may not be greater than :max kilobytes.'),
             'payment_receipt.mimes' => __('Payment receipt must be a file of type: :values.'),
         ];
+    }
+
+    /**
+     * Resolve the profile that will actually be saved, mirroring ProfileService::resolveProfile():
+     * an explicit profile_id, the route-bound model's profile, or an existing profile with the same email.
+     */
+    protected function targetProfileId(): ?int
+    {
+        $profileId = $this->integer('profile_id');
+        if ($profileId) {
+            return $profileId;
+        }
+
+        foreach (['user', 'student', 'teacher'] as $routeParameter) {
+            $routeModel = $this->route($routeParameter);
+            if (is_object($routeModel) && $routeModel->profile_id) {
+                return (int) $routeModel->profile_id;
+            }
+        }
+
+        $email = $this->input('email');
+        if (! is_string($email) || trim($email) === '') {
+            return null;
+        }
+
+        return Profile::query()->where('email', $email)->value('id');
     }
 
     public function profileByIdNumber(string $idNumber): ?Profile

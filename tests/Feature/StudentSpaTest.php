@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ProfileTypeEnum;
 use App\Models\Course;
 use App\Models\Profile;
 use App\Models\Student;
@@ -143,5 +144,98 @@ class StudentSpaTest extends TestCase
         $response = $this->getJson(route('academics.settings.students.index'));
 
         $response->assertStatus(403);
+    }
+
+    public function test_admin_cannot_create_student_with_personal_id_of_another_profile(): void
+    {
+        $this->actingAsAdmin();
+
+        $existingProfile = Profile::factory()->create(['personal_id' => '1234567']);
+
+        $response = $this->postJson(route('academics.settings.students.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => $existingProfile->personal_id,
+            'first_name' => 'Diara',
+            'last_name' => 'Tandi',
+            'email' => 'new.student@example.com',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['personal_id']);
+        $this->assertDatabaseMissing('profiles', ['email' => 'new.student@example.com']);
+    }
+
+    public function test_admin_can_create_student_reusing_profile_with_same_personal_id_and_email(): void
+    {
+        $this->actingAsAdmin();
+
+        $existingProfile = Profile::factory()->create();
+        $profileCount = Profile::query()->count();
+
+        $response = $this->postJson(route('academics.settings.students.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => $existingProfile->personal_id,
+            'first_name' => $existingProfile->first_name,
+            'last_name' => $existingProfile->last_name,
+            'email' => $existingProfile->email,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame($profileCount, Profile::query()->count());
+        $this->assertDatabaseHas('students', ['profile_id' => $existingProfile->id]);
+    }
+
+    public function test_admin_can_update_student_keeping_its_own_personal_id(): void
+    {
+        $this->actingAsAdmin();
+
+        $student = Student::factory()->create();
+
+        $response = $this->postJson(route('academics.settings.students.edit', ['student' => $student->id]), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => $student->profile->personal_id,
+            'first_name' => 'Updated',
+            'last_name' => 'Student',
+            'email' => $student->profile->email,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('profiles', [
+            'id' => $student->profile_id,
+            'first_name' => 'Updated',
+        ]);
+    }
+
+    public function test_admin_cannot_update_student_with_personal_id_of_another_profile(): void
+    {
+        $this->actingAsAdmin();
+
+        $student = Student::factory()->create();
+        $otherProfile = Profile::factory()->create();
+
+        $response = $this->postJson(route('academics.settings.students.edit', ['student' => $student->id]), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => $otherProfile->personal_id,
+            'first_name' => 'Updated',
+            'last_name' => 'Student',
+            'email' => $student->profile->email,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['personal_id']);
+    }
+
+    protected function actingAsAdmin(): User
+    {
+        $admin = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $admin->assignRole('admin');
+
+        /** @var User $admin */
+        $this->actingAs($admin, 'web');
+
+        return $admin;
     }
 }

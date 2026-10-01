@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const createUserSchema = (t, locale) => {
+export const createUserSchema = (t, locale, { requirePassword = false } = {}) => {
   const dataRegex = locale === 'en' ? /^\d{2}-\d{2}-\d{4}$/ : /^\d{2}\/\d{2}\/\d{4}$/;
 
   return z.object({
@@ -42,11 +42,15 @@ export const createUserSchema = (t, locale) => {
       })
       .optional(),
     name: z.string().min(1, t('Username is required')),
-    password: z.string()
-      .refine((val) => !val || val.length >= 6, {
-        message: t('Password must be at least 6 characters long.'),
-      })
-      .optional(),
+    password: requirePassword
+      ? z.string()
+        .min(1, t('Password is required.'))
+        .min(6, t('Password must be at least 6 characters long.'))
+      : z.string()
+        .refine((val) => !val || val.length >= 6, {
+          message: t('Password must be at least 6 characters long.'),
+        })
+        .optional(),
     roles: z.array(z.number()).min(1, t('At least one role must be selected')),
     status: z.string().min(1, t('Select Status')),
   });

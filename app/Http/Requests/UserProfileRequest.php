@@ -38,6 +38,7 @@ class UserProfileRequest extends FormRequest
                     Rule::unique('users', 'name')->ignore($this->user?->id),
                 ],
                 'password' => [
+                    Rule::requiredIf(fn () => $this->route('user') === null),
                     'nullable',
                     'string',
                     'min:6',
@@ -74,6 +75,7 @@ class UserProfileRequest extends FormRequest
                 'name.string' => __('Username must be a valid string.'),
                 'name.max' => __('Username may not be greater than :max characters.'),
                 'name.unique' => __('This username is already taken.'),
+                'password.required' => __('Password is required.'),
                 'password.string' => __('Password must be a valid string.'),
                 'password.min' => __('Password must be at least :min characters long.'),
             ]

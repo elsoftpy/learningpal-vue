@@ -216,6 +216,7 @@
                                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                         <div class="space-y-3">
                                             <FileUpload
+                                                :key="`distance-activity-file-${detail.id}-${productionResetKeys[detail.id] || 0}`"
                                                 :id="`distance-activity-file-${detail.id}`"
                                                 :button-label="$t('Upload file')"
                                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,image/*"
@@ -243,6 +244,7 @@
 
                                         <div class="space-y-3">
                                             <AudioRecorder
+                                                :key="`distance-activity-audio-${detail.id}-${productionResetKeys[detail.id] || 0}`"
                                                 :label="$t('Record student audio')"
                                                 @update:modelValue="setProductionFile(detail.id, 'audio', $event)"
                                                 @error="onAudioError"
@@ -256,6 +258,24 @@
                                                 <audio :src="media.url" controls class="w-full" />
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <Message
+                                        v-if="canSaveProduction(detail.id) && !detailLoadingMap[detail.id]?.upload"
+                                        class="mt-4"
+                                        severity="warn"
+                                        size="small"
+                                        variant="simple"
+                                    >
+                                        {{ $t('Your production is not saved yet. Press "Save Production" to upload it.') }}
+                                    </Message>
+
+                                    <div v-if="detailLoadingMap[detail.id]?.upload" class="mt-4 space-y-1">
+                                        <ProgressBar :value="uploadProgress[detail.id] || 0" class="h-2" :show-value="false" />
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                                            {{ $t('Uploading production... {percent}%', { percent: uploadProgress[detail.id] || 0 }) }}
+                                            {{ $t('Do not close this page until the upload finishes.') }}
+                                        </p>
                                     </div>
 
                                     <div class="mt-4 flex justify-end">
@@ -584,6 +604,7 @@ import Button from 'primevue/button';
 import FileUpload from '@/components/form/FileUpload.vue';
 import AudioRecorder from '@/components/form/AudioRecorder.vue';
 import Message from 'primevue/message';
+import ProgressBar from 'primevue/progressbar';
 import ProgressSpinner from 'primevue/progressspinner';
 import Tag from 'primevue/tag';
 import Dialog from 'primevue/dialog';
@@ -618,6 +639,9 @@ const distanceActivity = reactive({
 });
 const detailLoadingMap = reactive({});
 const pendingProduction = reactive({});
+const uploadProgress = reactive({});
+const productionResetKeys = reactive({});
+const UPLOAD_STALL_TIMEOUT_MS = 60000;
 const studentSubmissionPagination = reactive({});
 const adminActionLoading = reactive({});
 const nowMs = ref(Date.now());
@@ -991,9 +1015,37 @@ const deleteSubmissionMedia = async () => {
     }
 };
 
+const productionUploadErrorMessage = (error) => {
+    if (axios.isCancel(error)) {
+        return $t('The upload stopped responding. Check your internet connection and try again.');
+    }
+
+    if (!error?.response) {
+        return $t('The upload could not be completed. Check your internet connection and try again.');
+    }
+
+    if (error.response.status === 413) {
+        return $t('The file is too large to upload. Try a shorter recording.');
+    }
+
+    const apiError = handleApiError(error);
+    const firstFieldError = Object.values(apiError?.errors || {}).flat()[0];
+
+    return firstFieldError || apiError?.message || $t('Unable to save student production.');
+};
+
 const saveProduction = async (detail) => {
     ensurePendingProduction(detail.id);
     detailLoadingMap[detail.id].upload = true;
+    uploadProgress[detail.id] = 0;
+
+    const abortController = new AbortController();
+    let lastProgressAt = Date.now();
+    const stallCheckId = window.setInterval(() => {
+        if (Date.now() - lastProgressAt > UPLOAD_STALL_TIMEOUT_MS) {
+            abortController.abort();
+        }
+    }, 5000);
 
     try {
         const payload = new FormData();
@@ -1006,10 +1058,18 @@ const saveProduction = async (detail) => {
 
         const response = await axios.post(`/academics/lessons/distance-activities/details/${detail.id}/student-production`, payload, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            signal: abortController.signal,
+            onUploadProgress: (progressEvent) => {
+                lastProgressAt = Date.now();
+                if (progressEvent.total) {
+                    uploadProgress[detail.id] = Math.min(99, Math.round((progressEvent.loaded / progressEvent.total) * 100));
+                }
+            },
         });
 
         pendingProduction[detail.id].file = null;
         pendingProduction[detail.id].audio = null;
+        productionResetKeys[detail.id] = (productionResetKeys[detail.id] || 0) + 1;
 
         applyDistanceActivityData(response.data?.data?.distance_activity || {});
 
@@ -1020,15 +1080,19 @@ const saveProduction = async (detail) => {
             life: 3000,
         });
     } catch (error) {
-        const apiError = handleApiError(error);
+        if (error?.__authRedirectHandled) {
+            return;
+        }
+
         toast.add({
             severity: 'error',
-            summary: $t('Error'),
-            detail: apiError?.message || $t('Unable to save student production.'),
-            life: 4000,
+            summary: $t('Unable to save student production.'),
+            detail: productionUploadErrorMessage(error),
         });
     } finally {
+        window.clearInterval(stallCheckId);
         detailLoadingMap[detail.id].upload = false;
+        uploadProgress[detail.id] = 0;
     }
 };
 

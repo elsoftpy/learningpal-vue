@@ -30,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => InvalidateSessionMiddleware::class,
             'spa.navigation' => ServeSpaOnBrowserNavigation::class,
         ]);
+
+        $middleware->redirectGuestsTo('/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->renderable(function (NotFoundHttpException $e, $request) {

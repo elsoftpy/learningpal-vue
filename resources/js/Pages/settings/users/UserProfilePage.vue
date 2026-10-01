@@ -52,6 +52,7 @@
                     <div class="flex flex-col w-full md:w-1/6">
                         <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ $t('Password') }}
+                            <span v-if="creating" class="text-red-500">*</span>
                         </label>
                         <Password
                             id="password"
@@ -337,8 +338,6 @@ const { locale, t: $t } = useI18n();
 const { can } = usePermissions();
 const { handleApiError } = useApiErrorHandler();
 const { extractFormData } = useFormValues();
-const userSchema = computed(() => createUserSchema($t, locale.value));
-const resolver = zodResolver(userSchema.value);
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
@@ -359,6 +358,8 @@ let rolesDebounceTimer = null;
 
 const crudAction = route.meta?.crud || 'read';
 const creating = crudAction === 'create';
+const userSchema = computed(() => createUserSchema($t, locale.value, { requirePassword: creating }));
+const resolver = zodResolver(userSchema.value);
 
 const userId = route.meta.crud === 'edit.auth-user' ? auth.user.id : route.params.id;
 const from = route.query.from|| null;

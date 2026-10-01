@@ -649,5 +649,11 @@
     "late": "tarde",
     "mm/yyyy": "mm/aaaa",
     "present": "presente",
-    "will be replaced if new file selected": "será substituído se novo arquivo for selecionado"
+    "will be replaced if new file selected": "será substituído se novo arquivo for selecionado",
+    "Your production is not saved yet. Press \"Save Production\" to upload it.": "Sua produção ainda não foi salva. Clique em \"Salvar produção\" para enviá-la.",
+    "Uploading production... {percent}%": "Enviando produção... {percent}%",
+    "Do not close this page until the upload finishes.": "Não feche esta página até o envio terminar.",
+    "The upload stopped responding. Check your internet connection and try again.": "O envio parou de responder. Verifique sua conexão com a internet e tente novamente.",
+    "The upload could not be completed. Check your internet connection and try again.": "Não foi possível concluir o envio. Verifique sua conexão com a internet e tente novamente.",
+    "The file is too large to upload. Try a shorter recording.": "O arquivo é grande demais para enviar. Tente uma gravação mais curta."
 }

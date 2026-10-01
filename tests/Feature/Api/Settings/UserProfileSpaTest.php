@@ -490,4 +490,124 @@ class UserProfileSpaTest extends TestCase
             'id' => $user2->id,
         ]);
     }
+
+    public function test_admin_user_cannot_create_user_without_password(): void
+    {
+        $adminUser = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $adminUser->assignRole('admin');
+
+        /** @var User $adminUser */
+        $this->actingAs($adminUser, 'web');
+
+        $response = $this->postJson(route('settings.users.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => '555666777',
+            'first_name' => 'Maria',
+            'last_name' => 'Jimena',
+            'name' => 'mariajimena',
+            'roles' => ['student'],
+            'status' => StatusEnum::ACTIVE->value,
+            'email' => 'maria.jimena@example.com',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseMissing('profiles', ['email' => 'maria.jimena@example.com']);
+    }
+
+    public function test_admin_user_can_edit_user_without_sending_password(): void
+    {
+        $adminUser = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $adminUser->assignRole('admin');
+
+        $user = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $originalPasswordHash = $user->password;
+
+        /** @var User $adminUser */
+        $this->actingAs($adminUser, 'web');
+
+        $response = $this->postJson(route('settings.users.profile.update', ['user' => $user->id]), [
+            'type' => $user->profile->type,
+            'personal_id' => $user->profile->personal_id,
+            'first_name' => 'Carla',
+            'last_name' => 'Gomez',
+            'email' => $user->profile->email,
+            'name' => $user->name,
+            'roles' => ['student'],
+            'status' => StatusEnum::ACTIVE->value,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame($originalPasswordHash, $user->fresh()->password);
+    }
+
+    public function test_admin_user_cannot_create_user_with_personal_id_of_another_profile(): void
+    {
+        $adminUser = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $adminUser->assignRole('admin');
+
+        $existingProfile = Profile::factory()->create();
+
+        /** @var User $adminUser */
+        $this->actingAs($adminUser, 'web');
+
+        $response = $this->postJson(route('settings.users.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => $existingProfile->personal_id,
+            'first_name' => 'Diara',
+            'last_name' => 'Tandi',
+            'name' => 'diarat',
+            'password' => 'SecurePass123!',
+            'roles' => ['student'],
+            'status' => StatusEnum::ACTIVE->value,
+            'email' => 'diara.tandi@example.com',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['personal_id']);
+    }
+
+    public function test_admin_user_can_create_user_for_existing_profile_with_same_personal_id_and_email(): void
+    {
+        $adminUser = User::factory()->create([
+            'profile_id' => Profile::factory()->create()->id,
+        ]);
+
+        $adminUser->assignRole('admin');
+
+        $existingProfile = Profile::factory()->create();
+
+        /** @var User $adminUser */
+        $this->actingAs($adminUser, 'web');
+
+        $response = $this->postJson(route('settings.users.store'), [
+            'type' => ProfileTypeEnum::PERSON->value,
+            'personal_id' => $existingProfile->personal_id,
+            'first_name' => $existingProfile->first_name,
+            'last_name' => $existingProfile->last_name,
+            'name' => 'existing.profile.user',
+            'password' => 'SecurePass123!',
+            'roles' => ['student'],
+            'status' => StatusEnum::ACTIVE->value,
+            'email' => $existingProfile->email,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('users', [
+            'name' => 'existing.profile.user',
+            'profile_id' => $existingProfile->id,
+        ]);
+    }
 }

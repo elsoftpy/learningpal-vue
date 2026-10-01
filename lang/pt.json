@@ -244,5 +244,7 @@
     "reprogramed": "Reprogramada",
     "scheduled": "Agendada",
     "student": "estudante",
-    "teacher": "professor"
+    "teacher": "professor",
+    "This identity document is already registered.": "Este documento de identidade já está registrado.",
+    "This RUC is already registered.": "Este RUC já está registrado."
 }

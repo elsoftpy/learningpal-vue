@@ -247,5 +247,7 @@
     "reprogramed": "reprogramed",
     "scheduled": "scheduled",
     "student": "student",
-    "teacher": "teacher"
+    "teacher": "teacher",
+    "This identity document is already registered.": "This identity document is already registered.",
+    "This RUC is already registered.": "This RUC is already registered."
 }
