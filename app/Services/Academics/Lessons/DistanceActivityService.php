@@ -90,6 +90,44 @@ class DistanceActivityService
         return $query;
     }
 
+    /**
+     * Language levels the user can browse distance activities for: the current
+     * levels of their courses plus any level they have visible activities in.
+     *
+     * @return array<int, int>|null Null when the user is not restricted.
+     */
+    public function visibleLanguageLevelIds(User $user): ?array
+    {
+        $courseLanguageLevelIds = (new CourseVisibilityService)->visibleLanguageLevelIdsForUser($user);
+
+        if ($courseLanguageLevelIds === null) {
+            return null;
+        }
+
+        $activityLanguageLevelIds = $this->visibleActivitiesQuery($user)
+            ->whereNotNull('language_level_id')
+            ->distinct()
+            ->pluck('language_level_id')
+            ->map(fn ($id) => (int) $id);
+
+        return collect($courseLanguageLevelIds)
+            ->merge($activityLanguageLevelIds)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function canAccessLanguageLevelId(User $user, ?int $languageLevelId): bool
+    {
+        if ($languageLevelId === null) {
+            return false;
+        }
+
+        $visibleLanguageLevelIds = $this->visibleLanguageLevelIds($user);
+
+        return $visibleLanguageLevelIds === null || in_array($languageLevelId, $visibleLanguageLevelIds, true);
+    }
+
     public function listData(DistanceActivity $activity, User $user): array
     {
         $student = $this->resolveStudent($user);

@@ -8,6 +8,8 @@ use App\Models\DistanceActivityStudent;
 use App\Models\LanguageLevel;
 use App\Models\Profile;
 use App\Models\Student;
+use App\Models\StudyProgram;
+use App\Models\StudyProgramWeek;
 use App\Models\Teacher;
 use App\Models\User;
 use Tests\TestCase;
@@ -40,6 +42,52 @@ class DistanceActivityFilterTest extends TestCase
         $user->assignRole('student');
 
         return [$user, $student];
+    }
+
+    /**
+     * @return array{0: User, 1: LanguageLevel, 2: LanguageLevel, 3: DistanceActivity, 4: DistanceActivity, 5: LanguageLevel}
+     */
+    private function makeStudentWithPreviousLevelActivity(): array
+    {
+        [$studentUser, $student] = $this->makeStudentUser();
+        $adminUser = $this->makeUser('admin');
+
+        $previousLevel = LanguageLevel::factory()->create(['level' => 'A1.1']);
+        $currentLevel = LanguageLevel::factory()->create(['level' => 'B1.1']);
+        $unrelatedLevel = LanguageLevel::factory()->create(['level' => 'C1.1']);
+
+        $course = Course::factory()->create(['language_level_id' => $currentLevel->id]);
+        $course->students()->attach($student->id);
+
+        $weeks = collect([$previousLevel, $currentLevel])->mapWithKeys(fn (LanguageLevel $level) => [
+            $level->id => StudyProgramWeek::factory()->create([
+                'study_program_id' => StudyProgram::factory()->create(['language_level_id' => $level->id])->id,
+            ]),
+        ]);
+
+        $activities = [];
+
+        foreach ([$previousLevel, $currentLevel] as $level) {
+            $week = $weeks[$level->id];
+
+            $activity = DistanceActivity::factory()->create([
+                'user_id' => $adminUser->id,
+                'course_id' => $course->id,
+                'language_level_id' => $level->id,
+                'study_program_week_id' => $week->id,
+            ]);
+            DistanceActivityStudent::query()->create(['distance_activity_id' => $activity->id, 'student_id' => $student->id, 'completed' => false]);
+
+            $activities[] = $activity;
+        }
+
+        DistanceActivity::factory()->create([
+            'user_id' => $adminUser->id,
+            'course_id' => Course::factory()->create(['language_level_id' => $unrelatedLevel->id])->id,
+            'language_level_id' => $unrelatedLevel->id,
+        ]);
+
+        return [$studentUser, $previousLevel, $currentLevel, $activities[0], $activities[1], $unrelatedLevel];
     }
 
     private function makeActivity(User $user, ?int $languageLevelId = null): DistanceActivity
@@ -100,6 +148,62 @@ class DistanceActivityFilterTest extends TestCase
 
         $response->assertOk();
         $this->assertEmpty($response->json('data.students'));
+    }
+
+    public function test_student_gets_previous_language_levels_with_activities_in_filter_options(): void
+    {
+        [$studentUser, $previousLevel, $currentLevel, , , $unrelatedLevel] = $this->makeStudentWithPreviousLevelActivity();
+
+        $response = $this->actingAs($studentUser, 'web')
+            ->getJson('/academics/lessons/distance-activities/filter-options');
+
+        $response->assertOk();
+        $levelIds = collect($response->json('data.language_levels'))->pluck('value')->all();
+        $this->assertContains($previousLevel->id, $levelIds);
+        $this->assertContains($currentLevel->id, $levelIds);
+        $this->assertNotContains($unrelatedLevel->id, $levelIds);
+        $this->assertSame($currentLevel->id, $response->json('data.default_language_level_id'));
+    }
+
+    public function test_student_can_filter_activities_by_previous_language_level(): void
+    {
+        [$studentUser, $previousLevel, , $previousActivity, $currentActivity] = $this->makeStudentWithPreviousLevelActivity();
+
+        $filters = json_encode(['language_level_id' => $previousLevel->id]);
+        $response = $this->actingAs($studentUser, 'web')
+            ->getJson('/academics/lessons/distance-activities?filters='.urlencode($filters));
+
+        $response->assertOk();
+        $ids = collect($response->json('data.distance_activities'))->pluck('id')->all();
+        $this->assertSame([$previousActivity->id], $ids);
+        $this->assertNotContains($currentActivity->id, $ids);
+    }
+
+    public function test_student_weeks_summary_can_be_scoped_to_previous_language_level(): void
+    {
+        [$studentUser, $previousLevel, , $previousActivity] = $this->makeStudentWithPreviousLevelActivity();
+
+        $response = $this->actingAs($studentUser, 'web')
+            ->getJson('/academics/lessons/distance-activities/weeks?language_level_id='.$previousLevel->id);
+
+        $response->assertOk();
+        $this->assertSame(
+            [$previousActivity->study_program_week_id],
+            collect($response->json('data.weeks'))->pluck('id')->all()
+        );
+    }
+
+    public function test_student_cannot_filter_by_language_level_without_visible_activities(): void
+    {
+        [$studentUser, , , $previousActivity, $currentActivity, $unrelatedLevel] = $this->makeStudentWithPreviousLevelActivity();
+
+        $filters = json_encode(['language_level_id' => $unrelatedLevel->id]);
+        $response = $this->actingAs($studentUser, 'web')
+            ->getJson('/academics/lessons/distance-activities?filters='.urlencode($filters));
+
+        $response->assertOk();
+        $ids = collect($response->json('data.distance_activities'))->pluck('id')->sort()->values()->all();
+        $this->assertSame(collect([$previousActivity->id, $currentActivity->id])->sort()->values()->all(), $ids);
     }
 
     public function test_unauthenticated_user_cannot_access_filter_options(): void

@@ -20,6 +20,7 @@ class StudyProgramReplicationService
     {
         $course->loadMissing([
             'teachers',
+            'distanceActivities',
             'languageLevel.studyProgram.weeks.activities',
         ]);
 
@@ -31,28 +32,23 @@ class StudyProgramReplicationService
         }
 
         foreach ($studyProgram->weeks->sortBy('week_number') as $week) {
-            $distanceActivity = DistanceActivity::query()->create([
-                'course_id' => $course->id,
-                'language_level_id' => $course->language_level_id,
-                'study_program_week_id' => $week->id,
-                'teacher_id' => $teacherId,
-                'user_id' => $user->id,
-                'title' => $week->title,
-                'comments' => null,
-            ]);
+            $distanceActivity = $course->distanceActivities
+                ->firstWhere('study_program_week_id', $week->id);
+
+            if (! $distanceActivity) {
+                $distanceActivity = DistanceActivity::query()->create([
+                    'course_id' => $course->id,
+                    'language_level_id' => $course->language_level_id,
+                    'study_program_week_id' => $week->id,
+                    'teacher_id' => $teacherId,
+                    'user_id' => $user->id,
+                    'title' => $week->title,
+                    'comments' => null,
+                ]);
+            }
 
             foreach ($week->activities->sortBy('sort_order') as $activity) {
-                DistanceActivityDetail::query()->create([
-                    'distance_activity_id' => $distanceActivity->id,
-                    'study_program_week_activity_id' => $activity->id,
-                    'content_id' => $activity->level_content_id,
-                    'free_content' => $activity->free_content,
-                    'activity' => $activity->activity_name,
-                    'type' => $activity->type->value,
-                    'links' => $activity->links,
-                    'file_path' => null,
-                    'file_name' => null,
-                ]);
+                $this->firstOrCreateDetail($distanceActivity, $activity);
             }
         }
     }

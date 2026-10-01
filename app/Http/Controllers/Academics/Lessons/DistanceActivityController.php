@@ -62,7 +62,7 @@ class DistanceActivityController extends Controller
         if (isset($filters['language_level_id'])) {
             $languageLevelId = (int) $filters['language_level_id'];
 
-            if ($visibility->canAccessLanguageLevelId($user, $languageLevelId)) {
+            if ($distanceActivityService->canAccessLanguageLevelId($user, $languageLevelId)) {
                 $query->where('language_level_id', $languageLevelId);
             }
         }
@@ -126,11 +126,12 @@ class DistanceActivityController extends Controller
         );
     }
 
-    public function filterOptions(Request $request)
+    public function filterOptions(Request $request, DistanceActivityService $distanceActivityService)
     {
         $visibility = new CourseVisibilityService;
 
-        $visibleLanguageLevelIds = $visibility->visibleLanguageLevelIdsForUser($request->user());
+        $visibleLanguageLevelIds = $distanceActivityService->visibleLanguageLevelIds($request->user());
+        $currentLanguageLevelIds = $visibility->visibleLanguageLevelIdsForUser($request->user()) ?? [];
         $languageLevels = LanguageLevel::query()
             ->when($visibleLanguageLevelIds !== null, fn ($q) => $q->whereIn('id', $visibleLanguageLevelIds))
             ->orderBy('level')
@@ -146,6 +147,8 @@ class DistanceActivityController extends Controller
             message: __('Distance activity filter options loaded successfully.'),
             data: [
                 'language_levels' => $languageLevels,
+                'default_language_level_id' => $languageLevels
+                    ->first(fn (array $option) => in_array($option['value'], $currentLanguageLevelIds, true))['value'] ?? null,
                 'students' => $visibility->studentOptionsForUser($request->user()),
             ]
         );
@@ -159,10 +162,9 @@ class DistanceActivityController extends Controller
             return ResponseService::unauthorized(__('You are not authorized to view distance activities.'));
         }
 
-        $visibility = new CourseVisibilityService;
         $languageLevelId = $request->language_level_id ? (int) $request->language_level_id : null;
 
-        if ($languageLevelId !== null && ! $visibility->canAccessLanguageLevelId($user, $languageLevelId)) {
+        if ($languageLevelId !== null && ! $distanceActivityService->canAccessLanguageLevelId($user, $languageLevelId)) {
             $languageLevelId = null;
         }
 

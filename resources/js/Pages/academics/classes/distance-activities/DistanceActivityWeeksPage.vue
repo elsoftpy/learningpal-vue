@@ -188,7 +188,7 @@ onMounted(async () => {
         languageLevelOptions.value = response.data?.data?.language_levels ?? [];
 
         if (languageLevelOptions.value.length > 0 && selectedLanguageLevelId.value === null) {
-            selectedLanguageLevelId.value = languageLevelOptions.value[0].value;
+            selectedLanguageLevelId.value = response.data?.data?.default_language_level_id ?? languageLevelOptions.value[0].value;
             // fetchWeeks will be triggered by the watch below
             return;
         }

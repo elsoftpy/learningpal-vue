@@ -95,6 +95,74 @@ class CourseSpaTest extends TestCase
         ]);
     }
 
+    public function test_switching_course_back_to_previous_language_level_does_not_duplicate_activities(): void
+    {
+        $user = User::factory()->create(['profile_id' => Profile::factory()->create()->id]);
+        $user->assignRole('admin');
+
+        $language = Language::factory()->create(['name' => fake()->unique()->word()]);
+        $levelA = LanguageLevel::factory()->create(['language_id' => $language->id]);
+        $programA = StudyProgram::factory()->create(['language_level_id' => $levelA->id]);
+        $weekA = StudyProgramWeek::factory()->create(['study_program_id' => $programA->id]);
+        StudyProgramWeekActivity::factory()->count(2)->create(['study_program_week_id' => $weekA->id]);
+
+        $levelB = LanguageLevel::factory()->create(['language_id' => $language->id]);
+        $programB = StudyProgram::factory()->create(['language_level_id' => $levelB->id]);
+        $weekB = StudyProgramWeek::factory()->create(['study_program_id' => $programB->id]);
+        StudyProgramWeekActivity::factory()->create(['study_program_week_id' => $weekB->id]);
+
+        $course = Course::factory()->create([
+            'language_id' => $language->id,
+            'language_level_id' => $levelA->id,
+        ]);
+        (new StudyProgramReplicationService)->replicateToCourse($course, $user);
+
+        $student = Student::factory()->create();
+        $course->students()->attach($student->id);
+
+        $originalActivity = DistanceActivity::query()
+            ->where('course_id', $course->id)
+            ->where('study_program_week_id', $weekA->id)
+            ->sole();
+        DistanceActivityStudent::query()->create([
+            'distance_activity_id' => $originalActivity->id,
+            'student_id' => $student->id,
+            'completed' => true,
+            'completed_at' => now(),
+        ]);
+
+        foreach ([$levelB, $levelA] as $level) {
+            /** @var User $user */
+            $this->actingAs($user, 'web')
+                ->postJson(route('academics.settings.courses.edit', $course), [
+                    'name' => $course->name,
+                    'language_id' => $language->id,
+                    'language_level_id' => $level->id,
+                    'chat_room_link' => null,
+                    'status' => StatusEnum::ACTIVE->value,
+                ])
+                ->assertOk();
+        }
+
+        $weekAActivities = DistanceActivity::query()
+            ->where('course_id', $course->id)
+            ->where('study_program_week_id', $weekA->id)
+            ->get();
+
+        $this->assertCount(1, $weekAActivities);
+        $this->assertTrue($weekAActivities->first()->is($originalActivity));
+        $this->assertSame(2, $originalActivity->details()->count());
+        $this->assertSame(1, DistanceActivity::query()
+            ->where('course_id', $course->id)
+            ->where('study_program_week_id', $weekB->id)
+            ->count());
+        $this->assertDatabaseHas('distance_activity_students', [
+            'distance_activity_id' => $originalActivity->id,
+            'student_id' => $student->id,
+            'completed' => true,
+        ]);
+    }
+
     public function test_updating_course_without_language_level_change_does_not_replicate_activities(): void
     {
         $user = User::factory()->create(['profile_id' => Profile::factory()->create()->id]);
