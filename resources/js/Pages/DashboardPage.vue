@@ -304,6 +304,18 @@ const normalizeTime = (timeString) => {
   return timeString.length === 5 ? `${timeString}:00` : timeString;
 };
 
+const sessionSortKey = (session) => {
+  const eventDate = session.rescheduled_date ?? session.date ?? '';
+  const start = normalizeTime(session.rescheduled_start_time ?? session.start_time) ?? '';
+  const end = normalizeTime(session.rescheduled_end_time ?? session.end_time) ?? '';
+  return `${eventDate} ${start} ${end}`;
+};
+
+// Schedule-X's month grid comparator is inconsistent for same-day events, so the
+// final order depends on the browser's sort. Pre-sorting makes it deterministic.
+const sortSessionsByStart = (sessions = []) => [...sessions]
+  .sort((a, b) => sessionSortKey(a).localeCompare(sessionSortKey(b)));
+
 const assignConcurrentStartOffsets = (sessions = []) => {
   const bucketCounts = new Map();
 
@@ -585,7 +597,7 @@ function applyCalendarEvents(calendarInstance = calendarAppRef) {
     return;
   }
 
-  const layoutAwareSessions = assignConcurrentStartOffsets(filteredCalendarSessions.value);
+  const layoutAwareSessions = assignConcurrentStartOffsets(sortSessionsByStart(filteredCalendarSessions.value));
   const events = layoutAwareSessions.map(sessionToCalendarEvent);
   calendarInstance.events.set(events);
 }
