@@ -84,6 +84,72 @@ class DistanceActivityStudentProductionTest extends TestCase
             ->assertJsonPath('errors.completed.0', __('You must save your production before marking this task as completed.'));
     }
 
+    public function test_production_task_is_not_locked_behind_unopened_previous_videos(): void
+    {
+        [$studentUser, $productionDetail, $videoDetail, $laterExerciseDetail] = $this->createVideoThenProductionDetailsForStudent();
+
+        $details = collect(
+            $this->actingAs($studentUser, 'web')
+                ->postJson("/academics/lessons/distance-activities/{$productionDetail->distance_activity_id}/data")
+                ->assertOk()
+                ->json('data.distance_activity.details')
+        )->keyBy('id');
+
+        $this->assertSame(1, $details[$videoDetail->id]['sequence']);
+        $this->assertNull($details[$productionDetail->id]['completion_lock_message']);
+        $this->assertNull($details[$productionDetail->id]['next_completion_locked_until']);
+        $this->assertSame(
+            __('Open the previous video activity first.'),
+            $details[$laterExerciseDetail->id]['completion_lock_message']
+        );
+    }
+
+    public function test_student_can_upload_and_complete_production_before_opening_previous_videos(): void
+    {
+        [$studentUser, $productionDetail] = $this->createVideoThenProductionDetailsForStudent();
+
+        $this->actingAs($studentUser, 'web')
+            ->post("/academics/lessons/distance-activities/details/{$productionDetail->id}/student-production", [
+                'student_production_audio' => UploadedFile::fake()->create('student-production.webm', 500, 'audio/webm'),
+            ], ['Accept' => 'application/json'])
+            ->assertOk();
+
+        $this->actingAs($studentUser, 'web')
+            ->postJson("/academics/lessons/distance-activities/details/{$productionDetail->id}/complete", [
+                'completed' => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('distance_activity_detail_students', [
+            'distance_activity_detail_id' => $productionDetail->id,
+            'student_id' => $studentUser->profile->student->id,
+            'completed' => true,
+        ]);
+    }
+
+    /**
+     * @return array{0: User, 1: DistanceActivityDetail, 2: DistanceActivityDetail, 3: DistanceActivityDetail}
+     */
+    private function createVideoThenProductionDetailsForStudent(): array
+    {
+        [$studentUser, $existingDetail] = $this->createProductionDetailForStudent();
+        $distanceActivityId = $existingDetail->distance_activity_id;
+        $existingDetail->delete();
+
+        [$videoDetail, $productionDetail, $laterExerciseDetail] = collect([
+            StudyProgramActivityTypeEnum::VIDEO,
+            StudyProgramActivityTypeEnum::PRODUCTION,
+            StudyProgramActivityTypeEnum::EXERCISE,
+        ])->map(fn (StudyProgramActivityTypeEnum $type) => DistanceActivityDetail::factory()->create([
+            'distance_activity_id' => $distanceActivityId,
+            'study_program_week_activity_id' => null,
+            'type' => $type->value,
+            'links' => null,
+        ]))->all();
+
+        return [$studentUser, $productionDetail, $videoDetail, $laterExerciseDetail];
+    }
+
     /**
      * @return array{0: User, 1: DistanceActivityDetail}
      */

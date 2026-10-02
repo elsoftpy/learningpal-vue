@@ -579,6 +579,10 @@ class DistanceActivityService
 
     protected function validatePreviousVideoGate(DistanceActivityDetail $detail, int $studentId): ?string
     {
+        if (! $this->requiresPreviousVideosOpened($detail)) {
+            return null;
+        }
+
         $orderedDetails = $this->orderedDetails($detail->distanceActivity);
         $currentIndex = $orderedDetails->search(fn (DistanceActivityDetail $orderedDetail) => $orderedDetail->id === $detail->id);
 
@@ -684,6 +688,10 @@ class DistanceActivityService
             }
         }
 
+        if (! $this->requiresPreviousVideosOpened($detail)) {
+            return null;
+        }
+
         $currentIndex = $orderedDetails->search(fn (DistanceActivityDetail $orderedDetail) => $orderedDetail->id === $detail->id);
 
         if (! is_int($currentIndex) || $currentIndex <= 0) {
@@ -754,6 +762,10 @@ class DistanceActivityService
             }
         }
 
+        if (! $this->requiresPreviousVideosOpened($detail)) {
+            return null;
+        }
+
         $currentIndex = $orderedDetails->search(fn (DistanceActivityDetail $orderedDetail) => $orderedDetail->id === $detail->id);
 
         if (! is_int($currentIndex) || $currentIndex <= 0) {
@@ -779,6 +791,15 @@ class DistanceActivityService
         }
 
         return null;
+    }
+
+    /**
+     * Productions (e.g. audio recordings) can be submitted and completed at any time,
+     * so they are not gated behind opening the previous videos.
+     */
+    protected function requiresPreviousVideosOpened(DistanceActivityDetail $detail): bool
+    {
+        return $detail->type->value !== StudyProgramActivityTypeEnum::PRODUCTION->value;
     }
 
     protected function videoUnlockAt($videoOpenedAt): ?Carbon
