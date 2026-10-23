@@ -237,6 +237,48 @@ class DistanceActivityFilterTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // index: teacher visibility
+    // -------------------------------------------------------------------------
+
+    public function test_teacher_assigned_to_course_sees_activities_owned_by_a_previous_teacher(): void
+    {
+        [$teacherUser, $teacher] = $this->makeTeacherUser();
+        [, $previousTeacher] = $this->makeTeacherUser();
+        $adminUser = $this->makeUser('admin');
+
+        $course = Course::factory()->create();
+        $course->teachers()->attach($teacher->id);
+
+        $courseActivity = DistanceActivity::factory()->create([
+            'user_id' => $adminUser->id,
+            'teacher_id' => $previousTeacher->id,
+            'course_id' => $course->id,
+        ]);
+        $unassignedActivity = DistanceActivity::factory()->create([
+            'user_id' => $adminUser->id,
+            'teacher_id' => null,
+            'course_id' => $course->id,
+        ]);
+        $otherCourseActivity = DistanceActivity::factory()->create([
+            'user_id' => $adminUser->id,
+            'teacher_id' => $previousTeacher->id,
+            'course_id' => Course::factory()->create()->id,
+        ]);
+
+        $response = $this->actingAs($teacherUser, 'web')
+            ->getJson('/academics/lessons/distance-activities');
+
+        $response->assertOk();
+        $ids = collect($response->json('data.distance_activities'))->pluck('id')->all();
+        $this->assertContains($courseActivity->id, $ids);
+        $this->assertContains($unassignedActivity->id, $ids);
+        $this->assertNotContains($otherCourseActivity->id, $ids);
+        $listedCourseActivity = collect($response->json('data.distance_activities'))->firstWhere('id', $courseActivity->id);
+        $this->assertSame('manager', $listedCourseActivity['viewer_mode']);
+        $this->assertSame($teacher->profile->full_name, $listedCourseActivity['teacher_name']);
+    }
+
+    // -------------------------------------------------------------------------
     // index: student_id filter
     // -------------------------------------------------------------------------
 

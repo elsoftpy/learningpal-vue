@@ -130,7 +130,7 @@ const refreshPermissionState = async () => {
 };
 
 const chooseMimeType = () => {
-    const candidates = ['audio/mpeg', 'audio/mp3', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg'];
+    const candidates = ['audio/mpeg', 'audio/mp3', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'];
     return candidates.find((mime) => MediaRecorder.isTypeSupported(mime)) || '';
 };
 
@@ -187,6 +187,10 @@ const getFileExtensionFromMimeType = (mimeType) => {
         return 'ogg';
     }
 
+    if (mimeType.includes('mp4') || mimeType.includes('aac')) {
+        return 'm4a';
+    }
+
     return 'webm';
 };
 
@@ -205,9 +209,10 @@ const startRecording = async () => {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         permissionState.value = 'granted';
 
-        selectedMimeType = chooseMimeType() || 'audio/webm';
+        // Safari only records audio/mp4; forcing an unsupported type makes MediaRecorder throw.
+        selectedMimeType = chooseMimeType();
         mediaRecorder = new MediaRecorder(mediaStream, {
-            mimeType: selectedMimeType,
+            ...(selectedMimeType ? { mimeType: selectedMimeType } : {}),
             audioBitsPerSecond: props.bitRate * 1000,
         });
 

@@ -50,6 +50,25 @@ class DistanceActivityStudentProductionTest extends TestCase
             ->assertOk();
     }
 
+    public function test_student_can_upload_audio_recorded_in_safari(): void
+    {
+        [$studentUser, $detail] = $this->createProductionDetailForStudent();
+
+        $this->actingAs($studentUser, 'web')
+            ->post("/academics/lessons/distance-activities/details/{$detail->id}/student-production", [
+                'student_production_audio' => UploadedFile::fake()->create('student-production.m4a', 800, 'audio/mp4'),
+            ], ['Accept' => 'application/json'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $studentDetail = DistanceActivityDetailStudent::query()
+            ->where('distance_activity_detail_id', $detail->id)
+            ->where('student_id', $studentUser->profile->student->id)
+            ->firstOrFail();
+
+        $this->assertSame('audio', $studentDetail->getFirstMedia('student-production')?->getCustomProperty('media_type'));
+    }
+
     public function test_audio_larger_than_ten_megabytes_is_rejected_with_a_field_error(): void
     {
         [$studentUser, $detail] = $this->createProductionDetailForStudent();

@@ -28,7 +28,7 @@ class DistanceActivityService
     {
         $query = DistanceActivity::query()
             ->with([
-                'course',
+                'course.teachers.profile',
                 'teacher.profile',
                 'user.profile',
                 'students.student.profile.user',
@@ -60,21 +60,16 @@ class DistanceActivityService
             }
 
             if ($user->can('view own distance activities')) {
-                if ($hasCondition) {
-                    $visibleQuery->orWhere(function (Builder $ownQuery) use ($user) {
-                        $ownQuery
-                            ->where('user_id', $user->id)
-                            ->orWhereHas('teacher.profile.user', function (Builder $teacherUserQuery) use ($user) {
-                                $teacherUserQuery->where('id', $user->id);
-                            });
-                    });
-                } else {
-                    $visibleQuery
+                $visibleQuery->{$hasCondition ? 'orWhere' : 'where'}(function (Builder $ownQuery) use ($user) {
+                    $ownQuery
                         ->where('user_id', $user->id)
                         ->orWhereHas('teacher.profile.user', function (Builder $teacherUserQuery) use ($user) {
                             $teacherUserQuery->where('id', $user->id);
+                        })
+                        ->orWhereHas('course.teachers.profile.user', function (Builder $courseTeacherUserQuery) use ($user) {
+                            $courseTeacherUserQuery->where('users.id', $user->id);
                         });
-                }
+                });
             }
         });
 
@@ -150,10 +145,7 @@ class DistanceActivityService
         return [
             'id' => $activity->id,
             'week_number' => $activity->studyProgramWeek?->week_number,
-            'teacher_name' => $activity->teacher?->profile?->full_name
-                ?? $activity->user?->profile?->full_name
-                ?? $activity->user?->name
-                ?? '',
+            'teacher_name' => $this->teacherName($activity),
             'course_name' => $activity->course?->name ?? '',
             'title' => $activity->title,
             'comments' => $activity->comments,
@@ -229,7 +221,7 @@ class DistanceActivityService
     public function detailData(DistanceActivity $activity, User $user): array
     {
         $activity->loadMissing([
-            'course',
+            'course.teachers.profile',
             'teacher.profile',
             'user.profile',
             'students.student.profile.user',
@@ -983,6 +975,28 @@ class DistanceActivityService
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * The course's current teachers take precedence over the teacher snapshotted
+     * when the activity was created, since course teachers can change later.
+     */
+    protected function teacherName(DistanceActivity $activity): string
+    {
+        $courseTeacherNames = $activity->course?->teachers
+            ->map(fn ($teacher) => $teacher->profile?->full_name)
+            ->filter()
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->implode(', ');
+
+        if ($courseTeacherNames) {
+            return $courseTeacherNames;
+        }
+
+        return $activity->teacher?->profile?->full_name
+            ?? $activity->user?->profile?->full_name
+            ?? $activity->user?->name
+            ?? '';
     }
 
     protected function viewerMode(DistanceActivity $activity, User $user, ?Student $student = null): string

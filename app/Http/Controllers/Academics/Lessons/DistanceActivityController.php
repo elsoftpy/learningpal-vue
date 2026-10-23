@@ -52,6 +52,7 @@ class DistanceActivityController extends Controller
                     ->orWhere('comments', 'like', '%'.$search.'%')
                     ->orWhereHas('course', fn ($courseQuery) => $courseQuery->where('name', 'like', '%'.$search.'%'))
                     ->orWhereHas('teacher.profile', fn ($teacherQuery) => $teacherQuery->where('full_name', 'like', '%'.$search.'%'))
+                    ->orWhereHas('course.teachers.profile', fn ($teacherQuery) => $teacherQuery->where('full_name', 'like', '%'.$search.'%'))
                     ->orWhereHas('user.profile', fn ($ownerQuery) => $ownerQuery->where('full_name', 'like', '%'.$search.'%'));
             });
         }
@@ -85,7 +86,9 @@ class DistanceActivityController extends Controller
                 Profile::query()
                     ->select('profiles.full_name')
                     ->join('teachers', 'teachers.profile_id', '=', 'profiles.id')
-                    ->whereColumn('teachers.id', 'distance_activities.teacher_id')
+                    ->join('course_teacher', 'course_teacher.teacher_id', '=', 'teachers.id')
+                    ->whereColumn('course_teacher.course_id', 'distance_activities.course_id')
+                    ->orderBy('profiles.full_name')
                     ->limit(1),
                 $sortOrder
             );
@@ -272,11 +275,11 @@ class DistanceActivityController extends Controller
                     'nullable',
                     'file',
                     'max:10240',
-                    'mimetypes:audio/mpeg,audio/mp3,audio/webm,audio/webm;codecs=opus,audio/ogg,video/webm',
+                    'mimetypes:audio/mpeg,audio/mp3,audio/webm,audio/webm;codecs=opus,audio/ogg,video/webm,audio/mp4,audio/x-m4a,audio/aac,video/mp4',
                 ],
             ],
             [
-                'student_production_audio.mimetypes' => 'El campo student production audio debe ser un archivo de tipo: audio/mpeg, audio/mp3, audio/webm, audio/ogg.',
+                'student_production_audio.mimetypes' => 'El campo student production audio debe ser un archivo de tipo: audio/mpeg, audio/mp3, audio/webm, audio/ogg, audio/mp4.',
             ]
         );
 
