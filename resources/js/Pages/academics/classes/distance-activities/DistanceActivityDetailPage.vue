@@ -154,7 +154,7 @@
                                             :severity="detail.completed ? 'success' : 'primary'"
                                             :disabled="detail.completed || isDetailLocked(detail) || !canMarkCompleted(detail)"
                                             :loading="Boolean(detailLoadingMap[detail.id]?.complete)"
-                                            :label="detail.completed ? $t('Completed') : $t('Mark Completed')"
+                                            :label="detail.completed ? $t('Task Completed') : $t('Mark Completed')"
                                             @click="markCompleted(detail)"
                                         />
                                     </div>
@@ -794,7 +794,7 @@ const detailStatusSeverity = (detail) => {
 
 const detailStatusLabel = (detail) => {
     if (detail.completed) {
-        return $t('Completed');
+        return $t('Task Completed');
     }
 
     if (!isStudentView.value && detail.completed_students_count > 0) {
