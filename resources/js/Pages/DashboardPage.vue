@@ -12,7 +12,18 @@
             </div>
           </div>
           <div class="flex flex-col items-center justify-center space-y-3">
-            <div class="flex w-full flex-wrap gap-2">
+            <div v-if="isStudentRole" class="flex w-full flex-wrap gap-2">
+              <RouterLink
+                v-for="link in studentQuickLinks"
+                :key="link.key"
+                :to="link.to"
+                class="inline-flex items-center gap-1.5 rounded-full border border-blue-600 bg-blue-600 px-3 py-1 text-xs font-semibold text-white transition hover:border-blue-700 hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:border-blue-400 dark:hover:bg-blue-400"
+              >
+                <i :class="link.icon" class="text-[11px]" />
+                <span>{{ link.label }}</span>
+              </RouterLink>
+            </div>
+            <div v-else class="flex w-full flex-wrap gap-2">
               <button
                 v-for="option in sessionStatusOptions"
                 :key="option.value"
@@ -204,6 +215,16 @@ const isStudentRole = computed(() => {
 });
 
 const canPerformStudentSessionAction = computed(() => can('perform student session action') && isStudentRole.value);
+
+const studentQuickLinks = computed(() => ([
+  {
+    key: 'distance-activities',
+    label: $t('Distance Activities'),
+    icon: 'pi pi-book',
+    to: { name: 'academics.classes.distance-activities.weeks' },
+    visible: can(['view assigned distance activities', 'view own distance activities', 'view all distance activities']),
+  },
+].filter((link) => link.visible)));
 
 const sessionStatusOptions = computed(() => ([
   { value: 'all', label: $t('All') },
