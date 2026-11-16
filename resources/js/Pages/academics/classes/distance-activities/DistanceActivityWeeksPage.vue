@@ -152,13 +152,25 @@ const bubbleClass = (status) => {
 };
 
 const openWeek = (week) => {
+    const query = {
+        week_id: week.id,
+        week_title: week.title || `${$t('Week')} ${week.week_number}`,
+        ...(selectedLanguageLevelId.value ? { language_level_id: selectedLanguageLevelId.value } : {}),
+    };
+
+    if (week.student_activity_id) {
+        router.push({
+            name: 'academics.classes.distance-activities.detail',
+            params: { id: week.student_activity_id },
+            query,
+        });
+
+        return;
+    }
+
     router.push({
         name: 'academics.classes.distance-activities.list',
-        query: {
-            week_id: week.id,
-            week_title: week.title || `${$t('Week')} ${week.week_number}`,
-            ...(selectedLanguageLevelId.value ? { language_level_id: selectedLanguageLevelId.value } : {}),
-        },
+        query,
     });
 };
 

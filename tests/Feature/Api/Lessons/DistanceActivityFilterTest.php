@@ -193,6 +193,73 @@ class DistanceActivityFilterTest extends TestCase
         );
     }
 
+    public function test_student_weeks_summary_includes_activity_id_for_direct_access(): void
+    {
+        [$studentUser, , $currentLevel, , $currentActivity] = $this->makeStudentWithPreviousLevelActivity();
+
+        $this->actingAs($studentUser, 'web')
+            ->getJson('/academics/lessons/distance-activities/weeks?language_level_id='.$currentLevel->id)
+            ->assertOk()
+            ->assertJsonPath('data.weeks.0.id', $currentActivity->study_program_week_id)
+            ->assertJsonPath('data.weeks.0.student_activity_id', $currentActivity->id);
+    }
+
+    public function test_student_weeks_summary_omits_activity_id_when_week_has_multiple_activities(): void
+    {
+        [$studentUser, , $currentLevel, , $currentActivity] = $this->makeStudentWithPreviousLevelActivity();
+        $student = $studentUser->profile->student;
+
+        $secondActivity = DistanceActivity::factory()->create([
+            'user_id' => $currentActivity->user_id,
+            'course_id' => $currentActivity->course_id,
+            'language_level_id' => $currentLevel->id,
+            'study_program_week_id' => $currentActivity->study_program_week_id,
+        ]);
+        DistanceActivityStudent::query()->create(['distance_activity_id' => $secondActivity->id, 'student_id' => $student->id, 'completed' => false]);
+
+        $this->actingAs($studentUser, 'web')
+            ->getJson('/academics/lessons/distance-activities/weeks?language_level_id='.$currentLevel->id)
+            ->assertOk()
+            ->assertJsonPath('data.weeks.0.total_activities', 2)
+            ->assertJsonPath('data.weeks.0.student_activity_id', null);
+    }
+
+    public function test_admin_weeks_summary_omits_student_activity_id(): void
+    {
+        [, , $currentLevel] = $this->makeStudentWithPreviousLevelActivity();
+        $adminUser = $this->makeUser('admin');
+
+        $response = $this->actingAs($adminUser, 'web')
+            ->getJson('/academics/lessons/distance-activities/weeks?language_level_id='.$currentLevel->id)
+            ->assertOk();
+
+        $this->assertNotEmpty($response->json('data.weeks'));
+        $this->assertSame([null], array_unique(array_column($response->json('data.weeks'), 'student_activity_id')));
+    }
+
+    public function test_teacher_weeks_summary_omits_student_activity_id(): void
+    {
+        [$teacherUser, $teacher] = $this->makeTeacherUser();
+        $level = LanguageLevel::factory()->create();
+        $course = Course::factory()->create(['language_level_id' => $level->id]);
+        $course->teachers()->attach($teacher->id);
+        $week = StudyProgramWeek::factory()->create([
+            'study_program_id' => StudyProgram::factory()->create(['language_level_id' => $level->id])->id,
+        ]);
+        DistanceActivity::factory()->create([
+            'user_id' => $teacherUser->id,
+            'course_id' => $course->id,
+            'language_level_id' => $level->id,
+            'study_program_week_id' => $week->id,
+        ]);
+
+        $this->actingAs($teacherUser, 'web')
+            ->getJson('/academics/lessons/distance-activities/weeks')
+            ->assertOk()
+            ->assertJsonPath('data.weeks.0.id', $week->id)
+            ->assertJsonPath('data.weeks.0.student_activity_id', null);
+    }
+
     public function test_student_cannot_filter_by_language_level_without_visible_activities(): void
     {
         [$studentUser, , , $previousActivity, $currentActivity, $unrelatedLevel] = $this->makeStudentWithPreviousLevelActivity();

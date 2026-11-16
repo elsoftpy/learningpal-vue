@@ -13,6 +13,7 @@ use App\Services\Authorization\CourseVisibilityService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DistanceActivityService
@@ -180,6 +181,7 @@ class DistanceActivityService
         $activities = $query->get();
 
         $byWeek = $activities->groupBy('study_program_week_id');
+        $student = $user->can('view all distance activities') ? null : $this->resolveStudent($user);
 
         $weeks = [];
 
@@ -210,6 +212,7 @@ class DistanceActivityService
                 'status' => $weekStatus,
                 'total_activities' => $total,
                 'completed_activities' => $completedCount,
+                'student_activity_id' => $this->singleAssignedActivityId($weekActivities, $student),
             ];
         }
 
@@ -1020,6 +1023,23 @@ class DistanceActivityService
         }
 
         return 'student';
+    }
+
+    /**
+     * Returns the week's activity ID when it is the only one in the week and is assigned to the student,
+     * so the student can open it directly instead of going through the activities list.
+     *
+     * @param  Collection<int, DistanceActivity>  $weekActivities
+     */
+    protected function singleAssignedActivityId(Collection $weekActivities, ?Student $student): ?int
+    {
+        if (! $student || $weekActivities->count() !== 1) {
+            return null;
+        }
+
+        $activity = $weekActivities->first();
+
+        return $activity->students->contains('student_id', $student->id) ? $activity->id : null;
     }
 
     protected function resolveStudent(User $user): ?Student

@@ -89,9 +89,22 @@
                                         </button>
                                     </div>
                                     <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                                        {{ detail.activity }}
+                                        <a
+                                            v-if="isStudentView && parseLinks(detail.links).length"
+                                            :href="parseLinks(detail.links)[0]"
+                                            class="hover:underline"
+                                            @click.prevent="openLink(detail, parseLinks(detail.links)[0], 0)"
+                                        >
+                                            {{ detail.activity }}
+                                        </a>
+                                        <template v-else>
+                                            {{ detail.activity }}
+                                        </template>
                                     </h2>
-                                    <div class="space-y-1 text-sm text-slate-600 dark:text-slate-300">
+                                    <div v-if="isStudentView" class="text-sm text-slate-600 dark:text-slate-300">
+                                        {{ $t('Type') }}: {{ detail.display_type }}
+                                    </div>
+                                    <div v-else class="space-y-1 text-sm text-slate-600 dark:text-slate-300">
                                         <div>{{ $t('Content') }}: {{ detail.content_name || '—' }}</div>
                                         <div>{{ $t('Type') }}: {{ detail.display_type }}</div>
                                         <div v-if="detail.free_content">{{ $t('Free Content') }}: {{ detail.free_content }}</div>
