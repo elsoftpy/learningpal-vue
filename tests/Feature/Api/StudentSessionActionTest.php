@@ -18,6 +18,17 @@ use Tests\TestCase;
 class StudentSessionActionTest extends TestCase
 {
     /**
+     * Freeze time before the fixture session (2026-06-15 09:00) so actions stay
+     * inside their allowed window regardless of the real date.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Carbon::setTestNow(Carbon::parse('2026-06-15 07:00:00'));
+    }
+
+    /**
      * @return array{0: User, 1: Student}
      */
     private function makeStudentUser(): array

@@ -19,8 +19,7 @@ class DatabaseErrorMessageResolverTest extends TestCase
 
         $message = DatabaseErrorMessageResolver::userMessageFor($exception);
 
-        $this->assertNotNull($message);
-        $this->assertStringContainsString('links', strtolower($message));
+        $this->assertSame(__('One or more links are too long. Please use shorter links or remove tracking parameters and try again.'), $message);
     }
 
     public function test_it_returns_generic_message_for_other_truncation_errors(): void
@@ -33,8 +32,7 @@ class DatabaseErrorMessageResolverTest extends TestCase
 
         $message = DatabaseErrorMessageResolver::userMessageFor($exception);
 
-        $this->assertNotNull($message);
-        $this->assertStringContainsString('too long', strtolower($message));
+        $this->assertSame(__('Some text in the form is too long. Please shorten it and try again.'), $message);
     }
 
     public function test_it_returns_null_for_non_truncation_errors(): void
