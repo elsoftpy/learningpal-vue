@@ -62,7 +62,7 @@ class TeacherController extends Controller
         return ResponseService::success(
             data: [
                 'teachers' => $teachers,
-                'total ' => $paginated->total(),
+                'total' => $paginated->total(),
             ]
         );
     }

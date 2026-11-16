@@ -27,7 +27,7 @@ import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 const { t: $t, locale } = useI18n();
 const { can } = usePermissions();
 const canViewProfileData = computed(() => can('view profile data'));
-const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
+const canViewActionsColumn = computed(() => can(['edit teachers', 'delete teachers']));
 
 const profileExpansion = computed(() => {
     if (!canViewProfileData.value) {

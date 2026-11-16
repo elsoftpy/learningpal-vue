@@ -27,7 +27,7 @@ import RowActionsColumn from '@/components/datatable/RowActionsColumn.vue';
 const { t: $t, locale } = useI18n();
 const { can } = usePermissions();
 const canViewProfileData = computed(() => can('view profile data'));
-const canViewActionsColumn = computed(() => can(['edit users', 'delete users']));
+const canViewActionsColumn = computed(() => can(['edit students', 'delete students']));
 
 const profileExpansion = computed(() => {
     if (!canViewProfileData.value) {
@@ -133,8 +133,8 @@ const columns = computed(() => [
         visible: () => canViewActionsColumn.value,
         bodyComponent: RowActionsColumn,
         bodyProps: {
-            editPermission: 'edit teachers',
-            deletePermission: 'delete teachers',
+            editPermission: 'edit students',
+            deletePermission: 'delete students',
             editLabel: $t('Edit'),
             deleteLabel: $t('Delete'),
             onEdit: (row) => actions.handleEdit(row.id),
