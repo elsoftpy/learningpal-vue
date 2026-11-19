@@ -898,13 +898,28 @@ const openLink = async (detail, link, index = 0) => {
         ensurePendingProduction(detail.id);
         detailLoadingMap[detail.id].video = true;
 
+        // Safari only allows opening tabs during the click itself, so the tab is opened before the request
+        const pendingTab = window.open('', '_blank');
+
+        if (pendingTab) {
+            pendingTab.opener = null;
+        }
+
         try {
             await axios.post(`/academics/lessons/distance-activities/details/${detail.id}/video-open`, {
                 link_index: index,
             });
-            openInNewTab(link);
+
+            if (pendingTab && !pendingTab.closed) {
+                pendingTab.location.href = link;
+            } else {
+                openInNewTab(link);
+            }
+
             await fetchDistanceActivity();
         } catch (error) {
+            pendingTab?.close();
+
             const apiError = handleApiError(error);
             toast.add({
                 severity: 'error',
